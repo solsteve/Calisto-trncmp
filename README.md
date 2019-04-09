@@ -1,0 +1,4 @@
+Callisto
+========
+
+Core C++ libraries.
