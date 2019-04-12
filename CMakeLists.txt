@@ -31,7 +31,7 @@
 #/
 #/ =======================================================================================
 
-cmake_minimum_required( VERSION 3.5 )
+cmake_minimum_required( VERSION 3.10 )
 
 project ( Callisto CXX )
 
@@ -48,6 +48,13 @@ set ( Callisto_VERSION "${\
 Callisto_MAJOR_VERSION}.\
 ${Callisto_MINOR_VERSION}.\
 ${Callisto_PATCH_VERSION}" )
+
+set ( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" )
+message ( STATUS "Path = ${CMAKE_MODULE_PATH}" )
+
+find_package(Threads REQUIRED)
+find_package(GTest REQUIRED)
+
 
 #/ =======================================================================================
 
@@ -117,14 +124,9 @@ add_subdirectory ( apps )
 
 #/ =======================================================================================
 
-find_package(PkgConfig)
-pkg_check_modules(GTEST REQUIRED gtest>=1.7.0)
-pkg_check_modules(GMOCK REQUIRED gmock>=1.7.0)
+#include(CTest)
+enable_testing()
 
-include_directories(
-    ${GTEST_INCLUDE_DIRS}
-    ${GMOCK_INCLUDE_DIRS}
-)
 
 #/ =======================================================================================
 

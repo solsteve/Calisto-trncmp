@@ -1,16 +1,6 @@
-include(GoogleTest)
+project( tests CXX )
 
-add_executable(FooTest trncmp_unitTest.cc)
+include( GoogleTest )
 
-target_link_libraries(FooTest
-    callisto
-    gtest
-    gmock
-)
-gtest_add_tests(TARGET      FooTest
-                TEST_LIST   noArgsTests
-)
-set_tests_properties(${noArgsTests}   PROPERTIES TIMEOUT 10)
-
-
-
+add_subdirectory ( base )
+#add_subdirectory ( arrays )
