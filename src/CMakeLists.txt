@@ -32,8 +32,9 @@
 #/ =======================================================================================
 project ( src CXX )
 
-add_library( callisto STATIC source/trncmp.cc )
+add_library( callisto STATIC source/trncmp.cc source/mathdef.cc )
 set_target_properties(callisto PROPERTIES PUBLIC_HEADER include/trncmp.hh )
+set_target_properties(callisto PROPERTIES PUBLIC_HEADER include/mathdef.hh )
 
 add_subdirectory ( ctest )
 add_subdirectory ( utest )

@@ -44,8 +44,8 @@
 // ---------------------------------------------------------------------------------------
 int main( void ) {
   // -------------------------------------------------------------------------------------
-  std::cout << "Version = " << version() << std::endl;
-  std::cout << "Author  = " << author()  << std::endl;
+  std::cout << "Version = " << trncmpVersion() << std::endl;
+  std::cout << "Author  = " << trncmpAuthor()  << std::endl;
   return 0;
 }
 

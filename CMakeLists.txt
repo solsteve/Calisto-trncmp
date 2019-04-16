@@ -92,8 +92,8 @@ set ( GWARN "\
 
 set ( GFORM "-std=gnu++14" )
 
-set ( CMAKE_CXX_FLAGS_RELEASE "-O3 ${GWARN} ${GARCH} ${GFORM}" )
-set ( CMAKE_CXX_FLAGS_DEBUG   "-O1 -g -fbacktrace -fcheck=all ${GWARN} ${GARCH} ${GFORM}" )
+set ( CMAKE_CXX_FLAGS_RELEASE "-O3    ${GWARN} ${GARCH} ${GFORM}" )
+set ( CMAKE_CXX_FLAGS_DEBUG   "-O1 -g ${GWARN} ${GARCH} ${GFORM}" )
 
 #/ =======================================================================================
 

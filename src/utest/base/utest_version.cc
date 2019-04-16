@@ -5,12 +5,11 @@
 namespace {
 
 TEST(version, Positive) {
-  EXPECT_EQ("3.1.0dev", version());
+  EXPECT_STREQ("3.0.1", trncmpVersion());
 }
 
 TEST(version, Negative) {
-  EXPECT_NE("3.2.0dev", version());
+  EXPECT_STRNE("3.1.1", trncmpVersion());
 }
-
 
 }

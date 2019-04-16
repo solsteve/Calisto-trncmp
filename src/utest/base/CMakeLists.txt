@@ -2,7 +2,9 @@ project( base CXX )
 
 add_executable(${PROJECT_NAME} ../main.cc
   utest_author
-  utest_version)
+  utest_version
+  utest_mathdef_inline
+  utest_mathdef  )
 
 target_link_libraries(${PROJECT_NAME} GTest::GTest GTest::Main callisto)
 add_test(All${PROJECT_NAME}InBase ${PROJECT_NAME})

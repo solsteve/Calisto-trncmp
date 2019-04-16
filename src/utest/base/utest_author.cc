@@ -5,11 +5,11 @@
 namespace {
 
 TEST(author, Positive) {
-  EXPECT_EQ("Stephen W. Soliday", author());
+  EXPECT_STREQ("Stephen Soliday", trncmpAuthor());
 }
 
 TEST(author, Negative) {
-  EXPECT_NE("Stephen Soliday", author());
+  EXPECT_STRNE("Stephen X. Soliday", trncmpAuthor());
 }
 
 }
