@@ -81,7 +81,7 @@ endif ( "${CMAKE_BUILD_TYPE}" STREQUAL "" )
 
 set ( GARCH "\
 -fverbose-asm -ansi -fsigned-char -funsigned-bitfields -fshort-enums \
--funroll-loops -march=corei7 -mtune=corei7" )
+-funroll-loops -march=corei7 -mtune=corei7 -fipa-sra" )
 
 set ( GWARN "\
 -W -Wall -Wextra -Wfloat-equal -Wshadow -Wcast-align -Wredundant-decls \
@@ -130,9 +130,9 @@ enable_testing()
 
 #/ =======================================================================================
 
-option(BUILD_DOCS "Build documentation" OFF)
+option(BUILD_DOCS "Build documentation" ON)
 
-if (BUILD_DOCS)
+#if (BUILD_DOCS)
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
   
@@ -141,7 +141,7 @@ if (DOXYGEN_FOUND)
 
   configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
 
-  message("Doxygen build started")
+  message("Doxygen build started source=${CMAKE_CURRENT_SOURCE_DIR}/src")
 
   add_custom_target( doc_doxygen ALL
     COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
@@ -151,7 +151,7 @@ if (DOXYGEN_FOUND)
 else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
-endif (BUILD_DOCS)
+#endif (BUILD_DOCS)
 
 #/ =======================================================================================
 #/ **                           Top Level - C M A K E L I S T                           **

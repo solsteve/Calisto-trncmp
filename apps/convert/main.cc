@@ -33,8 +33,11 @@
  */
 // =======================================================================================
 
+
 #include <trncmp.hh>
 #include <mylocal.hh>
+#include <array_print.hh>
+
 
 // =======================================================================================
 /** @brief Entry point.
@@ -47,8 +50,51 @@ int main( void ) {
   // -------------------------------------------------------------------------------------
   std::cout << trncmpAuthor() << " ILH" << std::endl;
   std::cout << "App version " << APPVER << std::endl;
+
+  real8_t T2[] = { -11.73678219,  20.84680319,   2.51207001, -11.63547989,
+                   -10.66277194, -52.54156325, -21.04650316,  50.23840075 };
+
+
+  size_t n = sizeof(T2)/sizeof(T2[0]);
+  
+  std::cout << toString( T2, n ) << std::endl;
+  std::cout << toString( T2, n, "%.4f" ) << std::endl;
+  std::cout << toString( T2, n, "%.3f", "; " ) << std::endl;
+
+  real8_t XX[3][4] = { { -4.16595553, -95.15606213,  10.09049046,  52.30506251},
+                       { 89.04153076, -91.95091189, -15.21455717, -80.03042764},
+                       { 80.6179393 ,  23.28697296, -71.07057362, -30.39738595} };
+
+  size_t nr = sizeof(XX)/sizeof(XX[0]);
+  size_t nc = sizeof(XX[0])/sizeof(XX[0][0]);
+
+  real8_t *T3[nr];
+
+  for ( size_t i=0; i<nr; i++ ) {
+    T3[i] = XX[i];
+  }
+
+  std::cout << "N Row = " << nr << std::endl;
+  std::cout << "N Col = " << nc << std::endl;
+
+  std::cout << toString( T3, nr, nc ) << std::endl << std::endl;
+  std::cout << toString( T3, nr, nc, "%7.3f" ) << std::endl << std::endl;
+  std::cout << toString( T3, nr, nc, "%7.3f", "," ) << std::endl << std::endl;
+  std::cout << toString( T3, nr, nc, "%7.3f", ", ", "; " ) << std::endl << std::endl;
+
+  std::cout << toString( T2, n, "%7.3f", " " ) << std::endl << std::endl;
+  std::cout << toString_numpy( T2, n, "%7.3f" ) << std::endl << std::endl;
+  std::cout << toString_octave( T2, n, "%7.3f" ) << std::endl << std::endl;
+  std::cout << toString_sage( T2, n, "%7.3f" ) << std::endl << std::endl;
+
+  std::cout << toString( T3, nr, nc, "%7.3f", " ", "\n" ) << std::endl << std::endl;
+  std::cout << toString_numpy( T3, nr, nc, "%7.3f" ) << std::endl << std::endl;
+  std::cout << toString_octave( T3, nr, nc, "%7.3f" ) << std::endl << std::endl;
+  std::cout << toString_sage( T3, nr, nc, "%7.3f" ) << std::endl << std::endl;
+
   return 0;
 }
+
 
 // =======================================================================================
 // **                                      M A I N                                      **

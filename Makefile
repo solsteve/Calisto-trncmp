@@ -44,7 +44,7 @@ help:
 	@echo ""
 .PHONY: help
 
-DOCFLAG=OFF
+BUILD_DOCS=OFF
 
 #/ =======================================================================================
 
@@ -53,7 +53,8 @@ debug: DEBUG
 .PHONY: debug
 
 DEBUG:
-	mkdir -p $@
+	mkdir -p $@/docs/media
+	cp ./docs/media/* $@/docs/media/
 	cd $@; cmake $(COMPILERS) -DCMAKE_BUILD_TYPE=$@ -DBUILD_DOCS=$(DOCFLAG) ..
 
 #/ ---------------------------------------------------------------------------------------
@@ -63,13 +64,14 @@ release: RELEASE
 .PHONY: release
 
 RELEASE:
-	mkdir -p $@
+	mkdir -p $@/docs/media
+	cp ./docs/media/* $@/docs/media/
 	cd $@; cmake $(COMPILERS) -DCMAKE_BUILD_TYPE=$@ -DBUILD_DOCS=$(DOCFLAG) ..
 
 #/ =======================================================================================
 
 pages:
-	DOCFLAG=ON make -e -C . release
+	BUILD_DOCS=ON make -e -C . release
 .PHONY: pages
 
 #/ =======================================================================================

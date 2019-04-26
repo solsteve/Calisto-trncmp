@@ -1,5 +1,5 @@
 // ====================================================================== BEGIN FILE =====
-// **                             C T E S T _ V E R S I O N                             **
+// **                             C T E S T _ T L O G G E R                             **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library. (formerly SolLib)              **
@@ -27,9 +27,10 @@
 /** @brief Test the Version
  *  @file   ctest_version.cc
  *  @author Stephen W. Soliday
- *  @date   2019-Apr-11
+ *  @date   2013-06-24
+ *  @date   2019-Apr-26 CMake refactorization.
  *
- *  This is a test of author and version calls.
+ *  This is a test of the TLogger utility.
  */
 // =======================================================================================
 
@@ -37,19 +38,82 @@
 #include <trncmp.hh>
 
 
+#include <TLogger.hh>
+#include <unistd.h>
+
 // =======================================================================================
-/** @brief Entry point.
- *  @return 0 on success non-zero on failure
- *
- *  Main entry point for the version test.
- */
+// ---------------------------------------------------------------------------------------
+class LoggerDemo {
+  // -------------------------------------------------------------------------------------
+ protected:
+  TLogger* logger;
+
+  class MyAbortHandler : public TLogger::AbortHandler {
+    virtual void handle( int n ) {
+      std::cout << "This is my C++ logger abort function." << std::endl;
+      exit(n);
+    };
+  };
+
+  LoggerDemo(const LoggerDemo&);
+  LoggerDemo& operator=(const LoggerDemo&);
+
+ public:
+  LoggerDemo( void );
+  ~LoggerDemo( void );
+  void GO( void );
+};
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+LoggerDemo::LoggerDemo( void ) : logger(0) {
+  // -------------------------------------------------------------------------------------
+  logger = TLogger::getInstance();
+
+  logger->setLogfile("./test_c.log");
+  logger->registerAbortHandler( new MyAbortHandler() );
+  logger->setConsoleLevel(TLogger::DEBUG);
+  logger->setWriteLevel(TLogger::DEBUG);
+  logger->setAbortLevel(TLogger::CRITICAL);
+}
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+LoggerDemo::~LoggerDemo( void ) {
+  // -------------------------------------------------------------------------------------
+}
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+void LoggerDemo::GO( void ) {
+  // -------------------------------------------------------------------------------------
+  std::cerr << "C++: Logger test: start" << std::endl << std::endl;
+
+  logger->debug( "This is a debug message %f", 3.14 );
+  logger->info( "This is an info message" );
+  sleep(2);
+  logger->warn( LOCATION, "This is a warning message number %d", 3 );
+  sleep(2);
+  logger->error( "This is an error message" );
+  logger->critical( "This is a  critical message" );
+
+  std::cerr << std::endl << "C++: Logger test: stop" << std::endl << std::endl;
+}
+
+// =======================================================================================
 // ---------------------------------------------------------------------------------------
 int main( void ) {
   // -------------------------------------------------------------------------------------
-  std::cout << "Version = " << trncmpVersion() << std::endl;
-  std::cout << "Author  = " << trncmpAuthor()  << std::endl;
+
+  LoggerDemo* x = new LoggerDemo( );
+
+  x->GO();
+
+  delete x;
+
   return 0;
 }
+
 
 
 // =======================================================================================

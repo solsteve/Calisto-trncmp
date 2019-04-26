@@ -32,17 +32,21 @@
 #/ =======================================================================================
 project ( src CXX )
 
-add_library( callisto STATIC source/trncmp.cc source/mathdef.cc )
-set_target_properties(callisto PROPERTIES PUBLIC_HEADER include/trncmp.hh )
-set_target_properties(callisto PROPERTIES PUBLIC_HEADER include/mathdef.hh )
+file(GLOB LIB_SRC_FILES source/*.cc)
+file(GLOB LIB_HDR_FILES include/*.hh)
+
+add_library( callisto STATIC ${LIB_SRC_FILES} )
+target_include_directories( callisto PUBLIC include )
 
 add_subdirectory ( ctest )
 add_subdirectory ( utest )
 
 install (TARGETS callisto
   LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
-  PUBLIC_HEADER DESTINATION include)
+  ARCHIVE DESTINATION lib )
+
+install (FILES ${LIB_HDR_FILES} DESTINATION include)
+
 
 #/ =======================================================================================
 #/ **                             Source - C M A K E L I S T                            **
