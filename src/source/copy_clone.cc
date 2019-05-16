@@ -58,8 +58,8 @@
 void copy( char* dst, const size_t doff,
            const char* src, const size_t soff, const size_t n ) {
   // -------------------------------------------------------------------------------------
-  if ((const char*)0 == src) throw std::invalid_argument("source array pointer NULL");
-  if ((char*)0 == dst) throw std::invalid_argument("destination array pointer NULL");
+  if (static_cast<const char*>(0) == src) throw std::invalid_argument("source array pointer NULL");
+  if (static_cast<char*>(0) == dst) throw std::invalid_argument("destination array pointer NULL");
   
   register char*  D   = (dst+doff);
   register size_t idx = soff;
@@ -89,8 +89,8 @@ void copy( char* dst, const size_t doff,
 // ---------------------------------------------------------------------------------------
 void copy( char* dst, const char* src, const size_t soff, const size_t n ) {
   // -------------------------------------------------------------------------------------
-  if ((const char*)0 == src) throw std::invalid_argument("source array pointer NULL");
-  if ((char*)0 == dst) throw std::invalid_argument("destination array pointer NULL");
+  if (static_cast<const char*>(0) == src) throw std::invalid_argument("source array pointer NULL");
+  if (static_cast<char*>(0) == dst) throw std::invalid_argument("destination array pointer NULL");
   
   register char*  D   = dst;
   register size_t idx = soff;
@@ -120,8 +120,8 @@ void copy( char* dst, const char* src, const size_t soff, const size_t n ) {
 // ---------------------------------------------------------------------------------------
 void copy( char* dst, const size_t doff, const char* src, const size_t n ) {
   // -------------------------------------------------------------------------------------
-  if ((const char*)0 == src) throw std::invalid_argument("source array pointer NULL");
-  if ((char*)0 == dst) throw std::invalid_argument("destination array pointer NULL");
+  if (static_cast<const char*>(0) == src) throw std::invalid_argument("source array pointer NULL");
+  if (static_cast<char*>(0) == dst) throw std::invalid_argument("destination array pointer NULL");
   
   register char*  D   = (dst+doff);
   register size_t idx = 0;
@@ -150,8 +150,8 @@ void copy( char* dst, const size_t doff, const char* src, const size_t n ) {
 // ---------------------------------------------------------------------------------------
 void copy( char* dst, const char* src, const size_t n ) {
   // -------------------------------------------------------------------------------------
-  if ((const char*)0 == src) throw std::invalid_argument("source array pointer NULL");
-  if ((char*)0 == dst) throw std::invalid_argument("destination array pointer NULL");
+  if (static_cast<const char*>(0) == src) throw std::invalid_argument("source array pointer NULL");
+  if (static_cast<char*>(0) == dst) throw std::invalid_argument("destination array pointer NULL");
   
   register char*  D   = dst;
   register size_t idx = 0;

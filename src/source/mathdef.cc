@@ -251,10 +251,10 @@ void urandom( void* buffer, size_t n ) {
   int fd   = open("/dev/urandom", O_RDONLY);
 
   size_t    i = n;
-  u_int8_t* p = (u_int8_t*)buffer;
+  u_int8_t* p = static_cast<u_int8_t*>(buffer);
 
   while (0 < i) {
-    size_t r = read(fd, (void*)p, i);
+    size_t r = read(fd, static_cast<void*>(p), i);
     p = (p+r);
     i =  i-r;
   }

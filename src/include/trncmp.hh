@@ -52,6 +52,7 @@
 #include <typeinfo>
 #include <cctype>
 #include <string>
+#include <stdexcept>
 
 
 // ---------------------------------------------------------------------------------------
@@ -186,7 +187,7 @@ void ShowTime( std::ostream& o, real8_t hours );
 /** @brief C Format single variable.
  *  @param fmt c-style format (see: fprintf )
  *  @param value number to format.
- *  @return formatted value as char*
+ *  @return formatted value as std::string
  *
  *  Convert the number (value) using fprintf c-style format specifier.
  *  @note this function is not thread safe. It is not intended for complex formating
@@ -194,11 +195,22 @@ void ShowTime( std::ostream& o, real8_t hours );
  */
 // ---------------------------------------------------------------------------------------
 template< class T >
-inline char* c_fmt( std::string fmt, T value ) {
+std::string c_fmt( std::string fmt, T value ) {
   // -------------------------------------------------------------------------------------
-  static char buffer[64];
-  sprintf( buffer, fmt, value );
-  return buffer;
+  char buffer[64];
+  snprintf( buffer, 64, fmt.c_str(), value );
+  return std::string(buffer);
+}
+
+template<class A, class B>
+std::string EXPECTED( std::string l, A e, B g ) {
+  std::string msg( l );
+    msg.append( ": expected [" );
+    msg.append( e );
+    msg.append( "] got [" );
+    msg.append( g );
+    msg.append( "]" );
+    return msg;
 }
 
 

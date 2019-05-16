@@ -1,5 +1,5 @@
 #/ ====================================================================== BEGIN FILE =====
-#/ **                          Applications - C M A K E L I S T                         **
+#/ **                           TicTacToe - C M A K E L I S T                           **
 #/ =======================================================================================
 #/ **                                                                                   **
 #/ **  Copyright (c) 2019, Stephen W. Soliday                                           **
@@ -31,11 +31,23 @@
 #/
 #/ =======================================================================================
 
-project ( apps CXX )
+project ( tictactoe CXX )
 
-add_subdirectory ( convert )
-add_subdirectory ( tictactoe )
+set ( APP1_NAME "build_table" )
+
+set ( CMAKE_CXX_DIRECTORY ${PROJECT_BINARY_DIR}/temp )
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+add_executable ( ${APP1_NAME} build_table.cc state.cc state_table.cc )
+
+target_link_libraries ( ${APP1_NAME} callisto )
+
+install (TARGETS ${APP1_NAME}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
 #/ =======================================================================================
-#/ **                          Applications - C M A K E L I S T                         **
+#/ **                            Convert - C M A K E L I S T                            **
 #/ =========================================================================== end FILE ==

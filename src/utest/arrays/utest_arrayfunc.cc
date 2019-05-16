@@ -290,16 +290,16 @@ TEST( test_minmax_index, Positive ) {
   real8_t R[] = { 6.91, 3.49, 2.42, 3.75, 6.78, 2.34, 8.19, 1.75, 8.56 };
   int32_t A[] = { 6, 3, 4, 8, 1, 5, 9, 7, 2 };
   size_t n = sizeof(R)/sizeof(R[0]);
-  EXPECT_EQ( 7, MinIndex( R, n ) );
-  EXPECT_EQ( 8, MaxIndex( R, n ) );
+  EXPECT_EQ( 7, MinLoc( R, n ) );
+  EXPECT_EQ( 8, MaxLoc( R, n ) );
 
   n = sizeof(A)/sizeof(A[0]);
-  EXPECT_EQ( 4, MinIndex( A, n ) );
-  EXPECT_EQ( 6, MaxIndex( A, n ) );
+  EXPECT_EQ( 4, MinLoc( A, n ) );
+  EXPECT_EQ( 6, MaxLoc( A, n ) );
 
   real8_t* X = (real8_t*)0;
   try {
-    size_t dummy = MinIndex( X, n );
+    size_t dummy = MinLoc( X, n );
     std::cout << dummy << std:: endl;
   } catch( std::invalid_argument& e ) {
     std::cout << "Correct exception caught" << std:: endl;

@@ -43,7 +43,7 @@
 #include <time.h>
 
 
-TLogger* TLogger::theInstance = (TLogger*)0;
+TLogger* TLogger::theInstance = static_cast<TLogger*>(0);
 
 const int TLogger::UNSET    = 0;
 const int TLogger::CRITICAL = 1;
@@ -89,9 +89,9 @@ TLogger::AbortHandler* TLogger::DEFAULT_ABORT_HANDLER = &__TDAH;
 // ---------------------------------------------------------------------------------------
 char* TLogger::TimeStamp( char* buffer ) {
   // -------------------------------------------------------------------------------------
-  static char default_buffer[32];
+  static char default_buffer[96];
   char* P = buffer;
-  if ((char*)0 == P) {
+  if (static_cast<char*>(0) == P) {
     P = default_buffer;
   }
 
@@ -121,7 +121,7 @@ TLogger::TLogger( void ) : console_level(0), write_level(0), logfile_name(0),
   // -------------------------------------------------------------------------------------
   console_level  = TLogger::INFO;
   write_level    = TLogger::WARN;
-  logfile_name   = (char*)0;
+  logfile_name   = static_cast<char*>(0);
   abort_level    = TLogger::CRITICAL;
   abort_handler  = TLogger::DEFAULT_ABORT_HANDLER;
   flag           = true;
@@ -141,10 +141,10 @@ TLogger::~TLogger( void ) {
   abort_handler  = TLogger::DEFAULT_ABORT_HANDLER;
   flag           = false;
 
-  if ( (char*)0 != logfile_name ) {
+  if ( static_cast<char*>(0) != logfile_name ) {
     delete logfile_name;
   }
-  logfile_name = (char*)0;
+  logfile_name = static_cast<char*>(0);
 }
 
 
@@ -157,7 +157,7 @@ TLogger::~TLogger( void ) {
 // ---------------------------------------------------------------------------------------
 TLogger* TLogger::getInstance( void ) {
   // -------------------------------------------------------------------------------------
-  if ( (TLogger*)0 == TLogger::theInstance ) {
+  if ( static_cast<TLogger*>(0) == TLogger::theInstance ) {
     TLogger::theInstance = new TLogger();
   }
 
@@ -173,11 +173,11 @@ TLogger* TLogger::getInstance( void ) {
 // ---------------------------------------------------------------------------------------
 void TLogger::delInstance( void ) {
   // -------------------------------------------------------------------------------------
-  if ( (TLogger*)0 != TLogger::theInstance ) {
+  if ( static_cast<TLogger*>(0) != TLogger::theInstance ) {
     delete TLogger::theInstance;
   }
 
-  TLogger::theInstance = (TLogger*)0;
+  TLogger::theInstance = static_cast<TLogger*>(0);
 }
 
 
@@ -219,7 +219,7 @@ void TLogger::message( int level, char* extra ) {
     static const char* stamp = "UCEWID";
     static char        header[512];
 
-    if ( (char*)0 == extra ) {
+    if ( static_cast<char*>(0) == extra ) {
       sprintf( header, "[%s] **%c**", TLogger::TimeStamp(), stamp[level%6] );
     } else {
       sprintf( header, "[%s] **%c** ( %s )", TLogger::TimeStamp(), stamp[level%6], extra );
@@ -234,10 +234,10 @@ void TLogger::message( int level, char* extra ) {
 
     // ----- log to a file ---------------------------------------------------------------
 
-    if ( (char*)0 != logfile_name ) {
+    if ( static_cast<char*>(0) != logfile_name ) {
       if (level <= write_level) {
 	FILE* fp = fopen( logfile_name, "a" );
-	if ((FILE*)0 == fp) {
+	if (static_cast<FILE*>(0) == fp) {
 	  fprintf( stderr, "[%s]: **W** Failed to open log file: %s\n",
 		   header, logfile_name );
 	} else {
@@ -280,7 +280,7 @@ void TLogger::message( int level, const char* fmt, va_list list, char* extra ) {
     if (level <= console_level) {
       fprintf( stderr, "%s ", header );
       vfprintf( stderr, fmt, list );
-      if ( (char*)0 != extra ) {
+      if ( static_cast<char*>(0) != extra ) {
         fprintf( stderr, " ( %s )", extra );
       }
       fprintf( stderr, "\n" );
@@ -289,16 +289,16 @@ void TLogger::message( int level, const char* fmt, va_list list, char* extra ) {
 
     // ----- log to a file ---------------------------------------------------------------
 
-    if ( (char*)0 != logfile_name ) {
+    if ( static_cast<char*>(0) != logfile_name ) {
       if (level <= write_level) {
 	FILE* fp = fopen( logfile_name, "a" );
-	if ((FILE*)0 == fp) {
+	if (static_cast<FILE*>(0) == fp) {
 	  fprintf( stderr, "[%s]: **W** Failed to open log file: %s\n",
 		   header, logfile_name );
 	} else {
 	  fprintf( fp, "%s ", header );
 	  vfprintf( fp, fmt, list );
-          if ( (char*)0 != extra ) {
+          if ( static_cast<char*>(0) != extra ) {
             fprintf( fp, " ( %s )", extra );
           }        
 	  fprintf( fp, "\n" );
@@ -676,7 +676,7 @@ void TLogger::setWriteLevel( int level ) {
 // ---------------------------------------------------------------------------------------
 void TLogger::setLogfile( const char* fspc, int new_level ) {
   // -------------------------------------------------------------------------------------
-  if ( (char*)0 == logfile_name ) {
+  if ( static_cast<char*>(0) == logfile_name ) {
     logfile_name = new char[ MAXPATHLEN ];
   }
 

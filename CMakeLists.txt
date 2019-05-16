@@ -130,9 +130,9 @@ enable_testing()
 
 #/ =======================================================================================
 
-option(BUILD_DOCS "Build documentation" ON)
+option(BUILD_DOCS "Build documentation" OFF)
 
-#if (BUILD_DOCS)
+if (BUILD_DOCS)
 find_package(Doxygen)
 if (DOXYGEN_FOUND)
   
@@ -151,7 +151,7 @@ if (DOXYGEN_FOUND)
 else (DOXYGEN_FOUND)
   message("Doxygen need to be installed to generate the doxygen documentation")
 endif (DOXYGEN_FOUND)
-#endif (BUILD_DOCS)
+endif (BUILD_DOCS)
 
 #/ =======================================================================================
 #/ **                           Top Level - C M A K E L I S T                           **

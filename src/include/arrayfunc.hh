@@ -227,7 +227,7 @@ T Max( const T* array, const size_t len ) {
  */
 // ---------------------------------------------------------------------------------------
 template < class T >
-size_t MinIndex( const T* array, const size_t len ) {
+size_t MinLoc( const T* array, const size_t len ) {
   // -------------------------------------------------------------------------------------
   if ((const T*)0 == array) throw std::invalid_argument("array pointer NULL");
 
@@ -254,7 +254,7 @@ size_t MinIndex( const T* array, const size_t len ) {
  */
 // ---------------------------------------------------------------------------------------
 template < class T >
-size_t MaxIndex( const T* array, const size_t len ) {
+size_t MaxLoc( const T* array, const size_t len ) {
   // -------------------------------------------------------------------------------------
   if ((const T*)0 == array) throw std::invalid_argument("array pointer NULL");
 

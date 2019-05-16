@@ -79,13 +79,13 @@ class TLogger {
 
   static TLogger* getInstance ( void );
   static void     delInstance ( void );
-  static char*    TimeStamp   ( char* buffer = (char*)0 );
+  static char*    TimeStamp   ( char* buffer = static_cast<char*>(0) );
 
   void on      ( void );
   void off     ( void );
 
-  void message ( int level, const char* fmt, va_list list, char* extra = (char*)0 );
-  void message ( int level, char* extra = (char*)0 );
+  void message ( int level, const char* fmt, va_list list, char* extra = static_cast<char*>(0) );
+  void message ( int level, char* extra = static_cast<char*>(0) );
 
   void critical ( const char* fmt, ... );
   void error    ( const char* fmt, ... );
