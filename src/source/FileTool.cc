@@ -148,17 +148,17 @@ std::string timeStamp( const bool use_seconds ) {
 // ---------------------------------------------------------------------------------------
 std::ifstream openRead( const std::string fspc, int* status ) {
   // -------------------------------------------------------------------------------------
-  std::ifstream ifs = std::ifstream( fspc );
+  int           ierr = 0;
+  std::ifstream ifs  = std::ifstream( fspc );
   if ( ! ifs ) {
+    ierr = 1;
     if ( static_cast<int*>(0) == status ) {
       std::cerr << "Cannot open file " << fspc << " for reading." << std::endl;
-    } else {
-      *status = 1;
     }
   }
 
   if ( static_cast<int*>(0) != status ) {
-    *status = 0;
+    *status = ierr;
   }
   
   return ifs;
@@ -169,19 +169,19 @@ std::ifstream openRead( const std::string fspc, int* status ) {
 // ---------------------------------------------------------------------------------------
 std::ofstream openWrite( const std::string fspc, int* status ) {
   // -------------------------------------------------------------------------------------
-  std::ofstream ofs = std::ofstream( fspc );
+  int           ierr = 0;
+  std::ofstream ofs  = std::ofstream( fspc );
   if ( ! ofs ) {
+    ierr = 1;
     if ( static_cast<int*>(0) == status ) {
       std::cerr << "Cannot open file " << fspc << " for writing." << std::endl;
-    } else {
-      *status = 1;
     }
   }
-
-  if ( static_cast<int*>(0) != status ) {
-    *status = 0;
-  }
   
+  if ( static_cast<int*>(0) != status ) {
+    *status = ierr;
+  }
+    
   return ofs;
 }
 

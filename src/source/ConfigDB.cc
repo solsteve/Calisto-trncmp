@@ -40,42 +40,71 @@
 // =======================================================================================
 
 
-
 #include <ConfigDB.hh>
 #include <StringTool.hh>
 #include <FileTool.hh>
+#include <sstream>
+
 
 TLOGGER_REFERENCE( ConfigDB, logger );
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+ConfigDB::NoSuchKey::NoSuchKey( std::string k ) : std::exception(), key(k) {
+  // -------------------------------------------------------------------------------------
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+const char* ConfigDB::NoSuchKey::what() const noexcept {
+  // -------------------------------------------------------------------------------------
+  static char message[64];
+  snprintf( message, 63, "No such key: %s", key.c_str() );
+  return message;
+}
+
+
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+ConfigDB::NoSuchSection::NoSuchSection( std::string k ) : std::exception(), key(k) {
+  // -------------------------------------------------------------------------------------
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+const char* ConfigDB::NoSuchSection::what() const noexcept {
+  // -------------------------------------------------------------------------------------
+  static char message[64];
+  snprintf( message, 63, "No such section: [%s]", key.c_str() );
+  return message;
+}
+
+
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *  @param[in] k key.
+ *  @param[in] v value.
+ *  @param[in] c optional comment.
+ */
+// ---------------------------------------------------------------------------------------
+ConfigDB::Entry::Entry( std::string k, std::string v, std::string c )
+    : key(k), value(v), comment(c) {
+  // -------------------------------------------------------------------------------------
+}
+
 
 // =======================================================================================
 // ---------------------------------------------------------------------------------------
 ConfigDB::Entry::Entry( std::string ln ) : key(), value(), comment() {
   // -------------------------------------------------------------------------------------
   fromString( ln );
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- *  @param k key.
- *  @param v value.
- */
-// ---------------------------------------------------------------------------------------
-ConfigDB::Entry::Entry( std::string k, std::string v ) : key(k), value(v), comment() {
-  // -------------------------------------------------------------------------------------
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- *  @param k key.
- *  @param v value.
- *  @param c optional comment.
- */
-// ---------------------------------------------------------------------------------------
-ConfigDB::Entry::Entry( std::string k, std::string v, std::string c )
-    : key(k), value(v), comment(c) {
-  // -------------------------------------------------------------------------------------
 }
 
 
@@ -89,6 +118,10 @@ ConfigDB::Entry::Entry( void ) : key(), value(), comment() {
 
 
 // =======================================================================================
+/** @brief Destructor.
+ *
+ *  Clean up allocations.
+ */
 // ---------------------------------------------------------------------------------------
 ConfigDB::Entry::~Entry( void ) {
   // -------------------------------------------------------------------------------------
@@ -96,25 +129,79 @@ ConfigDB::Entry::~Entry( void ) {
 }
 
 
-
-    
+// =======================================================================================
+/** @brief
+ */
+// ---------------------------------------------------------------------------------------
 void ConfigDB::Entry::clear( void ) {
+  // -------------------------------------------------------------------------------------
   key.erase();
   value.erase();
   comment.erase();
-};
-
-
-
-
-//    void        copy       ( Entry* );
-//    void        set        ( std::string k, std::string v, std::string c="" );
-//    std::string toString   ( void );
-
-
+}
 
 
 // =======================================================================================
+/** @brief Copy.
+ *  @param[in] src pointer to a source Entry.
+ */
+// ---------------------------------------------------------------------------------------
+void ConfigDB::Entry::copy( ConfigDB::Entry& src ) {
+  // -------------------------------------------------------------------------------------
+  this->key     = src.key;
+  this->value   = src.value;
+  this->comment = src.comment;
+}
+
+
+// =======================================================================================
+/** @brief Set All.
+ *  @param[in] k key.
+ *  @param[in] v value.
+ *  @param[in] c comment.
+ *
+ */
+// ---------------------------------------------------------------------------------------
+void ConfigDB::Entry::set( std::string k, std::string v, std::string c ) {
+  // -------------------------------------------------------------------------------------
+  this->key     = k;
+  this->value   = v;
+  this->comment = c;
+}
+
+
+// =======================================================================================
+/** @brief
+ *  @return
+ *
+ *  Format a Entry
+ */
+// ---------------------------------------------------------------------------------------
+std::string ConfigDB::Entry::toString( void ) {
+  // -------------------------------------------------------------------------------------
+  if ( 0 < key.size() ) {
+    std::stringbuf    buffer;
+    std::ostream os (&buffer);
+    
+    os << key << " = " << value;
+    
+    if ( 0 < comment.size() ) {
+      os << " ; " << comment;
+    }
+    
+    return buffer.str();
+  }
+
+  return "";
+  //return "<EMPTY>";
+}
+
+
+// =======================================================================================
+/** @brief PArse from a String.
+ *  @param[in] test parsable string.
+ *  @return non zero on failure.
+ */
 // ---------------------------------------------------------------------------------------
 int ConfigDB::Entry::fromString( std::string test ) {
   // -------------------------------------------------------------------------------------
@@ -138,34 +225,39 @@ int ConfigDB::Entry::fromString( std::string test ) {
   
   std::string rhs = StringTool::trim( test.substr( sep+1 ) );
   if ( 0 == rhs.size() ) {
-    logger->error( "Line {%s} does not appear to data after =", test.c_str() );
+    logger->error( "Line {%s} does not appear to have data after =", test.c_str() );
     return 4;    
   }
 
-  if (( '"' == rhs[0] ) ||
-      ( '\'' == rhs[0] )) { // ----- value may be in quotes -------------------------
+  std::string temp_value;
+  sep = rhs.find( ';', 0 );
+  if (std::string::npos == sep) { // ----- no comments -----------------------------
+    temp_value = StringTool::trim( rhs );
+  } else {
+    temp_value   = StringTool::trim( rhs.substr( 0, sep ));
 
-    value = StringTool::containedBy( rhs, "'\"", "'\"" );
+    comment = StringTool::trim( rhs.substr( sep+1 ) );
+    if ( 0 == comment.size() ) {
+      logger->warn( "Line {%s} comment is empty", test.c_str() );
+      comment.erase();
+    }
+  }
+
+  if (( '"' == temp_value[0] ) ||
+      ( '\'' == temp_value[0] )) { // ----- value may be in quotes --------------------
+
+    value = StringTool::containedBy( temp_value, "'\"", "'\"" );
     if ( 0 == value.size() ) {
       logger->error( "Line {%s} quotes contain no value", test.c_str() );
       return 5;    
     }
   } else {
-    sep = rhs.find( ';', 0 );
-    if (std::string::npos == sep) { // ----- no comments -----------------------------
-      value = StringTool::trim( rhs );
-    } else { // ----- line has a comment ---------------------------------------------
-      value   = StringTool::trim( rhs.substr( 0, sep ));
+    value = temp_value;
+  }
 
-      if ( 0 == value.size() ) {
-        logger->error( "Line {%s} no value", test.c_str() );
-        return 6;    
-      }
-      comment = StringTool::trim( rhs.substr( sep+1 ) );
-      if ( 0 == comment.size() ) {
-        logger->warn( "Line {%s} comment is empty", test.c_str() );
-      }
-    }
+  if ( 0 == value.size() ) {
+    logger->error( "Line {%s} no value", test.c_str() );
+    return 6;    
   }
 
   return 0;
@@ -178,84 +270,600 @@ int ConfigDB::Entry::fromString( std::string test ) {
 
 
 
-
-
-
-
+// =======================================================================================
+/** @brief Constructor.
+ *
+ *  Allocates a vector of strings to store comments.
+ */
+// ---------------------------------------------------------------------------------------
+ConfigDB::Comments::Comments( void ) : array(0), com_it() {
+  // -------------------------------------------------------------------------------------
+  array = new std::vector<std::string>();
+}
 
 
 // =======================================================================================
+/** @brief Destructor.
+ *
+ *  deallocates comment vector.
+ */
 // ---------------------------------------------------------------------------------------
-ConfigDB::ConfigDB( void ) : sections(0), file_comments(0) {
+ConfigDB::Comments::~Comments( void ) {
   // -------------------------------------------------------------------------------------
+  delete array;
+}
+
+
+// =======================================================================================
+/** @brief Get by Index.
+ *  @param[in] i index.
+ *  @return comment at index.
+ *
+ *  Return the comment at the index.
+ */
+// ---------------------------------------------------------------------------------------
+std::string ConfigDB::Comments::get( size_t i ) {
+  // -------------------------------------------------------------------------------------
+  if ( i+1 > array->size() ) {
+    std::string msg( c_fmt( "Expected index less than %d Got ", array->size() ) );
+    msg.append( c_fmt( "%d", i ) );
+    throw( std::out_of_range( msg ) );
+  }
+  
+  return array->at(i);
+}
+
+
+// =======================================================================================
+/** @brief Is In.
+ *  @param[in] c test string.
+ *  @return true if test string matches one of the section comments.
+ *
+ *  Determine if a comment already exists.
+ */
+// ---------------------------------------------------------------------------------------
+bool ConfigDB::Comments::isIn( std::string c ) {
+  // -------------------------------------------------------------------------------------
+  for ( std::vector<std::string>::iterator it=array->begin() ;
+        it != array->end() ; ++it ) {
+    if ( 0 == c.compare( *it ) ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+// =======================================================================================
+/** @brief Rewind.
+ *
+ *  Rewind the section comment iterator.
+ */
+// ---------------------------------------------------------------------------------------
+void ConfigDB::Comments::rewind( void ) {
+  // -------------------------------------------------------------------------------------
+  com_it = array->begin();
+}
+
+
+// =======================================================================================
+/** @brief Has Next.
+ *  @return true if the iterator will produce more comments.
+ *
+ *  Check if more comments can be retrieved by the comment iterator.
+ */
+// ---------------------------------------------------------------------------------------
+bool ConfigDB::Comments::hasNext( void ) {
+  // -------------------------------------------------------------------------------------
+  if ( com_it == array->end() ) {
+    return false;
+  }
+  return true;  
+}
+
+
+// =======================================================================================
+/** @brief Get Next.
+ *  @return a copy of the next section comment.
+ *
+ *  Request the next section comment.
+ */
+// ---------------------------------------------------------------------------------------
+std::string ConfigDB::Comments::next( void ) {
+  // -------------------------------------------------------------------------------------
+  if ( com_it == array->end() ) {
+    return "";
+  }
+  return std::string( *com_it++ );
 }
 
 
 
 
+
+
+
+
+
+
+
+
+
 // =======================================================================================
+/** @brief Construction.
+ *  @param[in] nm section name.
+ *
+ *  Construct a named section.
+ */
 // ---------------------------------------------------------------------------------------
-ConfigDB::ConfigDB( const std::string fspc ) : sections(0), file_comments(0) {
+ConfigDB::Section::Section( std::string nm )
+    : sec_name(nm), sec_comments(0), sec_map(0), sec_map_it() {
   // -------------------------------------------------------------------------------------
+  sec_map      = new std::map<std::string, ConfigDB::Entry*>();
+  sec_comments = new ConfigDB::Comments();
+}
+
+
+// =======================================================================================
+/** @brief Destructor.
+ *
+ *  Release allocation.
+ */
+// ---------------------------------------------------------------------------------------
+ConfigDB::Section::~Section( void ) {
+  // -------------------------------------------------------------------------------------
+  sec_name.erase();
+  delete sec_map;
+  delete sec_comments;
+
+  sec_map      = static_cast<std::map<std::string, ConfigDB::Entry*>*>(0);
+  sec_comments = static_cast<ConfigDB::Comments*>(0);
+}
+
+
+// =======================================================================================
+/** @brief Size.
+ *  @param[in] dim which size to return (default: number of key/value pairs)
+ *  @return requested size.
+ *
+ *  By defualt return the number of key/value pairs in this section.
+ *  If dim is present return either the number of key/value pair or the number of
+ *  comment lines.
+ */
+// ---------------------------------------------------------------------------------------
+size_t ConfigDB::Section::size( config_dim_type_e dim ) {
+  // -------------------------------------------------------------------------------------
+  size_t sz = 0;
+  
+  switch( dim ) {
+    default:
+    case SECTIONS:
+      throw( std::invalid_argument( EXPECTED( "Unsupported DIM",
+                                              "COMMENTS or ENTRIES",
+                                              "SECTIONS" ) ) );
+    case COMMENTS:
+      sz = sec_comments->size();
+      break;
+
+    case ENTRIES:
+      sz = sec_map->size();
+      break;
+  }
+
+  return sz;
+}
+
+
+// =======================================================================================
+/** @brief Has Key.
+ *  @param[in] key test key.
+ *  @return true if a record exists associated with the key.
+ *
+ *  Check to see if there is a record associated with the supplied key.
+ */
+// ---------------------------------------------------------------------------------------
+bool ConfigDB::Section::hasKey( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return ( sec_map->end() == sec_map->find( key ) ? (false) : (true) );
+}
+
+
+// =======================================================================================
+/** @brief Set Value.
+ *  @param[in] key key.
+ *  @param[in] val value.
+ *  @param[in] com comment (default: null).
+ *
+ *  If an entry exists associated with the key then update the value with val, otherwise
+ *  create a new entry.
+ */
+// ---------------------------------------------------------------------------------------
+void ConfigDB::Section::set( std::string key, std::string val, std::string com ) {
+  // -------------------------------------------------------------------------------------
+  (*sec_map)[ key ] = new Entry( key, val, com );
+}
+
+
+// =======================================================================================
+/** @brief Get Value.
+ *  @param[in] key key.
+ *  @return value associated with key.
+ *
+ *  Return the value of an entry associated with key.
+ */
+// ---------------------------------------------------------------------------------------
+std::string ConfigDB::Section::get( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  try {
+    Entry* ent = sec_map->at( key );
+    return ent->getValue();
+  } catch( std::out_of_range& e ) {
+    throw ConfigDB::NoSuchKey( key );
+  }
+  return "";
+}
+
+
+// =======================================================================================
+/** @brief Get Value.
+ *  @param[in] key key.
+ *  @return comment associated with key.
+ *
+ *  Return the comment of an entry associated with key.
+ */
+// ---------------------------------------------------------------------------------------
+std::string ConfigDB::Section::getComment( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  try {
+    Entry* ent = sec_map->at( key );
+    return ent->getComment();
+  } catch( std::out_of_range& e ) {
+    throw ConfigDB::NoSuchKey( key );
+  }
+  return "";
+}
+
+
+// =======================================================================================
+/** @brief Rewind Entry Iterator.
+ *
+ *  Reinitialize the entry iterator regardless of its current state. The next call to
+ *  next will retirive a copy of the first Entry in this Section.
+ */
+// ---------------------------------------------------------------------------------------
+void ConfigDB::Section::rewind( void ) {
+  // -------------------------------------------------------------------------------------
+  sec_map_it = sec_map->begin();
+}
+
+
+// =======================================================================================
+/** @brief Has Next Entry.
+ *  @return true is an entry is available.
+ *
+ *  If there is another entry avaiable return a true without actually retrieving a copy.
+ */
+// ---------------------------------------------------------------------------------------
+bool ConfigDB::Section::hasNext( void ) {
+  // -------------------------------------------------------------------------------------
+  if ( sec_map_it == sec_map->end() ) {
+    return false;
+  }
+  return true;
+}
+
+
+// =======================================================================================
+/** @brief Get Next Entry.
+ *  @param[inout] ent reference to an entry object.
+ *  @return true is entry was returned.
+ *
+ *  Retrieve a copy of the next entry in this section. If an entry is found then the
+ *  contents are copyied into argP: ent and this function returns a true. If no entry was
+ *  found then this function returns a false and the arg entry contents remain unchanged.
+ */
+// ---------------------------------------------------------------------------------------
+bool ConfigDB::Section::next( ConfigDB::Entry& ent ) {
+  // -------------------------------------------------------------------------------------
+  if ( sec_map_it == sec_map->end() ) {
+    return false;
+  }
+  ent.copy( sec_map_it->second );
+  ++sec_map_it;
+  return true;
+}
+
+
+// =======================================================================================
+/** @brief Merge.
+ *  @param[in] reference to a source section.
+ *
+ *  Merge copies of the entries and comments from the source section into this one.
+ */
+// ---------------------------------------------------------------------------------------
+void ConfigDB::Section::merge( ConfigDB::Section& sec ) {
+  // -------------------------------------------------------------------------------------
+  ConfigDB::Entry ent;
+  sec.rewind();
+  while( sec.next(ent) ) {
+    add( ent );
+  }
+  
+  ConfigDB::Comments* com = sec.comments();
+    
+  com->rewind();
+
+  while ( com->hasNext() ) {
+    std::string test = com->next();
+    if ( ! sec_comments->isIn( test ) ) {
+      addComment( test );
+    }
+  }
+
+}
+
+
+// =======================================================================================
+/** @brief Write INI File.
+ *  @param[in] os reference to an oiutput stream.
+ *  @return true if error occurs.
+ */
+// ---------------------------------------------------------------------------------------
+bool ConfigDB::Section::writeINI( std::ostream& os ) {
+  // -------------------------------------------------------------------------------------
+  sec_comments->rewind();
+
+  os << "[" << getName() << "]\n";
+  
+  while ( sec_comments->hasNext() ) {
+    os << "  ; " << sec_comments->next() << "\n";
+  }
+
+  ConfigDB::Entry ent;
+
+  rewind();
+
+  while( next(ent) ) {
+    os << "  " << ent.toString() << "\n";
+  }
+
+  os << "\n";
+
+  return false;
+}
+
+
+
+
+
+
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *
+ *  Construct an empty ConfigDB instance.
+ */
+// ---------------------------------------------------------------------------------------
+ConfigDB::ConfigDB( void ) : file_comments(0), sections(0), sec_it() {
+  // -------------------------------------------------------------------------------------
+  sections      = new std::map<std::string, ConfigDB::Section*>();
+  file_comments = new ConfigDB::Comments();
+}
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *  @param[in] fspc path to a configuration file.
+ *
+ *  Construct an empty ConfigDB instance, and parse the file at fspc.
+ */
+// ---------------------------------------------------------------------------------------
+ConfigDB::ConfigDB( const std::string fspc ) : file_comments(0), sections(0), sec_it() {
+  // -------------------------------------------------------------------------------------
+  sections      = new std::map<std::string, ConfigDB::Section*>();
+  file_comments = new ConfigDB::Comments();
   readINI( fspc, static_cast<int*>(0) );
 }
 
 
-
-
-
-
-
-
-
-
+// =======================================================================================
+/** @brief Has Section.
+ *  @param[in] sname test section name.
+ *  @return true if a section exists associated with the section name.
+ *
+ *  Check to see if there is a section associated with the supplied name.
+ */
+// ---------------------------------------------------------------------------------------
+bool ConfigDB::hasSection( std::string sname ) {
+  // -------------------------------------------------------------------------------------
+  return ( sections->end() == sections->find( sname ) ? (false) : (true) );
+}
 
 
 // =======================================================================================
-/** @brief Parse INI Line.
- *  @param[in]  ref reference line.
- *  @param[out] return values.
- *  @return line type.
+/** @brief Add Section.
+ *  @param[in] sname name of the new (or existing) section.
+ *
+ *  Add a new empty section. If a section with this name exists no action is taken.
  */
 // ---------------------------------------------------------------------------------------
-ConfigDB::ini_line_type ConfigDB::ParseLine_INI( std::string& ref, std::string* ret_val ) {
+void  ConfigDB::add( std::string sname ) {
   // -------------------------------------------------------------------------------------
-  size_t n,c;
-  std::string test = StringTool::trim( ref );
-
-  if ( 0 == test.size() )  { return ConfigDB::INI_BLANK_LINE; }
-
-  // ----- find a line comment -----------------------------------------------------------
-  if ( ';' == test[0] ) {
-    *ret_val = StringTool::trim( test.substr( 1 ) );
-    return ConfigDB::INI_LINE_COMMENT;
+  if ( ! hasSection( sname ) ) {
+    (*sections)[sname] = new ConfigDB::Section( sname );
   }
+}
 
-  // ----- find a section name -----------------------------------------------------------
-  if (( '[' == test[0] ) ||
-      ( '{' == test[0] ) ||
-      ( '(' == test[0] ) ) {
 
-    *ret_val = StringTool::trim( StringTool::containedBy( test, "[{(", "]})" ) );
+// =======================================================================================
+/** @brief Add Section.
+ *  @param[in] sec reference to a source section
+ *
+ *  Check this configuration for a section with the same name as the source. If found
+ *  merge the source into it. If not create a new section as a copy of the source.
+ */
+// ---------------------------------------------------------------------------------------
+void  ConfigDB::add( ConfigDB::Section& sec ) {
+  // -------------------------------------------------------------------------------------
+  std::string sname = sec.getName();
+  add( sname );
+  get( sname )->merge( sec );
+}
 
-    if ( 0 == ret_val[0].size() ) { return ConfigDB::INI_UNKNOWN; }
 
-    if ( "@EOF" == *ret_val ) {
-      return ConfigDB::INI_EOF;
-    }
-
-    return ConfigDB::INI_SECTION_NAME;
-  }
-
-  *ret_val = StringTool::trim( ref );
-  return ConfigDB::INI_OTHER_LINE;
+// =======================================================================================
+/** @brief Add Section.
+ *  @param[in] sec reference to a source section
+ *
+ *  Check this configuration for a section with the same name as the source. If found
+ *  merge the source into it. If not create a new section as a copy of the source.
+ */
+// ---------------------------------------------------------------------------------------
+void  ConfigDB::add( ConfigDB::Section* sec ) {
+  // -------------------------------------------------------------------------------------
+  add( *sec );
 }
 
 
 
+// =======================================================================================
+/** @brief Get Value.
+ *  @param[in] key key.
+ *  @return value associated with key.
+ *
+ *  Return the value of an entry associated with key.
+ */
+// ---------------------------------------------------------------------------------------
+ConfigDB::Section* ConfigDB::get( std::string sname ) {
+  // -------------------------------------------------------------------------------------
+  try {
+    return sections->at( sname );
+  } catch( std::out_of_range& e ) {
+    throw ConfigDB::NoSuchSection( sname );
+  }
+  return static_cast<ConfigDB::Section*>(0);
+}
 
 
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+void ConfigDB::set( std::string sname, std::string key,
+                    std::string value, std::string comment ) {
+  // -------------------------------------------------------------------------------------
+  return this->get( sname )->set( key, value, comment );
+}
 
+
+// =======================================================================================
+/** @brief Size.
+ *  @param[in] dim which size to return (default: number of sectionss)
+ *  @return requested size.
+ *
+ *  By defualt return the number of sections in this configuration.
+ *  If dim is present return either the number of sections or the number of
+ *  comment lines.
+ */
+// ---------------------------------------------------------------------------------------
+size_t ConfigDB::size( config_dim_type_e dim ) {
+  // -------------------------------------------------------------------------------------
+  size_t sz = 0;
+  
+  switch( dim ) {
+    default:
+    case ENTRIES:
+      throw( std::invalid_argument( EXPECTED( "Unsupported DIM",
+                                              "COMMENTS or SECTIONS",
+                                              "ENTRIES" ) ) );
+    case COMMENTS:
+      sz = file_comments->size();
+      break;
+
+    case SECTIONS:
+      sz = sections->size();
+      break;
+  }
+
+  return sz;
+}
+
+
+// =======================================================================================
+/** @brief Rewind.
+ *
+ *  Rewind the section iterator.
+ */
+// ---------------------------------------------------------------------------------------
+void ConfigDB::rewind( void ) {
+  // -------------------------------------------------------------------------------------
+  sec_it = sections->begin();
+}
+
+
+// =======================================================================================
+/** @brief Has Next.
+ *  @return true if the iterator will produce more section names.
+ *
+ *  Check if more section names can be retrieved by the section iterator.
+ */
+// ---------------------------------------------------------------------------------------
+bool ConfigDB::hasNext( void ) {
+  // -------------------------------------------------------------------------------------
+  if ( sec_it == sections->end() ) {
+    return false;
+  }
+  return true;  
+}
+
+
+// =======================================================================================
+/** @brief Get Next.
+ *  @return then name of the next section referenced by the iterator.
+ *
+ *  Request the next section name in the iteration.
+ */
+// ---------------------------------------------------------------------------------------
+std::string ConfigDB::next( void ) {
+  // -------------------------------------------------------------------------------------
+  if ( sec_it == sections->end() ) {
+    return "";
+  }
+
+  std::string sn = (*sec_it++).second->getName();
+  return sn;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+void ConfigDB::merge( ConfigDB& cdb ) {
+  // -------------------------------------------------------------------------------------
+  ConfigDB::Comments* com = cdb.comments();
+    
+  com->rewind();
+
+  while ( com->hasNext() ) {
+    std::string test = com->next();
+    if ( ! file_comments->isIn( test ) ) {
+      file_comments->add( test );
+    }
+  }
+
+  cdb.rewind();
+  while ( cdb.hasNext() ) {
+    std::string sname = cdb.next();
+    ConfigDB::Section* sec = cdb.get( sname );
+    add( sec );
+  }
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+void ConfigDB::merge( ConfigDB* cdb ) {
+  // -------------------------------------------------------------------------------------
+  merge( *cdb );
+}
 
 
 // =======================================================================================
@@ -266,9 +874,26 @@ ConfigDB::ini_line_type ConfigDB::ParseLine_INI( std::string& ref, std::string* 
  *  Write the configuration onto an output stream.
  */
 // ---------------------------------------------------------------------------------------
-int ConfigDB::writeINI   ( std::ostream& os ) {
+int ConfigDB::writeINI( std::ostream& os ) {
   // -------------------------------------------------------------------------------------
-  return 1;
+
+  // ----- write file level comments -------------------------
+
+  if ( static_cast<Comments*>(0) != file_comments ) {
+    size_t nc = file_comments->size();
+    for ( size_t i=0; i<nc; i++ ) {
+      os << "; " << file_comments->get(i) << "\n";
+    }
+  }
+
+  rewind();
+
+  while( hasNext() ) {
+    std::string sname = next();
+    get( sname )->writeINI( os );
+  }
+  
+  return 0;
 }
 
 
@@ -283,8 +908,45 @@ int ConfigDB::writeINI   ( std::ostream& os ) {
 // ---------------------------------------------------------------------------------------
 int ConfigDB::readINI( std::istream& is ) {
   // -------------------------------------------------------------------------------------
-  
-  return 1;
+  char buffer[512];
+  std::string sname;
+  bool        inSection = false;
+
+  while( ! is.eof() ) {
+    is.getline( buffer, 512 );
+    std::string line = StringTool::trim( buffer );
+    if ( 0 < line.size() ) {
+      switch(line[0]) {
+        // ----- new sction name ---------------------------------------------------------
+        case '[':
+        case '{':
+        case '(': {
+          sname     = StringTool::containedBy( line, "[{(", "}}]" );
+          inSection = true;
+          add( sname );
+        } break;
+          
+          // ----- comment line ----------------------------------------------------------        
+        case ';':
+        case '!':
+        case '#': {
+          std::string com = StringTool::trim( line.substr( 1 ) );
+          if ( inSection ) {
+            addComment( sname, com );
+          } else {
+            addComment( com );
+          }
+        } break;
+          
+          // ----- possible KVC ----------------------------------------------------------         
+        default: {
+          Entry ent(line);
+          set( sname, ent.getKey(), ent.getValue(), ent.getComment() );
+        } break;
+      }
+    }
+  }
+  return 0;
 }
 
 
@@ -362,7 +1024,6 @@ int ConfigDB::readINI( const std::string fspc, int* status ) {
   
   return istat;
 }
-
 
 
 // =======================================================================================

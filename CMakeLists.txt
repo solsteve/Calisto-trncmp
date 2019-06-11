@@ -87,10 +87,10 @@ set ( GWARN "\
 -W -Wall -Wextra -Wfloat-equal -Wshadow -Wcast-align -Wredundant-decls \
 -Wundef -Wpointer-arith -Wsign-compare -Wconversion -Wpacked -Wno-multichar \
 -Wmissing-noreturn -Wunused-macros -Wendif-labels -Wformat -Wformat-security \
--Wswitch-default -Wswitch-enum -Wsynth -Wreorder -Winline -Weffc++ -ffor-scope \
+-Wswitch-default -Wswitch-enum -Wsynth -Wreorder -Winline -Weffc++ \
 -fcheck-new -Wsign-promo -Woverloaded-virtual -Wno-unused-result" )
 
-set ( GFORM "-std=gnu++14" )
+set ( GFORM "-std=gnu++11" )
 
 set ( CMAKE_CXX_FLAGS_RELEASE "-O3    ${GWARN} ${GARCH} ${GFORM}" )
 set ( CMAKE_CXX_FLAGS_DEBUG   "-O1 -g ${GWARN} ${GARCH} ${GFORM}" )

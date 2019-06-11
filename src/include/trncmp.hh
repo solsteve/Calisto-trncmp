@@ -180,7 +180,14 @@ void ShowTime( std::ostream& o, real8_t hours );
 #  define  until(_c) while(!(_c)) ///< create a do-until loop
 
 /** Show a variable for documentation */
-#define SHOW(a) std::cerr << #a << " = " << a << std::endl;
+#define SHOW(a) std::cerr << #a << " = " << a << std::endl
+
+/** Show a message */
+#define MSG(a) std::cerr << __FILE__ << ":" << __LINE__ <<": " << a << std::endl
+
+/** Show a debug marker */
+#define MARK  MSG("<<<==============================>>>")
+
 
 
 // =======================================================================================

@@ -39,7 +39,7 @@ int build( State* table, size_t idx, size_t player  ) {
   // -------------------------------------------------------------------------------------
   size_t count = 0;
   size_t c     = State::check( table[idx] );
-  size_t np = State::toggle( player );
+  size_t np    = State::toggle( player );
   size_t test[9];
 
   if ( 0 != c ) {
@@ -77,6 +77,39 @@ int build( State* table, size_t idx, size_t player  ) {
   return 0;
 }
 
+size_t uid_counter = 1000;
+
+// =======================================================================================
+int makeUID_r( State* table, std::ofstream& fp, size_t idx ) {
+  // -------------------------------------------------------------------------------------
+  table[idx].uid = uid_counter++;
+  //  fp << table[idx].uid << "\n";
+  fp << idx << "\n";
+
+  for ( size_t i=0; i<9; i++ ) {
+    size_t nid = table[idx].next[i];
+    if ( 0 < nid ) {
+      makeUID_r( table, fp, nid );
+    }
+  }
+  
+  return 0;
+}
+
+
+
+
+// =======================================================================================
+void makeUID( State* table, std::string fspc ) {
+  // -------------------------------------------------------------------------------------
+  uid_counter = 1000;
+  std::ofstream fout( fspc );
+
+  makeUID_r( table, fout, 0 );
+  
+  fout.close();
+}
+
 
 // =======================================================================================
 int main( void ) {
@@ -96,8 +129,20 @@ int main( void ) {
   }
 
   build( G->table, 0, State::PO );
-  renumber( G->table, max_states );
 
+  MARK;
+  
+  makeUID(G->table, "uid.1" );
+  
+  MARK;
+
+  renumber( G->table, max_states );
+  MARK;
+
+  //makeUID(G->table, "uid.2" );
+  
+  MARK;
+  
   size_t count = 0;
   for ( size_t i=0; i<max_states; i++ ) {
     if ( G->table[i].valid ) {
@@ -107,11 +152,13 @@ int main( void ) {
   }
 
   std::cerr << "Found " << count << " valid boards out of " << max_states << "\n";
+  MARK;
 
   std::ofstream fp( "state.data" );
 
   fp << count << "\n";
-  
+   MARK;
+ 
   count = 0;
   for ( size_t i=0; i<max_states; i++ ) {
     if ( G->table[i].valid ) {
@@ -138,6 +185,18 @@ int main( void ) {
   }
 
   fp.close();
+  
+  MARK;
+
+  StateTable T1( "state.data" );
+  T1.write( "/tmp/st.x" );
+  StateTable T2( "/tmp/st.x" );
+
+  MARK;
+
+  makeUID(T2.table, "uid.2" );
+
+  MARK;
   
   delete G;
   

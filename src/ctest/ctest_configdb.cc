@@ -35,19 +35,26 @@
 
 
 #include <ConfigDB.hh>
+#include <StringTool.hh>
 
 
 // =======================================================================================
-void Results( ConfigDB::Entry ent, std::string line ) {
+void Results( ConfigDB::Entry& ent, std::string line ) {
   // -------------------------------------------------------------------------------------
   std::cout << "K = [" << ent.getKey() << "] "
             << "V = [" << ent.getValue() << "] "
             << "C = [" << ent.getComment() << "] "
-            << "L = {" << line << "}\n";
+            << "L = {" << line << "} ToStr: ["
+            << ent.toString()
+            << "]\n";
 }
 
 
-#define TestEntry( rv, ent, line ) { ent.clear(); rv=ent.fromString( line ); if (0==rv) { Results( ent, line ); } }
+#define TestEntry( rv, ent, line ) {   \
+    ent.clear();                        \
+    rv=ent.fromString( line );           \
+    if (0==rv) { Results( ent, line ); }  \
+  }
 
 // =======================================================================================
 void Test01( void ) {
@@ -56,20 +63,113 @@ void Test01( void ) {
 
   int k = 0;
 
+  std::cerr << "\nThese will work ------------------------------------\n\n";
   TestEntry( k, E, "girl = heather ; all mine" );
   TestEntry( k, E, "girl = heather" );
+  TestEntry( k, E, "girl = heather marie ; special" );
   TestEntry( k, E, "girl = 'heather marie' ; special" );
   TestEntry( k, E, "girl = \"heather marie\" ; special" );
   TestEntry( k, E, "heather = fun" );
   TestEntry( k, E, "heather : fun" );
   
+  std::cerr << "\nThese will fail to work ----------------------------\n\n";
   TestEntry( k, E, "  " );
   TestEntry( k, E, "heather" );
   TestEntry( k, E, ": heather" );
   TestEntry( k, E, "   = heather" );
   TestEntry( k, E, "heather = " );
   TestEntry( k, E, "heather = ; what" );
+
+  std::cerr << "\nThese will give a warning but pass -----------------\n\n";
   TestEntry( k, E, "heather = great ;" );
+
+  std::cerr << "\n----------------------------------------------------\n\n";
+}
+
+
+// =======================================================================================
+void Test02( void ) {
+  // -------------------------------------------------------------------------------------
+  ConfigDB::Entry E1( "wife", "heather", "keeper of pens" );
+  ConfigDB::Entry E2( "daughter", "rebekah" );
+  ConfigDB::Entry E3( "son = stephen ; the and" );
+  ConfigDB::Entry E4;
+
+  std::cout << "E1: [" << E1.toString() << "]\n";
+  std::cout << "E2: [" << E2.toString() << "]\n";
+  std::cout << "E3: [" << E3.toString() << "]\n";
+  std::cout << "E4: [" << E4.toString() << "]\n\n";
+
+  E2.copy(E1);
+  E3.clear();
+  E4.set( "old", "steve" );
+
+  std::cout << "E2: [" << E2.toString() << "]\n";
+  std::cout << "E3: [" << E3.toString() << "]\n";
+  std::cout << "E4: [" << E4.toString() << "]\n\n";
+
+  std::cout << "Expect [wife]           got [" << E1.getKey()     << "]\n";
+  std::cout << "       [heather]        got [" << E1.getValue()   << "]\n";
+  std::cout << "       [keeper of pens] got [" << E1.getComment() << "]\n\n";
+}
+
+// =======================================================================================
+void Test03( void ) {
+  // -------------------------------------------------------------------------------------
+  ConfigDB::Section sec("MySec");
+  
+  sec.addComment( "first comment" );
+  sec.addComment( "second comment" );
+
+  sec.set( "alpha", "tank",  "soviet" );
+  sec.set( "beta", "plane", "british" );
+
+  sec.addComment( "third comment" );
+
+  sec.set( "gamma", "boat" );
+  sec.set( "delta", "truck", "american" );
+
+  sec.writeINI( std::cout );
+}
+
+// =======================================================================================
+void Test04( void ) {
+  // -------------------------------------------------------------------------------------
+  ConfigDB cfg;
+  ConfigDB recover;
+
+  cfg.addComment("File level comment");
+  cfg.addComment("second line file comment");
+  
+  cfg.addComment( "First", "Section level comment" );
+  cfg.addComment( "First", "second line section comment" );
+  
+  cfg.set( "First", "episode", "the cage", "first pilot episode" );
+  cfg.set( "First", "parts", "2" );
+
+  cfg.addComment( "First", "third line section comment" );
+  
+  cfg.set( "First", "exec", "number one", "played by majel barret" );
+
+  cfg.addComment( "Second", "Star Trek facts" );
+
+  cfg.addComment("third line file comment");
+
+  cfg.set( "Second", "ship",  "Enterprise",   "heavy cruiser" );
+  cfg.set( "Second", "reg",   "NCC 1701",     "" );
+  cfg.set( "Second", "class", "Constitution", "inaugral" );
+
+  cfg.writeINI( std::cout );
+  cfg.writeINI( "/tmp/test.ini" );
+
+  recover.readINI( "/tmp/test.ini" );
+
+  std::cout << "\n----- re read from file ------------------------------\n\n";
+
+  recover.writeINI( std::cout );
+  
+  
+  
 }
 
 // =======================================================================================
@@ -82,8 +182,17 @@ void Test01( void ) {
 int main( void ) {
   // -------------------------------------------------------------------------------------
   
-  std::cout << "\n==================================================================\n\n";
+  std::cout << "\n===== Test01 =============================================================\n\n";
   Test01();
+  
+  std::cout << "\n===== Test02 =============================================================\n\n";
+  Test02();
+  
+  std::cout << "\n===== Test03 =============================================================\n\n";
+  Test03();
+  
+  std::cout << "\n===== Test04 =============================================================\n\n";
+  Test04();
   
   return 0;
 }

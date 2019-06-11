@@ -13,15 +13,16 @@ class StateTable {
   State* table;
   size_t table_size;
 
-  StateTable( std::string fspc );
-  StateTable( size_t n );
-  ~StateTable( void );
+  StateTable  ( std::string fspc );
+  StateTable  ( size_t n );
+  ~StateTable ( void );
 
-  void destroy ( void );
-  void init    ( size_t n );
+  void   destroy ( void );
+  void   init    ( size_t n );
 
-  void write ( std::string fspc );
-  void read  ( std::string fspc );
+  void   write   ( std::string fspc );
+  void   read    ( std::string fspc );
+  size_t find    ( size_t t[] );
 
  private:
   EMPTY_PROTOTYPE( StateTable );

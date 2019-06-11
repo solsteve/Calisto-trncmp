@@ -36,11 +36,14 @@ class State {
   size_t current;  ///< The next player to move from this state, or the winner.
   size_t winner;   ///< The next player to move from this state, or the winner.
 
+  size_t uid;
+
   State( void );
   ~State ( void );
 
   void   clear   ( void );
   void   display ( std::ostream& os );
+  bool   compare ( size_t t[] );
 
   void   load  ( Counter& C );
   void   load  ( size_t src[] );
