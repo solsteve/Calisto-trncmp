@@ -39,6 +39,7 @@
 
 
 #include <trncmp.hh>
+#include <string.h>
 
 
 // =======================================================================================
@@ -165,6 +166,33 @@ void copy( char* dst, const char* src, const size_t n ) {
     }
   }
 }
+
+
+
+
+
+
+// =======================================================================================
+/** @brief Clone.
+ *  @param[in] src  pointer to source character array.
+ *  @return    pointer to newly allocated destination character array.
+ *
+ *  Allocate a destination array and copy the source into it.
+ *  @note it is your responsibility to delete the destination array.
+ */
+// ---------------------------------------------------------------------------------------
+char* clone( const char* src ) {
+  // -------------------------------------------------------------------------------------
+  size_t n = strlen(src);
+  char* dst = new char[n+1];
+  for ( size_t i=0; i<n; i++ ) {
+    dst[i] = src[i];
+  }
+  dst[n] = (char)0;
+  return dst;
+}
+
+
 
 
 

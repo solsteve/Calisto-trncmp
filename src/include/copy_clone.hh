@@ -149,6 +149,8 @@ void copy( T* dst, T* src, const size_t n ) {
   }
 }
 
+char* clone( const char* src );
+
 
 // =======================================================================================
 /** @brief Clone.
@@ -158,7 +160,7 @@ void copy( T* dst, T* src, const size_t n ) {
  *  @return    pointer to newly allocated destination array.
  *
  *  Allocate a destination array and copy the source into it.
- *  @note it is your responsibility to delete the destinationa array.
+ *  @note it is your responsibility to delete the destination array.
  */
 // ---------------------------------------------------------------------------------------
 template<class T>
@@ -182,7 +184,7 @@ T* clone( T* src, const size_t soff, const size_t n ) {
  *  @return    pointer to newly allocated destination array.
  *
  *  Allocate a destination array and copy the source into it.
- *  @note it is your responsibility to delete the destinationa array.
+ *  @note it is your responsibility to delete the destination array.
  */
 // ---------------------------------------------------------------------------------------
 template<class T>

@@ -127,7 +127,7 @@ class ConfigDB {
     void        copy       ( Entry* src );
     void        set        ( std::string k, std::string v, std::string c="" );
     std::string toString   ( void );
-    int         fromString ( std::string test );
+    int         fromString ( std::string test, bool report=true );
    
     std::string getKey     ( void );
     std::string getValue   ( void );

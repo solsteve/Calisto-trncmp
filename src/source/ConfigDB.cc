@@ -200,32 +200,41 @@ std::string ConfigDB::Entry::toString( void ) {
 // =======================================================================================
 /** @brief PArse from a String.
  *  @param[in] test parsable string.
+ *  @param[in] report include use of the logger.
  *  @return non zero on failure.
  */
 // ---------------------------------------------------------------------------------------
-int ConfigDB::Entry::fromString( std::string test ) {
+int ConfigDB::Entry::fromString( std::string test, bool report ) {
   // -------------------------------------------------------------------------------------
   if ( 0 == StringTool::trim( test ).size() ) {
-    logger->error( "Line {%s} appears to be empty", test.c_str() );
+    if ( report ) {
+      logger->error( "Line {%s} appears to be empty", test.c_str() );
+    }
     return 1;    
   }
   
   size_t sep = test.find_first_of("=:");
 
   if ( std::string::npos == sep ) {
-    logger->error( "Line {%s} is not parsable. It must contain an = or :", test.c_str() );
+    if ( report ) {
+      logger->error( "Line {%s} is not parsable. It must contain an = or :", test.c_str() );
+    }
     return 2;
   }
 
   key = StringTool::trim( test.substr( 0, sep ) );
   if ( 0 == key.size() ) {
-    logger->error( "Line {%s} does not appear to contain a key", test.c_str() );
+    if ( report ) {
+      logger->error( "Line {%s} does not appear to contain a key", test.c_str() );
+    }
     return 3;    
   }
   
   std::string rhs = StringTool::trim( test.substr( sep+1 ) );
   if ( 0 == rhs.size() ) {
-    logger->error( "Line {%s} does not appear to have data after =", test.c_str() );
+    if ( report ) {
+      logger->error( "Line {%s} does not appear to have data after =", test.c_str() );
+    }
     return 4;    
   }
 
@@ -238,8 +247,10 @@ int ConfigDB::Entry::fromString( std::string test ) {
 
     comment = StringTool::trim( rhs.substr( sep+1 ) );
     if ( 0 == comment.size() ) {
-      logger->warn( "Line {%s} comment is empty", test.c_str() );
-      comment.erase();
+      if ( report ) {
+        logger->warn( "Line {%s} comment is empty", test.c_str() );
+        comment.erase();
+      }
     }
   }
 
@@ -248,7 +259,9 @@ int ConfigDB::Entry::fromString( std::string test ) {
 
     value = StringTool::containedBy( temp_value, "'\"", "'\"" );
     if ( 0 == value.size() ) {
-      logger->error( "Line {%s} quotes contain no value", test.c_str() );
+      if ( report ) {
+        logger->error( "Line {%s} quotes contain no value", test.c_str() );
+      }
       return 5;    
     }
   } else {
@@ -256,7 +269,9 @@ int ConfigDB::Entry::fromString( std::string test ) {
   }
 
   if ( 0 == value.size() ) {
-    logger->error( "Line {%s} no value", test.c_str() );
+    if ( report ) {
+      logger->error( "Line {%s} no value", test.c_str() );
+    }
     return 6;    
   }
 
@@ -751,7 +766,10 @@ ConfigDB::Section* ConfigDB::get( std::string sname ) {
 void ConfigDB::set( std::string sname, std::string key,
                     std::string value, std::string comment ) {
   // -------------------------------------------------------------------------------------
-  return this->get( sname )->set( key, value, comment );
+  if ( ! hasSection( sname ) ) {
+    add( sname );
+  }
+  get( sname )->set( key, value, comment );
 }
 
 

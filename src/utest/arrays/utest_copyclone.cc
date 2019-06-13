@@ -5,6 +5,17 @@
 
 namespace {
 
+TEST( test_cc_char, Positive ) {
+  const char *original = "heather";
+  char* test = clone( original );
+  EXPECT_STREQ( original, test );
+  delete test;
+
+  test = clone( "Rebekah" );
+  EXPECT_STREQ( "Rebekah", test );
+  delete test;
+}
+
 // =======================================================================================
 
 TEST( test_cc_oo, Positive ) {
