@@ -52,6 +52,7 @@
 #define EMPTY_MAP_PTR static_cast<cli_map_s**>(0)
 
 char**                       AppOptions::NO_ENV            = static_cast<char**>(0);
+char**                       AppOptions::NO_ARGV           = static_cast<char**>(0);
 const char*                  AppOptions::FILENAME          = static_cast<const char*>(0);
 const char*                  AppOptions::NO_CFG_ON_CMDLINE = static_cast<const char*>(0);
 const char*                  AppOptions::NO_CFG_IN_ENV     = static_cast<const char*>(0);
@@ -66,7 +67,7 @@ static TLogger* logger = TLogger::getInstance();
  */
 // ---------------------------------------------------------------------------------------
 AppOptions::classInstance::classInstance( void )
-  : config_base("config"),
+  : config_base("configdb"),
     config_path("/etc:~:."),
     env_secname("ENV"),
     opt_secname("CLI"),
@@ -681,10 +682,10 @@ ConfigDB* AppOptions::getConfigDB( void ) {
   // parse the command line for options and environment variables
   // -------------------------------------------------------------------------------------
 
-  ConfigDB::Section* csec = (ConfigDB::Section*)0;
-  ConfigDB::Section* esec = (ConfigDB::Section*)0;
+  ConfigDB::Section* csec = static_cast<ConfigDB::Section*>(0);
+  ConfigDB::Section* esec = static_cast<ConfigDB::Section*>(0);
 
-  if ( (char**)0 != I->env ) {
+  if ( AppOptions::NO_ENV != I->env ) {
     AppOptions::parseEnvironment( I->config, I->env, I->env_secname );
     if ( I->config->hasSection( I->env_secname ) ) {
       esec = I->config->get( I->env_secname );
@@ -695,7 +696,7 @@ ConfigDB* AppOptions::getConfigDB( void ) {
     }
   }
 
-  if ( (char**)0 != I->argv ) {
+  if ( AppOptions::NO_ARGV != I->argv ) {
     AppOptions::parseCommandLine( I->config, I->argc, I->argv, I->opt_secname );
     if ( I->config->hasSection( I->opt_secname ) ) {
       csec = I->config->get( I->opt_secname );
@@ -725,30 +726,26 @@ ConfigDB* AppOptions::getConfigDB( void ) {
       for ( size_t j=0; j<prefix_n; j++ ) {
 	for ( size_t k=0; k<suffix_n; k++ ) {
 	  std::string test = SP[i] + "/" + prefix[j] + I->config_base + suffix[k];
-	  //std::cout << "Try [" << test << "]";
 	  if ( true == FileTool::fileExists( test ) ) {
-	    //std::cout << " (found)";
 	    I->config->readINI( test );
 	  }
-	  //std::cout << std::endl;
 	}
       }
     }
   }
   
   // -------------------------------------------------------------------------------------
-  // check to see if there is an environment variable for the config filename
+  // check to see if there is an environment variable with a config filename
   // -------------------------------------------------------------------------------------
 
   if ( AppOptions::NO_ENV != I->env ) {
-    if ( 0 < I->env_keyname.length() ) {
-      if ( I->config->hasSection( I->env_secname ) ) {
-	esec = I->config->get( I->env_secname );
-	if ( esec->hasKey( I->env_keyname ) ) {
-	  std::string cfgfn = esec->get( I->env_keyname );
-	  logger->debug( "Reading config from ENV: %s", cfgfn.c_str() );
-	  I->config->readINI( cfgfn );
-	}
+    if ( static_cast<ConfigDB::Section*>(0) != esec ) {
+      if ( 0 < I->env_keyname.length() ) {
+        if ( esec->hasKey( I->env_keyname ) ) {
+          std::string cfgfn = esec->get( I->env_keyname );
+          logger->debug( "Reading config from ENV: %s", cfgfn.c_str() );
+          I->config->readINI( cfgfn );
+        }
       }
     }
   }
@@ -757,11 +754,15 @@ ConfigDB* AppOptions::getConfigDB( void ) {
   // next check to see if there is a command line option for the config filename
   // -------------------------------------------------------------------------------------
 
-  if ( 0 < I->opt_keyname.length() ) {
-    if ( csec->hasKey(I->opt_keyname) ) {
-      std::string cfgfn = csec->get( I->opt_keyname );
-      logger->debug( "Reading config from CMDLIN: %s", cfgfn.c_str() );
-      I->config->readINI( cfgfn );
+  if ( AppOptions::NO_ARGV != I->argv ) {
+    if ( static_cast<ConfigDB::Section*>(0) != csec ) {
+      if ( 0 < I->opt_keyname.length() ) {
+        if ( csec->hasKey( I->opt_keyname ) ) {
+          std::string cfgfn = csec->get( I->opt_keyname );
+          logger->debug( "Reading config from CMDLINE: %s", cfgfn.c_str() );
+          I->config->readINI( cfgfn );
+        }
+      }
     }
   }
 
@@ -798,8 +799,6 @@ ConfigDB* AppOptions::getConfigDB( void ) {
       missing_opt += 1;
     }
   }
-
-
 
   if ( 0 < missing_opt ) {
     logger->error( "missing options from the command line." );

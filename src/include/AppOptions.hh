@@ -159,33 +159,13 @@ class AppOptions {
   static ConfigDB* getConfigDB  ( void );
 
   static char**           NO_ENV;
+  static char**           NO_ARGV;
   static const char*      FILENAME;
   static const char*      NO_DEFCFG;
   static const char*      NO_CFG_ON_CMDLINE;
   static const char*      NO_CFG_IN_ENV;
   static usage_function_t DEFAULT_USAGE;
 }; // end class AppOptions
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 #endif

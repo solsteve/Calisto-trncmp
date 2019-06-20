@@ -921,7 +921,8 @@ int ConfigDB::writeINI( std::ostream& os ) {
  *  @param[in] is input stream to read from.
  *  @return code.
  *
- *  Read the configuration from an input stream.
+ *  Read the configuration from an input stream. This function may be called multiple
+ *  times. Each time will add to the current ConfigDB.
  */
 // ---------------------------------------------------------------------------------------
 int ConfigDB::readINI( std::istream& is ) {

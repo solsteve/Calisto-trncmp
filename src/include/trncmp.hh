@@ -87,37 +87,52 @@ typedef long double real10_t;   ///< alias for long double
 // ---------------------------------------------------------------------------------------
 
 
-/** @brief 64 bit mask */
+/** @brief unsigned 64 bit mask */
 typedef union __u_mask64 {
   u_int64_t qwrd;      ///< One   Quad   Word  Unsigned
   u_int32_t dwrd[2];   ///< Two   Double Words Unsigned
   u_int16_t word[4];   ///< Four  Single Words Unsigned
   u_int8_t  byte[8];   ///< Eight Half   Words Unsigned
-  int64_t   i64;       ///< One   Quad   Word 
-  int32_t   i32[2];    ///< Two   Double Words
-  int16_t   i16[4];    ///< Four  Single Words
-  int8_t    i8[8];     ///< Eight Half   Words
-} u_mask64_t;
+} u_mask64_u;
 
 
-/** @brief 32 bit mask */
+/** @brief unsigned 32 bit mask */
 typedef union __u_mask32 {
   u_int32_t dwrd;      ///< One  Double Word  Unsigned
   u_int16_t word[2];   ///< Two  Single Words Unsigned
   u_int8_t  byte[4];   ///< Four Half   Words Unsigned
-  int32_t   i32;       ///< One  Double Word
-  int16_t   i16[2];    ///< Two  Single Words
-  int8_t    i8[4];     ///< Four Half   Words
-} u_mask32_t;
+} u_mask32_u;
 
 
-/** @brief 16 bit mask */
+/** @brief unsigned 16 bit mask */
 typedef union __u_mask16 {
   u_int16_t word;      ///< One Single Word  Unsigned
   u_int8_t  byte[2];   ///< Two Half   Words Unsigned
+} u_mask16_u;
+
+
+/** @brief 64 bit mask */
+typedef union __mask64 {
+  int64_t   i64;       ///< One   Quad   Word 
+  int32_t   i32[2];    ///< Two   Double Words
+  int16_t   i16[4];    ///< Four  Single Words
+  int8_t    i8[8];     ///< Eight Half   Words
+} mask64_u;
+
+
+/** @brief 32 bit mask */
+typedef union __mask32 {
+  int32_t   i32;       ///< One  Double Word
+  int16_t   i16[2];    ///< Two  Single Words
+  int8_t    i8[4];     ///< Four Half   Words
+} mask32_u;
+
+
+/** @brief 16 bit mask */
+typedef union __mask16 {
   int16_t   i16;       ///< One Single Word
   int8_t    i8[2];     ///< Two Half   Words
-} u_mask16_t;
+} mask16_u;
 
 
 // ---------------------------------------------------------------------------------------
