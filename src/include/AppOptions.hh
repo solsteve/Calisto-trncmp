@@ -2,29 +2,25 @@
 // **                                A P P O P T I O N S                                **
 // =======================================================================================
 // **                                                                                   **
-// **  This file is part of the TRNCMP Research Library. (formerly SolLib)              **
+// **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 2013, 2019, Stephen W. Soliday                                     **
-// **                            stephen.soliday@trncmp.org                             **
-// **                            http://research.trncmp.org                             **
+// **  Copyright (c) 2013-2019, Stephen W. Soliday                                      **
+// **                           stephen.soliday@trncmp.org                              **
+// **                           http://research.trncmp.org                              **
 // **                                                                                   **
 // **  -------------------------------------------------------------------------------  **
 // **                                                                                   **
-// **  This file, and associated source code, is not free software; you may not         **
-// **  redistribute it and/or modify it. This library is currently in an on going       **
-// **  development phase by its author and has, as yet, not been publicly distributed.  **
-// **  Development of this library has been at the sole cost in both time and funding   **
-// **  by its author. Until such a public release is made the author retains ALL RIGHTS **
-// **  to this software. It is expected that if and when this library is deemed         **
-// **  releasable it will be released under the GNU Public license for non-commercial   **
-// **  use or with a restricted rights for government use. At that time each source     **
-// **  file will contain either/both the standard GPL statement/disclaimer, and/or the  **
-// **  DFARS Restricted Rights Legend.                                                  **
+// **  Callisto is free software: you can redistribute it and/or modify it under the    **
+// **  terms of the GNU General Public License as published by the Free Software        **
+// **  Foundation, either version 3 of the License, or (at your option)                 **
+// **  any later version.                                                               **
 // **                                                                                   **
-// **  This library exists at the present time WITHOUT ANY WARRANTY; without even the   **
-// **  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.         **
-// **  As you are not supposed to be in possession of this file if you use it,          **
-// **  you use this code AT YOUR OWN RISK.                                              **
+// **  Callisto is distributed in the hope that it will be useful, but WITHOUT          **
+// **  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS    **
+// **  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.   **
+// **                                                                                   **
+// **  You should have received a copy of the GNU General Public License along with     **
+// **  Callisto. If not, see <https://www.gnu.org/licenses/>.                           **
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
@@ -40,8 +36,8 @@
  */
 // =======================================================================================
 
-#ifndef __APPOPTIONS_TRNCMP_HH
-#define __APPOPTIONS_TRNCMP_HH
+#ifndef __HH_APPOPTIONS_TRNCMP
+#define __HH_APPOPTIONS_TRNCMP
 
 #include <ConfigDB.hh>
 

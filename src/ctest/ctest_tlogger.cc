@@ -2,7 +2,7 @@
 // **                             C T E S T _ T L O G G E R                             **
 // =======================================================================================
 // **                                                                                   **
-// **  This file is part of the TRNCMP Research Library. (formerly SolLib)              **
+// **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
 // **  Copyright (c) 2019, Stephen W. Soliday                                           **
 // **                      stephen.soliday@trncmp.org                                   **
@@ -10,22 +10,22 @@
 // **                                                                                   **
 // **  -------------------------------------------------------------------------------  **
 // **                                                                                   **
-// **  This program is free software: you can redistribute it and/or modify it under    **
-// **  the terms of the GNU General Public License as published by the Free Software    **
+// **  Callisto is free software: you can redistribute it and/or modify it under the    **
+// **  terms of the GNU General Public License as published by the Free Software        **
 // **  Foundation, either version 3 of the License, or (at your option)                 **
 // **  any later version.                                                               **
 // **                                                                                   **
-// **  This program is distributed in the hope that it will be useful, but WITHOUT      **
+// **  Callisto is distributed in the hope that it will be useful, but WITHOUT          **
 // **  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS    **
 // **  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.   **
 // **                                                                                   **
 // **  You should have received a copy of the GNU General Public License along with     **
-// **  this program. If not, see <http://www.gnu.org/licenses/>.                        **
+// **  Callisto. If not, see <https://www.gnu.org/licenses/>.                           **
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief Test the Version
- *  @file   ctest_version.cc
+/** @brief Test the T-Logger class.
+ *  @file   ctest_tlogger.cc
  *  @author Stephen W. Soliday
  *  @date   2013-06-24
  *  @date   2019-Apr-26 CMake refactorization.
@@ -117,5 +117,5 @@ int main( void ) {
 
 
 // =======================================================================================
-// **                             C T E S T _ V E R S I O N                             **
+// **                             C T E S T _ T L O G G E R                             **
 // ======================================================================== END FILE =====

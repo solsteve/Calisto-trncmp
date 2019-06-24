@@ -2,29 +2,25 @@
 // **                                      D I C E                                      **
 // =======================================================================================
 // **                                                                                   **
-// **  This file is part of the TRNCMP Research Library. (formerly SolLib)              **
+// **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 1990, 2009,16,19, Stephen W. Soliday                               **
-// **                                  stephen.soliday@trncmp.org                       **
-// **                                  http://research.trncmp.org                       **
+// **  Copyright (c) 1990-2019, Stephen W. Soliday                                      **
+// **                           stephen.soliday@trncmp.org                              **
+// **                           http://research.trncmp.org                              **
 // **                                                                                   **
 // **  -------------------------------------------------------------------------------  **
 // **                                                                                   **
-// **  This file, and associated source code, is not free software; you may not         **
-// **  redistribute it and/or modify it. This library is currently in an on going       **
-// **  development phase by its author and has, as yet, not been publicly distributed.  **
-// **  Development of this library has been at the sole cost in both time and funding   **
-// **  by its author. Until such a public release is made the author retains ALL RIGHTS **
-// **  to this software. It is expected that if and when this library is deemed         **
-// **  releasable it will be released under the GNU Public license for non-commercial   **
-// **  use or with a restricted rights for government use. At that time each source     **
-// **  file will contain either/both the standard GPL statement/disclaimer, and/or the  **
-// **  DFARS Restricted Rights Legend.                                                  **
+// **  Callisto is free software: you can redistribute it and/or modify it under the    **
+// **  terms of the GNU General Public License as published by the Free Software        **
+// **  Foundation, either version 3 of the License, or (at your option)                 **
+// **  any later version.                                                               **
 // **                                                                                   **
-// **  This library exists at the present time WITHOUT ANY WARRANTY; without even the   **
-// **  implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.         **
-// **  As you are not supposed to be in possession of this file if you use it,          **
-// **  you use this code AT YOUR OWN RISK.                                              **
+// **  Callisto is distributed in the hope that it will be useful, but WITHOUT          **
+// **  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS    **
+// **  FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.   **
+// **                                                                                   **
+// **  You should have received a copy of the GNU General Public License along with     **
+// **  Callisto. If not, see <https://www.gnu.org/licenses/>.                           **
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
@@ -46,9 +42,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+
 #define VAR_INIT(a)  ent_engine(a), have_spare(false), rand1(0.0), rand2(0.0)
 
 TLOGGER_REFERENCE( Dice, logger );
+
 
 /// Static singleton instance.
 Dice* Dice::theInstance = static_cast<Dice*>(0);
@@ -62,9 +60,10 @@ Dice* Dice::theInstance = static_cast<Dice*>(0);
 // ---------------------------------------------------------------------------------------
 Dice::Dice( void ) : VAR_INIT(0) {
   // -------------------------------------------------------------------------------------
-  ent_engine = Entropy::build();
+  ent_engine = Entropy::DEFAULT();
   seed_set();
 }
+
 
 // =======================================================================================
 /** @brief Constructor.
@@ -74,9 +73,10 @@ Dice::Dice( void ) : VAR_INIT(0) {
 // ---------------------------------------------------------------------------------------
 Dice::Dice( std::string fspc ) : VAR_INIT(0) {
   // -------------------------------------------------------------------------------------
-  ent_engine = Entropy::build();
+  ent_engine = Entropy::DEFAULT();
   seed_set(fspc);
 }
+
 
 // =======================================================================================
 /** @brief Constructor.
@@ -86,9 +86,36 @@ Dice::Dice( std::string fspc ) : VAR_INIT(0) {
 // ---------------------------------------------------------------------------------------
 Dice::Dice( void* sm, size_t n ) : VAR_INIT(0) {
   // -------------------------------------------------------------------------------------
-  ent_engine = Entropy::build();
+  ent_engine = Entropy::DEFAULT();
   seed_set(sm,n);
 }
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *
+ *  Instantiate an instance of the underlying randomize source. Apply the seed action.
+ */
+// ---------------------------------------------------------------------------------------
+Dice::Dice( Entropy* eng ) : VAR_INIT(0) {
+  // -------------------------------------------------------------------------------------
+  ent_engine = eng;
+  seed_set();
+}
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *
+ *  Instantiate an instance of the underlying randomize source. Apply the seed action.
+ */
+// ---------------------------------------------------------------------------------------
+Dice::Dice( Entropy* eng, std::string str ) : VAR_INIT(0) {
+  // -------------------------------------------------------------------------------------
+  ent_engine = eng;
+  seed_set(str);
+}
+
 
 // =======================================================================================
 /** @brief Constructor.
@@ -99,13 +126,8 @@ Dice::Dice( void* sm, size_t n ) : VAR_INIT(0) {
 Dice::Dice( Entropy* eng, void* sm, size_t n ) : VAR_INIT(0) {
   // -------------------------------------------------------------------------------------
   ent_engine = eng;
-  reseed(sm,n);
+  seed_set(sm,n);
 }
-
-
-
-
-
 
 
 // =======================================================================================
@@ -124,9 +146,6 @@ Dice::~Dice( void ) {
 }
 
 
-
-
-
 // =======================================================================================
 /** @brief Get Instance.
  *  @return a pointer to the static instance of the randomize class.
@@ -141,7 +160,8 @@ Dice* Dice::getInstance( void ) {
   }
   return Dice::theInstance;
 }
-  
+
+
 // =======================================================================================
 /** @brief Get Instance.
  *  @param fspc file specification.
@@ -155,11 +175,12 @@ Dice* Dice::getInstance( std::string fspc ) {
   if ( ( Dice* )0 == Dice::theInstance ) {
     Dice::theInstance = new Dice(fspc);
   } else {
-    Dice::theInstance->reseed(fspc);
+    Dice::theInstance->seed_set(fspc);
   }
   return Dice::theInstance;
 }
-  
+
+
 // =======================================================================================
 /** @brief Get Instance.
  *  @return a pointer to the static instance of the Dice class.
@@ -172,12 +193,10 @@ Dice* Dice::getInstance( void* sm, size_t n ) {
   if ( ( Dice* )0 == Dice::theInstance ) {
     Dice::theInstance = new Dice(sm, n);
   } else {
-    Dice::theInstance->reseed(sm,n);
+    Dice::theInstance->seed_set(sm,n);
   }
   return Dice::theInstance;
 }
-
-
 
 
 // =======================================================================================
@@ -194,7 +213,8 @@ Dice* Dice::getInstance( Entropy* eng ) {
   }
   return Dice::theInstance;
 }
-  
+
+
 // =======================================================================================
 /** @brief Get Instance.
  *  @param fspc file specification.
@@ -208,11 +228,12 @@ Dice* Dice::getInstance( Entropy* eng, std::string fspc ) {
   if ( ( Dice* )0 == Dice::theInstance ) {
     Dice::theInstance = new Dice(eng, fspc);
   } else {
-    Dice::theInstance->reseed(fspc);
+    Dice::theInstance->seed_set(fspc);
   }
   return Dice::theInstance;
 }
-  
+
+
 // =======================================================================================
 /** @brief Get Instance.
  *  @return a pointer to the static instance of the Dice class.
@@ -225,14 +246,10 @@ Dice* Dice::getInstance( Entropy* eng, void* sm, size_t n ) {
   if ( ( Dice* )0 == Dice::theInstance ) {
     Dice::theInstance = new Dice(eng, sm, n);
   } else {
-    Dice::theInstance->reseed(sm,n);
+    Dice::theInstance->seed_set(sm,n);
   }
   return Dice::theInstance;
 }
-
-
-
-
 
 
 // =======================================================================================
@@ -250,16 +267,15 @@ void Dice::delInstance( void ) {
 }
 
 
-
 // =======================================================================================
 /** @brief Reset Seed.
  *
  *  Reapply the seed function.
  */
 // ---------------------------------------------------------------------------------------
-bool Dice::seed_set( void ) {
+void Dice::seed_set( void ) {
   // -------------------------------------------------------------------------------------
-  return ent_engine->seed_set();
+   ent_engine->seed_set();
 }
 
 
@@ -271,9 +287,9 @@ bool Dice::seed_set( void ) {
  *  Reapply the seed function by providing seed material.
  */
 // ---------------------------------------------------------------------------------------
-bool Dice::reseed( std::string fspc ) {
+void Dice::seed_set( std::string fspc ) {
   // -------------------------------------------------------------------------------------
-  //    std::cout << "reseed from file\n";
+  //    std::cout << "seed_set from file\n";
   //** @todo make this thread safe */
     
   size_t ss = ent_engine->seed_size();
@@ -297,9 +313,8 @@ bool Dice::reseed( std::string fspc ) {
   ent_engine->seed_set( buffer, ss );
 
   delete buffer;
-
-  return false;
 }
+
 
 // =======================================================================================
 /** @brief Reset Seed.
@@ -310,11 +325,11 @@ bool Dice::reseed( std::string fspc ) {
  *  Reapply the seed function by providing seed material.
  */
 // ---------------------------------------------------------------------------------------
-bool Dice::seed_set( void* src, size_t n ) {
+void Dice::seed_set( void* src, size_t n ) {
   // -------------------------------------------------------------------------------------
   ent_engine->seed_set( src, n );
-  return false;
 }
+
 
 // =======================================================================================
 /** @brief Boolean.
@@ -332,6 +347,7 @@ bool Dice::boolean( real8_t thres ) {
   return ( ent_engine->R64() < thres) ? true : false;
 }
 
+
 // =======================================================================================
 /** @brief Uniform.
  *  @return a number with a Gaussian distribution.
@@ -344,6 +360,7 @@ real8_t Dice::uniform( void ) {
   // -------------------------------------------------------------------------------------
   return ent_engine->R64();
 }
+
 
 // =======================================================================================
 /** @brief Gaussian.
@@ -367,11 +384,12 @@ real8_t Dice::gaussian( void ) {
   
   rand1 = ent->R64();
   if(rand1 < 1e-100) { rand1 = 1e-100; }
-  rand1 = -N_TWO * log(rand1);
-  rand2 = N_2PI*ent->R64();
+  rand1 = -D_TWO * log(rand1);
+  rand2 = D_2PI*ent->R64();
   
   return sqrt(rand1) * cos(rand2);
 }
+
 
 // =======================================================================================
 /** @brief Random Index.

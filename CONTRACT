@@ -1,0 +1,35 @@
+All functions that do not throw exceptions must include "throw()"
+
+All functions return false or 0 on success and
+                     true  of >0 on failure
+
+All exceptions are ultimatly deriverd from std::exception.
+
+Use STL container before custom container.
+
+Use GSL before BLAS before custom.
+
+make std::complex a standard numeric type.
+
+use string before char array.
+
+all source file contain copyright
+
+all source files documented with doxygen
+
+make
+make test
+make install
+make clean
+make fullclean
+make distclean
+
+numerator preference ==>  0/0 returns 0
+
+all types of explicit size: u_int32_t, int16_t, real32_t, real64_t,...
+
+all containers have iterators.
+
+all storable classes are dervive from either OBJECT or SORTABLE
+
+use reference inplace of pointers where convienent
