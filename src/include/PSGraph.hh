@@ -113,11 +113,11 @@ class PSGraph {                                                                 
   class Draw : public PSGraph::Window {                                   // PSGraph::Draw
     // -----------------------------------------------------------------------------------
    private:
-    EMPTY_PROTOTYPE( PSGraph::Draw )
+    EMPTY_PROTOTYPE( Draw );
 
-    int         id;
-    std::string temp_filename;
-    FILE*       file_handle;
+    int        id;
+    char*      temp_filename;
+    FILE*      file_handle;
 
     static int window_count;
 
@@ -158,7 +158,7 @@ class PSGraph {                                                                 
     class Node {                                                    // PSGraph::Draw::Node
       // ---------------------------------------------------------------------------------
      private:
-      EMPTY_PROTOTYPE( PSGraph::Draw::Nod );
+      EMPTY_PROTOTYPE( Node );
 
      public:
       PSGraph::Window* window;
@@ -177,7 +177,7 @@ class PSGraph {                                                                 
   class Page {                                                            // PSGraph::Page
     // -----------------------------------------------------------------------------------
    private:
-    EMPTY_PROTOTYPE( PSGraph::Page );
+    EMPTY_PROTOTYPE( Page );
 
    protected:
     PSGraph::Draw::Node* firstWindow;
@@ -204,7 +204,7 @@ class PSGraph {                                                                 
   // =====================================================================================
  protected:
   EMPTY_PROTOTYPE( PSGraph );
-  TLOGGER_HEADER( PSGraph );
+  TLOGGER_HEADER( logger );
   
   PSGraph::Page** page;       ///< Array of pages
   size_t          num_page;   ///< Number of pages
@@ -253,6 +253,36 @@ inline  void PSGraph::Page::setName ( std::string nm ) {
   // -------------------------------------------------------------------------------------
   name = nm;
 }
+
+
+
+
+// =======================================================================================
+/** @brief Scale.
+ *  @param[in] x coordinate in world coordinates.
+ *  @return coordinate in device coordinates.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t PSGraph::Draw::scaleX( real8_t x ) {
+  // -------------------------------------------------------------------------------------
+  return ((slope_x * x) + inter_x);
+}
+
+
+// =======================================================================================
+/** @brief Scale.
+ *  @param[in] y coordinate in world coordinates.
+ *  @return coordinate in device coordinates.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t PSGraph::Draw::scaleY( real8_t y ) {
+  // -------------------------------------------------------------------------------------
+  return ((slope_y * y) + inter_y);
+}
+
+
+
+
 
     
 

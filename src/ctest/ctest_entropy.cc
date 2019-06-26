@@ -173,12 +173,12 @@ void TEST02( void ) {
     S.reset();
     W.reset();
     for ( size_t i=0; i<N_SAMP; i++ ) {
-      size_t x = dd->index();
+      size_t x = dd->index(10000);
       S.update( x );
     }
     std::cout << ((real8_t)N_SAMP / W.check())*1.0e-6 << " M samples / second\n";
     S.report();
-    std::cout << "Expected 0 0.5 1\n\n";
+    std::cout << "Expected 0 5000 9999\n\n";
   }
   
 

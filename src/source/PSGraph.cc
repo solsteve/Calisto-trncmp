@@ -40,6 +40,8 @@
 
 
 #include <PSGraph.hh>
+      #include <sys/types.h>
+       #include <unistd.h>
 
 PSGraph::Color PSGraph::Color::white   ( 1.0, 1.0, 1.0 );
 PSGraph::Color PSGraph::Color::black   ( 0.0, 0.0, 0.0 );
@@ -61,7 +63,7 @@ TLOGGER_REFERENCE( PSGraph, logger );
 /** @brief Constructor.
  */
 // ---------------------------------------------------------------------------------------
-PSGraph::Color::Color( void ) : r(N_ZERO), g(N_ZERO), b(N_ZERO) {
+PSGraph::Color::Color( void ) : r(D_ZERO), g(D_ZERO), b(D_ZERO) {
   // -------------------------------------------------------------------------------------
 }
 
@@ -106,9 +108,9 @@ PSGraph::Color::~Color( void ) {
 // ---------------------------------------------------------------------------------------
 void PSGraph::Color::correct( void ) {
   // -------------------------------------------------------------------------------------
-  if (r < N_ZERO) { r = N_ZERO; }  if (r > N_ONE) { r = N_ONE; }
-  if (g < N_ZERO) { g = N_ZERO; }  if (g > N_ONE) { g = N_ONE; }
-  if (b < N_ZERO) { b = N_ZERO; }  if (b > N_ONE) { b = N_ONE; }
+  if (r < D_ZERO) { r = D_ZERO; }  if (r > D_ONE) { r = D_ONE; }
+  if (g < D_ZERO) { g = D_ZERO; }  if (g > D_ONE) { g = D_ONE; }
+  if (b < D_ZERO) { b = D_ZERO; }  if (b > D_ONE) { b = D_ONE; }
 }
 
 
@@ -171,6 +173,197 @@ void PSGraph::Window::setDevice( real8_t x, real8_t y ) {
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+// =======================================================================================
+/** @brief Initialize.
+ *  @param[in] dw window width  in device coordinates (inches).
+ *  @param[in] dh window height in device coordinates (inches).
+ *  @param[in] x1 windows lower left  device x coordinate
+ *  @param[in] y1 windows lower left  device y coordinate
+ *  @param[in] x2 windows upper right device x coordinate
+ *  @param[in] y2 windows upper right device x coordinate
+ *  @return the true on error.
+ *
+ *  Initialize the physical position of this object on a device.
+ */
+// ---------------------------------------------------------------------------------------
+bool PSGraph::Draw::init( real8_t, real8_t,
+                          real8_t x1, real8_t y1, real8_t x2, real8_t y2 ) {
+  // -------------------------------------------------------------------------------------
+  PSGraph::Draw::window_count += 1;
+  id = PSGraph::Draw::window_count;
+  temp_filename = new char[MAXPATHLEN];
+  sprintf( temp_filename, "pswork_%d_%d.tmp", (int)getpid(), id );
+  if ( static_cast<FILE*>(0) == ( file_handle = fopen( temp_filename, "a+" ) ) ) {
+    logger->error( "Failed to open temp file [%s]", temp_filename );
+    exit(1);
+  }
+
+  world_x1   = x1;
+  world_x2   = x2;
+  world_y1   = y1;
+  world_y2   = y2;
+
+  real8_t dx = world_x2 - world_x1;
+  real8_t dy = world_y2 - world_y1;
+
+  slope_x    = device_width  / dx;
+  slope_y    = device_height / dy;
+
+  inter_x    = -slope_x * world_x1;
+  inter_y    = -slope_y * world_y1;
+
+  return false;
+}
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *  @param[in] dw window width  in device coordinates (inches).
+ *  @param[in] dh window height in device coordinates (inches).
+ *  @param[in] x1 windows lower left  device x coordinate
+ *  @param[in] y1 windows lower left  device y coordinate
+ *  @param[in] x2 windows upper right device x coordinate
+ *  @param[in] y2 windows upper right device x coordinate
+ */
+// ---------------------------------------------------------------------------------------
+PSGraph::Draw::Draw( real8_t dev_width, real8_t dev_height,
+                     real8_t x1, real8_t y1, real8_t x2, real8_t y2 ) :
+  PSGraph::Window(dev_width, dev_height), 
+  id(0), temp_filename(0), file_handle(0), world_x1(0.0), world_x2(0.0), world_y1(0.0),
+  world_y2(0.0), slope_x(0.0), slope_y(0.0), inter_x(0.0), inter_y(0.0), last(), saved() {
+  // -------------------------------------------------------------------------------------
+  this->init(dev_width, dev_height, x1, y1, x2, y2);
+}
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *  @param[in] dw window width  in device coordinates (inches).
+ *  @param[in] dh window height in device coordinates (inches).
+ */
+// ---------------------------------------------------------------------------------------
+PSGraph::Draw::Draw( real8_t dev_width, real8_t dev_height ) :
+  PSGraph::Window(dev_width, dev_height), 
+  id(0), temp_filename(0), file_handle(0), world_x1(0.0), world_x2(0.0), world_y1(0.0),
+  world_y2(0.0), slope_x(0.0), slope_y(0.0), inter_x(0.0), inter_y(0.0), last(), saved()
+{
+  // -------------------------------------------------------------------------------------
+  this->init(dev_width, dev_height, D_ZERO, D_ZERO, dev_width, dev_height);
+}
+
+
+// =======================================================================================
+/** @brief Destructor.
+ */
+// ---------------------------------------------------------------------------------------
+PSGraph::Draw::~Draw( void ) {
+  // -------------------------------------------------------------------------------------
+  fclose(file_handle);
+  unlink(temp_filename);
+}
+
+
+// =======================================================================================
+/** @brief Draw Line.
+ *  @param[in] x1 starting x world coordinate for the line.
+ *  @param[in] y1 starting y world coordinate for the line.
+ *  @param[in] x2 ending   x world coordinate for the line.
+ *  @param[in] y2 ending   y world coordinate for the line.
+ *
+ *  Draw a line between two world coordinates.
+ */
+// ---------------------------------------------------------------------------------------
+void PSGraph::Draw::drawLine( real8_t x1, real8_t y1, real8_t x2, real8_t y2 ) {
+  // -------------------------------------------------------------------------------------
+  fprintf( file_handle,
+	   "%.5f %.5f %.5f %.5f DL\n",
+	   scaleX(x1), scaleY(y1), scaleX(x2), scaleY(y2) );
+}
+
+
+// =======================================================================================
+/** @brief Write.
+ *  @param[in] fp file handle.
+ *
+ *  Write postscript file.
+ */
+// ---------------------------------------------------------------------------------------
+void PSGraph::Draw::pswrite( FILE* fp ) {
+  // -------------------------------------------------------------------------------------
+  char* line = new char[256];
+
+  write_ps_window_header(fp);
+
+  rewind( file_handle );
+
+  while( (char*)0 != fgets( line, 256, file_handle ) ) {
+    fputs( line, fp );
+  }
+
+  write_ps_window_trailer(fp);
+
+  delete line;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // =======================================================================================
 /** @brief Constructor.
  *  @param[in] pn page number.
@@ -202,9 +395,9 @@ PSGraph::Page::~Page( void ) {
  *  Add a window to this page.
  */
 // ---------------------------------------------------------------------------------------
-bool PSPage::add( PSWindow* w, real8_t x, real8_t y ) {
+bool PSGraph::Page::add( PSGraph::Window* w, real8_t x, real8_t y ) {
   // -------------------------------------------------------------------------------------
-  PSDrawNode* temp = new PSDrawNode( w, firstWindow );
+  PSGraph::Draw::Node* temp = new PSGraph::Draw::Node( w, firstWindow );
   w->setDevice( x, y );
   firstWindow = temp;
   return false;
@@ -270,7 +463,7 @@ void PSGraph::Page::pswrite( FILE* fp ) {
  *  Write the postscript header for this window on the output stream.
  */
 // ---------------------------------------------------------------------------------------
-void PSGraph:Window::write_ps_window_header( FILE* psout ) {
+void PSGraph::Window::write_ps_window_header( FILE* psout ) {
   // -------------------------------------------------------------------------------------
   fprintf( psout, "%%%%----------------------------------\n");
   fprintf( psout, "gsave\n");
@@ -283,7 +476,7 @@ void PSGraph:Window::write_ps_window_header( FILE* psout ) {
  *  @param[in] psout pointer to a file handle.
  */
 // ---------------------------------------------------------------------------------------
-void PSPage::write_ps_page_header( FILE* psout ) {
+void PSGraph::Page::write_ps_page_header( FILE* psout ) {
   // -------------------------------------------------------------------------------------
   fprintf( psout, "%%%%==============================================================\n");
   if (static_cast<char*>(0) == name) {
@@ -312,7 +505,7 @@ void PSPage::write_ps_page_header( FILE* psout ) {
  *  Write the postscript trailer for this window on the output stream.
  */
 // ---------------------------------------------------------------------------------------
-void PSGraph:Window::write_ps_window_trailer( FILE* psout ) {
+void PSGraph::Window::write_ps_window_trailer( FILE* psout ) {
   // -------------------------------------------------------------------------------------
   fprintf( psout, "grestore\n");
 }
@@ -323,7 +516,7 @@ void PSGraph:Window::write_ps_window_trailer( FILE* psout ) {
  *  @param[in] psout pointer to a file handle.
  */
 // ---------------------------------------------------------------------------------------
-void PSPage::write_ps_page_trailer( FILE* psout ) {
+void PSGraph::Page::write_ps_page_trailer( FILE* psout ) {
   // -------------------------------------------------------------------------------------
   fprintf( psout, "%%%%----------------------------------\n");
   fprintf( psout, "stoppage\n");
