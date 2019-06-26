@@ -40,8 +40,9 @@
 
 
 #include <PSGraph.hh>
-      #include <sys/types.h>
-       #include <unistd.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 
 PSGraph::Color PSGraph::Color::white   ( 1.0, 1.0, 1.0 );
 PSGraph::Color PSGraph::Color::black   ( 0.0, 0.0, 0.0 );
@@ -52,12 +53,17 @@ PSGraph::Color PSGraph::Color::cyan    ( 0.0, 1.0, 1.0 );
 PSGraph::Color PSGraph::Color::magenta ( 1.0, 0.0, 1.0 );
 PSGraph::Color PSGraph::Color::yellow  ( 1.0, 1.0, 0.0 );
 
+
 int PSGraph::Draw::window_count = 0;
+
 
 #define NULL_DRAW_NODE  static_cast<PSGraph::Draw::Node*>(0)
 #define NULL_WINDOW     static_cast<PSGraph::Window*>(0)
+#define NULL_PAGE       static_cast<PSGraph::Page*>(0)
+
 
 TLOGGER_REFERENCE( PSGraph, logger );
+
 
 // =======================================================================================
 /** @brief Constructor.
@@ -100,6 +106,7 @@ PSGraph::Color::~Color( void ) {
   // -------------------------------------------------------------------------------------
 }
 
+
 // =======================================================================================
 /** @brief Correction.
  *
@@ -126,7 +133,7 @@ void PSGraph::Color::correct( void ) {
  */
 // ---------------------------------------------------------------------------------------
 PSGraph::Window::Window( void ) :
-  device_width(0), device_height(0), device_x(0), device_y(0) {
+    device_width(0), device_height(0), device_x(0), device_y(0) {
   // -------------------------------------------------------------------------------------
 }
 
@@ -138,7 +145,7 @@ PSGraph::Window::Window( void ) :
  */
 // ---------------------------------------------------------------------------------------
 PSGraph::Window::Window( real8_t dev_width, real8_t dev_height ) :
-  device_width(0), device_height(0), device_x(0), device_y(0) {
+    device_width(0), device_height(0), device_x(0), device_y(0) {
   // -------------------------------------------------------------------------------------
   device_width  = dev_width;
   device_height = dev_height;
@@ -151,6 +158,12 @@ PSGraph::Window::Window( real8_t dev_width, real8_t dev_height ) :
 // ---------------------------------------------------------------------------------------
 PSGraph::Window::~Window( void ) {
   // -------------------------------------------------------------------------------------
+  MARK;
+device_width  = 0.0;
+device_height = 0.0;
+device_x      = 0.0;
+device_y      = 0.0;
+  MARK;
 }
 
 
@@ -165,19 +178,6 @@ void PSGraph::Window::setDevice( real8_t x, real8_t y ) {
   device_x = x;
   device_y = y;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -207,7 +207,7 @@ bool PSGraph::Draw::init( real8_t, real8_t,
   temp_filename = new char[MAXPATHLEN];
   sprintf( temp_filename, "pswork_%d_%d.tmp", (int)getpid(), id );
   if ( static_cast<FILE*>(0) == ( file_handle = fopen( temp_filename, "a+" ) ) ) {
-    logger->error( "Failed to open temp file [%s]", temp_filename );
+    logger->error( LOCATION, "Failed to open temp file [%s]", temp_filename );
     exit(1);
   }
 
@@ -241,9 +241,9 @@ bool PSGraph::Draw::init( real8_t, real8_t,
 // ---------------------------------------------------------------------------------------
 PSGraph::Draw::Draw( real8_t dev_width, real8_t dev_height,
                      real8_t x1, real8_t y1, real8_t x2, real8_t y2 ) :
-  PSGraph::Window(dev_width, dev_height), 
-  id(0), temp_filename(0), file_handle(0), world_x1(0.0), world_x2(0.0), world_y1(0.0),
-  world_y2(0.0), slope_x(0.0), slope_y(0.0), inter_x(0.0), inter_y(0.0), last(), saved() {
+    PSGraph::Window(dev_width, dev_height), 
+    id(0), temp_filename(0), file_handle(0), world_x1(0.0), world_x2(0.0), world_y1(0.0),
+    world_y2(0.0), slope_x(0.0), slope_y(0.0), inter_x(0.0), inter_y(0.0), last(), saved() {
   // -------------------------------------------------------------------------------------
   this->init(dev_width, dev_height, x1, y1, x2, y2);
 }
@@ -256,9 +256,9 @@ PSGraph::Draw::Draw( real8_t dev_width, real8_t dev_height,
  */
 // ---------------------------------------------------------------------------------------
 PSGraph::Draw::Draw( real8_t dev_width, real8_t dev_height ) :
-  PSGraph::Window(dev_width, dev_height), 
-  id(0), temp_filename(0), file_handle(0), world_x1(0.0), world_x2(0.0), world_y1(0.0),
-  world_y2(0.0), slope_x(0.0), slope_y(0.0), inter_x(0.0), inter_y(0.0), last(), saved()
+    PSGraph::Window(dev_width, dev_height), 
+    id(0), temp_filename(0), file_handle(0), world_x1(0.0), world_x2(0.0), world_y1(0.0),
+    world_y2(0.0), slope_x(0.0), slope_y(0.0), inter_x(0.0), inter_y(0.0), last(), saved()
 {
   // -------------------------------------------------------------------------------------
   this->init(dev_width, dev_height, D_ZERO, D_ZERO, dev_width, dev_height);
@@ -325,37 +325,35 @@ void PSGraph::Draw::pswrite( FILE* fp ) {
 
 
 
+// =======================================================================================
+/** @brief Constructor.
+ */
+// ---------------------------------------------------------------------------------------
+PSGraph::Draw::Node::Node( void ) : window(0), next(0) {
+  // -------------------------------------------------------------------------------------
+}
 
 
+// =======================================================================================
+/** @brief Constructor.
+ *  @param[in] w pointer to a window.
+ *  @param[in] n pointer to the next PSDrawNode.
+ */
+// ---------------------------------------------------------------------------------------
+PSGraph::Draw::Node::Node( PSGraph::Window* w, Node* n )  : window(w), next(n) {
+  // -------------------------------------------------------------------------------------
+}
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// =======================================================================================
+/** @brief Constructor.
+ */
+// ---------------------------------------------------------------------------------------
+PSGraph::Draw::Node::~Node( void ) {
+  // -------------------------------------------------------------------------------------
+  window = NULL_WINDOW;
+  next   = NULL_DRAW_NODE;
+}
 
 
 
@@ -369,7 +367,7 @@ void PSGraph::Draw::pswrite( FILE* fp ) {
  *  @param[in] pn page number.
  */
 // ---------------------------------------------------------------------------------------
-PSGraph::Page::Page( size_t pn ) : firstWindow(0), name(0), page_number(0) {
+PSGraph::Page::Page( size_t pn ) : firstWindow(0), name(), page_number(0) {
   // -------------------------------------------------------------------------------------
   page_number = pn;
 }
@@ -381,7 +379,13 @@ PSGraph::Page::Page( size_t pn ) : firstWindow(0), name(0), page_number(0) {
 // ---------------------------------------------------------------------------------------
 PSGraph::Page::~Page( void ) {
   // -------------------------------------------------------------------------------------
-  logger->info("Do we need to clean up?");
+  PSGraph::Window* w = NULL_WINDOW;
+  MARK;
+  while ( NULL_WINDOW != (w = pop()) ) {
+  MARK;
+    delete w;
+  MARK;
+  }
 }
 
 
@@ -414,6 +418,7 @@ bool PSGraph::Page::add( PSGraph::Window* w, real8_t x, real8_t y ) {
 PSGraph::Window* PSGraph::Page::pop( void ) {
   // -------------------------------------------------------------------------------------
   if ( NULL_DRAW_NODE == firstWindow ) {
+  MARK;
     return NULL_WINDOW;
   }
 
@@ -422,7 +427,9 @@ PSGraph::Window* PSGraph::Page::pop( void ) {
   firstWindow  = temp->next;
   temp->window = NULL_WINDOW;
   temp->next   = NULL_DRAW_NODE;
+  MARK;
   delete temp;
+  MARK;
   return w;
 }
 
@@ -434,13 +441,13 @@ PSGraph::Window* PSGraph::Page::pop( void ) {
 // ---------------------------------------------------------------------------------------
 void PSGraph::Page::pswrite( FILE* fp ) {
   // -------------------------------------------------------------------------------------
-  PSGraph::Page::write_ps_page_header( fp );
+  write_ps_page_header( fp );
 
   for (PSGraph::Draw::Node* node = firstWindow; node; node = node->next) {
     node->window->pswrite( fp );
   }
 
-  PSGraph::Page::write_ps_page_trailer( fp );
+  write_ps_page_trailer( fp );
 }
 
 
@@ -448,6 +455,104 @@ void PSGraph::Page::pswrite( FILE* fp ) {
 
 
 
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *  @param[in] n number of pages.
+ */
+// ---------------------------------------------------------------------------------------
+PSGraph::PSGraph( size_t n ) : page(0), num_page(0) {
+  // -------------------------------------------------------------------------------------
+  num_page = n;
+  page     = new PSGraph::Page*[n];
+  for (size_t i=0; i<n; i++) {
+    page[i] = new PSGraph::Page(i);
+  }
+}
+
+
+// =======================================================================================
+/** @brief Destructor.
+ */
+// ---------------------------------------------------------------------------------------
+PSGraph::~PSGraph( void ) {
+  // -------------------------------------------------------------------------------------
+  for ( size_t i=0; i<num_page; i++ ) {
+    if ( NULL_PAGE != page[i] ) {
+      delete page[i];
+    }
+    page[i] = NULL_PAGE;
+  }
+  delete page;
+  num_page = 0;
+}
+
+
+// =======================================================================================
+/** @brief Set Page Name.
+ *  @param[in] pn page number.
+ *  @param[in] nm name.
+ *
+ *  Set the name of an individual page.
+ */
+// ---------------------------------------------------------------------------------------
+void PSGraph::setName( size_t pn, std::string nm ) {
+  // -----------------------------------------------------------------------------------
+  if ( pn < num_page ) {
+    if ( NULL_PAGE != page[pn] ) {
+      page[pn]->setName( nm );
+    } else {
+      logger->error( LOCATION, "Page %d has not yet been allocated.", pn );
+    }
+  } else {
+    logger->error( LOCATION, "Page %d is out of range, expected < %d.", pn, num_page );
+  }
+}
+
+
+// =======================================================================================
+/** @brief Add.
+ *  @param[in] w  pointer to the window.
+ *  @param[in] pn page number.
+ *  @param[in] x  position in device coordinates.
+ *  @param[in] y  position in device coordinates.
+ */
+// ---------------------------------------------------------------------------------------
+void PSGraph::add( PSGraph::Window* w, size_t pn, real8_t x, real8_t y ) {
+  // -----------------------------------------------------------------------------------
+  if ( pn < num_page ) {
+    if ( NULL_PAGE != page[pn] ) {
+      page[pn]->add( w, x, y );
+    } else {
+      logger->error( LOCATION, "Page %d has not yet been allocated.", pn );
+    }
+  } else {
+    logger->error( LOCATION, "Page %d is out of range, expected < %d.", pn, num_page );
+  }
+}
+
+
+// =======================================================================================
+/** @brief Name.
+ *  @return the name
+ *
+ */
+// ---------------------------------------------------------------------------------------
+void PSGraph::pswrite( std::string fspc ) {
+  // -------------------------------------------------------------------------------------
+  FILE* fp = fopen( fspc.c_str(), "w" );
+  
+  write_ps_header( fspc, fp );
+
+  for (size_t i=0; i<num_page; i++) {
+    page[i]->pswrite(fp);
+  }
+
+  write_ps_trailer(fp);
+
+  fclose(fp);
+}
 
 
 
@@ -479,10 +584,10 @@ void PSGraph::Window::write_ps_window_header( FILE* psout ) {
 void PSGraph::Page::write_ps_page_header( FILE* psout ) {
   // -------------------------------------------------------------------------------------
   fprintf( psout, "%%%%==============================================================\n");
-  if (static_cast<char*>(0) == name) {
-    fprintf( psout, "%%%%Page: %u %u\n", page_number, page_number);
+  if ( 0 < name.size() ) {
+    fprintf( psout, "%%%%Page: %s %lu\n", name.c_str(), page_number);
   } else {
-    fprintf( psout, "%%%%Page: %s %u\n", name, page_number);
+    fprintf( psout, "%%%%Page: %lu %lu\n", page_number, page_number);
   }
   fprintf( psout, "%%%%--------------------------------------------------------------\n");
   fprintf( psout, "%%%%BeginPageSetup\n");
@@ -491,6 +596,87 @@ void PSGraph::Page::write_ps_page_header( FILE* psout ) {
   fprintf( psout, "%%%%EndPageSetup\n");
 }
 
+
+// =X=====================================================================================
+/** @brief Write postscript header.
+ *  @param psfile_name name of the postscript file for Title: xxxx
+ *  @param psout pointer to a file.
+ */
+// ---------------------------------------------------------------------------------------
+void PSGraph::write_ps_header( std::string psfile_name, FILE* psout ) {
+  // -------------------------------------------------------------------------------------
+  time_t t = time((time_t*)0);
+  fprintf( psout, "%%!PS-Adobe-3.0\n");
+  fprintf( psout, "%%%%============================================= BEGIN FILE =====\n");
+  fprintf( psout, "%%%%Title: %s\n", psfile_name.c_str() );
+  fprintf( psout, "%%%%Creator: PSGraph (C++) TRNCMP15\n");
+  fprintf( psout, "%%%%CreationDate: %s", ctime(&t) );
+  fprintf( psout, "%%%%Orientation: Landscape\n");
+  fprintf( psout, "%%%%Pages: %lu\n", num_page);
+  fprintf( psout, "%%%%BoundingBox: 0 0 612 792\n");
+  fprintf( psout, "%%%%DocumentPaperSizes: letter\n");
+  fprintf( psout, "%%Magnification: 1.0000\n");
+  fprintf( psout, "%%%%EndComments\n");
+  fprintf( psout, "%%%%--------------------------------------------------------------\n");
+  fprintf( psout, "%%%%BeginSetup\n");
+  fprintf( psout, "[{\n");
+  fprintf( psout, "%%%%BeginFeature: *PageRegion Letter\n");
+  fprintf( psout, "<</PageSize [612 792]>> setpagedevice\n");
+  fprintf( psout, "%%%%EndFeature\n");
+  fprintf( psout, "} stopped cleartomark\n");
+  fprintf( psout, "%%%%EndSetup\n");
+  fprintf( psout, "%%%%--------------------------------------------------------------\n");
+  fprintf( psout, "%%%%BeginProlog\n");
+  fprintf( psout, "%%%%----------------------\n");
+  fprintf( psout, "\n");
+  fprintf( psout, "userdict /forms_ops 10 dict dup begin put\n");
+  fprintf( psout, "\n");
+  fprintf( psout, "/StartEPSF { %% prepare for EPSF inclusion\n");
+  fprintf( psout, "userdict begin\n");
+  fprintf( psout, "/PreEPS_state save def\n");
+  fprintf( psout, "/dict_stack countdictstack def\n");
+  fprintf( psout, "/ops_count count 1 sub def\n");
+  fprintf( psout, "/showpage {} def\n");
+  fprintf( psout, "} bind def\n");
+  fprintf( psout, "\n");
+  fprintf( psout, "/EPSFCleanUp { %% clean up after EPSF inclusion\n");
+  fprintf( psout, "count ops_count sub {pop} repeat\n");
+  fprintf( psout, "countdictstack dict_stack sub {end} repeat\n");
+  fprintf( psout, "PreEPS_state restore\n");
+  fprintf( psout, "end %% userdict\n");
+  fprintf( psout, "} bind def\n");
+  fprintf( psout, "\n");
+  fprintf( psout, "%%%%----------------------\n");
+  fprintf( psout, "\n");
+  fprintf( psout, "/$PSGDict 200 dict def\n");
+  fprintf( psout, "/$PSGBegin {$PSGDict begin /$PSGSaveState save def} def\n");
+  fprintf( psout, "/$PSGEnd   {$PSGSaveState restore end} def\n");
+  fprintf( psout, "%%%%----------------------\n");
+  fprintf( psout, "/startpage {\n");
+  fprintf( psout, "save\n");
+  fprintf( psout, "newpath 0 792 moveto 0 0 lineto 612 0\n");
+  fprintf( psout, "lineto 612 792 lineto closepath clip newpath\n");
+  fprintf( psout, "$PSGBegin\n");
+  fprintf( psout, "10 setmiterlimit 0 setlinejoin 0 setlinecap 0 setlinewidth\n");
+  fprintf( psout, "612 0 translate 90 rotate 72 72 scale\n");
+  fprintf( psout, "} bind def\n");
+  fprintf( psout, "%%%%----------------------\n");
+  fprintf( psout, "/stoppage { $PSGEnd restore } bind def\n");
+  fprintf( psout, "/TIMESB { /Times-Bold findfont setfont } bind def\n");
+  fprintf( psout, "/TIMESI { /Times-Italic findfont setfont } bind def\n");
+  fprintf( psout, "/TIMES  { /Times findfont setfont } bind def\n");
+  fprintf( psout, "/DL { newpath moveto lineto stroke } bind def\n");
+  fprintf( psout, "/DR { newpath rectstroke } bind def\n");
+  fprintf( psout, "/BS { %% x, y, width, height, string\n");
+  fprintf( psout, "gsave\n");
+  fprintf( psout, "  /str exch def /rot exch def /hgt exch def /wdt exch def\n");
+  fprintf( psout, "  /yco exch def /xco exch def\n");
+  fprintf( psout, "  xco yco translate 0 0 moveto rot rotate\n");
+  fprintf( psout, "  wdt str stringwidth pop div hgt scale str show\n");
+  fprintf( psout, "grestore\n");
+  fprintf( psout, "} bind def\n");
+  fprintf( psout, "%%%%EndProlog\n");
+}
 
 
 
@@ -524,13 +710,17 @@ void PSGraph::Page::write_ps_page_trailer( FILE* psout ) {
 }
 
 
-
-
-
-
-
-
-
+// =======================================================================================
+/** @brief Write postscript trailer.
+ *  @param psout pointer to a file.
+ */
+// ---------------------------------------------------------------------------------------
+void PSGraph::write_ps_trailer( FILE* psout ) {
+  // -------------------------------------------------------------------------------------
+  fprintf( psout, "%%%%=============================================== END FILE =====\n");
+  fprintf( psout, "%%%%Trailer\n");
+  fprintf( psout, "%%EOF\n");
+}
 
 
 // =======================================================================================
