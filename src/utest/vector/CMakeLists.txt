@@ -1,5 +1,5 @@
 #/ ====================================================================== BEGIN FILE =====
-#/ **                              UTest - C M A K E L I S T                            **
+#/ **                             vector - C M A K E L I S T                            **
 #/ =======================================================================================
 #/ **                                                                                   **
 #/ **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
@@ -29,20 +29,25 @@
 #/ @details Provides a common build environment.
 #/
 #/ @author  Stephen W. Soliday
-#/ @date    2019-May-26
+#/ @date    2019-Apr-28
 #/
 #/ =======================================================================================
 
-project( tests CXX )
+project( vector CXX )
 
-include( GoogleTest )
+add_executable(${PROJECT_NAME} ../main.cc
+  utest_vector2d
+  utest_vector3d
+  )
 
-add_subdirectory ( base )
-add_subdirectory ( arrays )
-add_subdirectory ( strings )
-add_subdirectory ( configdb )
-add_subdirectory ( vector )
+target_link_libraries(${PROJECT_NAME} GTest::GTest GTest::Main callisto)
+add_test(All${PROJECT_NAME}InBase ${PROJECT_NAME})
+
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION test
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
 #/ =======================================================================================
-#/ **                              UTest - C M A K E L I S T                            **
+#/ **                             arrays - C M A K E L I S T                            **
 #/ =========================================================================== END FILE ==

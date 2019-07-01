@@ -57,7 +57,7 @@ class RunStat {
 
  public:
 
-  RunStat  ( std::string nm );
+  RunStat  ( std::string nm = "" );
   ~RunStat ( void );
   
   size_t  count  ( void );

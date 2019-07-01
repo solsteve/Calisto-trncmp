@@ -40,6 +40,7 @@
 
 
 #include <TLogger.hh>
+#include <list>
 
 
 // =======================================================================================
@@ -47,13 +48,16 @@
 class PSGraph {                                                                 // PSGraph
   // -------------------------------------------------------------------------------------
 
- public:
+public:
+
+ typedef enum { NORMAL=0, BOLD=1, ITALIC=2 } font_enum;
+ 
 
   // =====================================================================================
   // -------------------------------------------------------------------------------------
   class Color {                                                          // PSGraph::Color
     // -----------------------------------------------------------------------------------
-   public:
+  public:
     real8_t r;   ///< Red   component
     real8_t g;   ///< Green component
     real8_t b;   ///< Blue  component
@@ -75,7 +79,7 @@ class PSGraph {                                                                 
     static Color magenta;   ///< The color Magenta  #FF00FF
     static Color yellow;    ///< The color Yellow   #FFFF00
 
-   protected:
+  protected:
     void correct( void );
     
   }; // end class PSGraph::Color
@@ -88,7 +92,7 @@ class PSGraph {                                                                 
   // -------------------------------------------------------------------------------------
   class Window {                                                        // PSGraph::Window
     // -----------------------------------------------------------------------------------
-   protected:
+  protected:
     real8_t device_width;                           ///< physical window width    (inches)
     real8_t device_height;                          ///< physical window height   (inches)
     real8_t device_x;                               ///< physical window position (inches)
@@ -97,7 +101,7 @@ class PSGraph {                                                                 
     void write_ps_window_header  ( FILE* psout );
     void write_ps_window_trailer ( FILE* psout );
 
-   public:
+  public:
     Window                 ( void );
     Window                 ( real8_t dev_width, real8_t dev_height );
     virtual ~Window        ( void );
@@ -112,7 +116,7 @@ class PSGraph {                                                                 
   // -------------------------------------------------------------------------------------
   class Draw : public PSGraph::Window {                                   // PSGraph::Draw
     // -----------------------------------------------------------------------------------
-   private:
+  private:
     EMPTY_PROTOTYPE( Draw );
 
     int        id;
@@ -121,7 +125,7 @@ class PSGraph {                                                                 
 
     static int window_count;
 
-   protected:
+  protected:
     real8_t world_x1;                         ///< windows lower left  device x coordinate
     real8_t world_x2;                         ///< windows lower left  device y coordinate
     real8_t world_y1;                         ///< windows upper right device x coordinate
@@ -130,45 +134,73 @@ class PSGraph {                                                                 
     real8_t slope_x, slope_y;
     real8_t inter_x, inter_y;
 
-    Color last;
-    Color saved;
+    PSGraph::Color last;
+    PSGraph::Color saved;
 
+    bool init              ( real8_t dev_width, real8_t dev_height,
+			     real8_t x1, real8_t y1, real8_t x2, real8_t y2 );
 
-    bool init ( real8_t dev_width, real8_t dev_height,
-                real8_t x1, real8_t y1, real8_t x2, real8_t y2 );
+    void drawFillPolygon   ( real8_t* x, real8_t* y, size_t n, bool fill );
 
-   public:
-    Draw            ( real8_t dev_width, real8_t dev_height,
-                      real8_t x1, real8_t y1, real8_t x2, real8_t y2 );
+    void drawFillRectangle ( real8_t x1, real8_t y1, real8_t x2, real8_t y2, bool fill );
 
-    Draw            ( real8_t dev_width, real8_t dev_height );
+  public:
+    Draw                   ( real8_t dev_width, real8_t dev_height,
+			     real8_t x1, real8_t y1, real8_t x2, real8_t y2 );
 
-    virtual ~Draw   ( void );
+    Draw                   ( real8_t dev_width, real8_t dev_height );
 
-    void         drawLine ( real8_t x1, real8_t y1, real8_t x2,  real8_t y2 );
+    virtual ~Draw          ( void );
 
-    virtual void pswrite  ( FILE* fp );
+    void    saveColor      ( void );
+    void    restoreColor   ( void );
+    void    setRGB         ( PSGraph::Color& C );
+    void    setRGB         ( real8_t r, real8_t g, real8_t b );
 
-    real8_t      scaleX   ( real8_t x );
-    real8_t      scaleY   ( real8_t y );
-
-   public:
-    // ===================================================================================
-    // -----------------------------------------------------------------------------------
-    class Node {                                                    // PSGraph::Draw::Node
-      // ---------------------------------------------------------------------------------
-     private:
-      EMPTY_PROTOTYPE( Node );
-
-     public:
-      PSGraph::Window* window;
-      Node*            next;
-
-      Node  ( void );
-      Node  ( PSGraph::Window* w, Node* n );
-      ~Node ( void );
-    }; // end class PSGraph::Draw::Node
+    void    setFont        ( PSGraph::font_enum ftype );
     
+    void    drawLine       ( real8_t x1, real8_t y1, real8_t x2,  real8_t y2 );
+    void    drawRay        ( real8_t xc, real8_t yc, real8_t m, real8_t theta );
+
+    
+    void    drawBorder     ( void );
+    void    drawPolygon    ( real8_t* x, real8_t* y, size_t n );
+
+    void    fillPolygon    ( real8_t* x, real8_t* y, size_t n );
+
+    void    drawRectangle  ( real8_t x1, real8_t y1, real8_t x2, real8_t y2 );
+
+    void    fillRectangle  ( real8_t x1, real8_t y1, real8_t x2, real8_t y2 );
+
+    void    drawEllipse    ( real8_t xc, real8_t yc,
+			     real8_t a, real8_t b, real8_t theta,
+			     size_t parts=64 );
+
+    void    fillEllipse    ( real8_t xc, real8_t yc,
+			     real8_t a, real8_t b, real8_t theta,
+			     size_t parts=64 );
+
+    void    drawCircle     ( real8_t xc, real8_t yc,
+			     real8_t r,
+			     size_t parts=64 );
+
+    void    fillCircle     ( real8_t xc, real8_t yc,
+			     real8_t r,
+			     size_t parts=64 );
+
+    void    write          ( std::string text,
+			     real8_t x1, real8_t y1,
+			     real8_t x2, real8_t y2, real8_t theta = 0.0);
+    
+    void    write_inch     ( std::string,
+			     real8_t x,     real8_t y,
+			     real8_t width, real8_t height, real8_t theta = 0.0);
+
+    virtual void pswrite   ( FILE* fp );
+
+    real8_t      scaleX    ( real8_t x );
+    real8_t      scaleY    ( real8_t y );
+
   }; // end class PSGraph::Draw
 
   
@@ -176,11 +208,11 @@ class PSGraph {                                                                 
   // -------------------------------------------------------------------------------------
   class Page {                                                            // PSGraph::Page
     // -----------------------------------------------------------------------------------
-   private:
+  private:
     EMPTY_PROTOTYPE( Page );
 
-   protected:
-    PSGraph::Draw::Node* firstWindow;
+  protected:
+    std::list<PSGraph::Window*> wlist;
 
     std::string  name;
     size_t       page_number;
@@ -188,21 +220,20 @@ class PSGraph {                                                                 
     void write_ps_page_header  ( FILE* psout );
     void write_ps_page_trailer ( FILE* psout );
 
-   public:
-    Page            ( size_t pn );
-    ~Page           ( void );
+  public:
+    Page         ( size_t pn );
+    ~Page        ( void );
 
-    void             setName ( std::string nm );
+    void setName ( std::string nm );
 
-    bool             add     ( PSGraph::Window* w, real8_t x, real8_t y );
-    PSGraph::Window* pop     ( void );
-    void             pswrite ( FILE* fp );
+    bool add     ( PSGraph::Window* w, real8_t x, real8_t y );
+    void pswrite ( FILE* fp );
   
   }; // end class PSGraph::Page
 
 
   // =====================================================================================
- protected:
+protected:
   EMPTY_PROTOTYPE( PSGraph );
   TLOGGER_HEADER( logger );
   
@@ -212,7 +243,7 @@ class PSGraph {                                                                 
   void write_ps_header  ( std::string fspc, FILE* psout );
   void write_ps_trailer ( FILE* psout );
 
- public:
+public:
   PSGraph      ( size_t n = 1 );
   ~PSGraph     ( void );
 
@@ -227,6 +258,10 @@ class PSGraph {                                                                 
 
 
 // =======================================================================================
+/** @brief 
+ *
+ */
+// ---------------------------------------------------------------------------------------
 inline  void PSGraph::Color::set( real8_t _r, real8_t _g, real8_t _b ) {
   // -------------------------------------------------------------------------------------
   r=_r;
@@ -237,12 +272,17 @@ inline  void PSGraph::Color::set( real8_t _r, real8_t _g, real8_t _b ) {
 
 
 // =======================================================================================
+/**
+ *
+ */
+// ---------------------------------------------------------------------------------------
 inline  void PSGraph::Color::copy( Color& C ) {
   // -------------------------------------------------------------------------------------
   r=C.r;
   g=C.g;
   b=C.b;
 }
+
 
 // =======================================================================================
 /** @brief Set Name.
@@ -253,8 +293,6 @@ inline  void PSGraph::Page::setName ( std::string nm ) {
   // -------------------------------------------------------------------------------------
   name = nm;
 }
-
-
 
 
 // =======================================================================================
@@ -281,10 +319,99 @@ inline  real8_t PSGraph::Draw::scaleY( real8_t y ) {
 }
 
 
-
-
+// =======================================================================================
+/** @brief Draw a circle.
+ *  @param[in] xc x coordinate of the center of the ellipse.
+ *  @param[in] yc y coordinate of the center of the ellipse.
+ *  @param[in] r  value of the semi-minor axis.
+ *  @param[in] parts number of segments.
+ *
+ *  Draw an ellipse centered at (x,y) and rotated theta radians.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void PSGraph::Draw::drawCircle( real8_t xc, real8_t yc, real8_t r, size_t parts ) {
+  // -------------------------------------------------------------------------------------
+  drawEllipse( xc, yc, r, r, 0.0, parts );
+}
 
     
+// =======================================================================================
+/** @brief Draw a circle.
+ *  @param[in] xc x coordinate of the center of the ellipse.
+ *  @param[in] yc y coordinate of the center of the ellipse.
+ *  @param[in] r  value of the semi-minor axis.
+ *  @param[in] parts number of segments.
+ *
+ *  Draw an ellipse centered at (x,y) and rotated theta radians.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void PSGraph::Draw::fillCircle( real8_t xc, real8_t yc, real8_t r, size_t parts ) {
+  // -------------------------------------------------------------------------------------
+  fillEllipse( xc, yc, r, r, 0.0, parts );
+}
+
+
+// ==========================================================================================
+/** @brief Draw Polygon.
+ *  @param[in] x array of x world coordinates.
+ *  @param[in] y array of y world coordinates.
+ *  @param[in] n number of coordinates to use ( n <= x.length )
+ *
+ *  Draw a polygon defined by a set of vertices.
+ */
+// ------------------------------------------------------------------------------------------
+inline  void PSGraph::Draw::drawPolygon( real8_t* x, real8_t* y, size_t n ) {
+  // ----------------------------------------------------------------------------------------
+  PSGraph::Draw::drawFillPolygon( x, y, n, false );
+}
+
+
+// ==========================================================================================
+/** @brief Fill Polygon.
+ *  @param[in] x array of x world coordinates.
+ *  @param[in] y array of y world coordinates.
+ *  @param[in] n number of coordinates to use ( n <= x.length )
+ *
+ *  Fill a polygon defined by a set of vertices and fill.
+ */
+// ------------------------------------------------------------------------------------------
+inline  void PSGraph::Draw::fillPolygon( real8_t* x, real8_t* y, size_t n ) {
+  // ----------------------------------------------------------------------------------------
+  PSGraph::Draw::drawFillPolygon( x, y, n, true );
+}
+
+
+// ==========================================================================================
+    /** @brief Draw Rectangle.
+     *  @param[in] x1 lower left  in device x coordinate
+     *  @param[in] y1 lower left  in device y coordinate
+     *  @param[in] x2 upper right in device x coordinate
+     *  @param[in] y2 upper right in device x coordinate
+     *
+     *  Draw a rectangle in this window.
+     */
+// ------------------------------------------------------------------------------------------
+inline  void PSGraph::Draw::drawRectangle( real8_t x1, real8_t y1, real8_t x2, real8_t y2 ) {
+  // ----------------------------------------------------------------------------------------
+  PSGraph::Draw::drawFillRectangle( x1, y1, x2, y2, false );
+}
+
+
+// ==========================================================================================
+    /** @brief Draw Rectangle.
+     *  @param[in] x1 lower left  in device x coordinate
+     *  @param[in] y1 lower left  in device y coordinate
+     *  @param[in] x2 upper right in device x coordinate
+     *  @param[in] y2 upper right in device x coordinate
+     *
+     *  Fill a rectangle in this window.
+     */
+// ------------------------------------------------------------------------------------------
+inline  void PSGraph::Draw::fillRectangle( real8_t x1, real8_t y1, real8_t x2, real8_t y2 ) {
+  // ----------------------------------------------------------------------------------------
+  PSGraph::Draw::drawFillRectangle( x1, y1, x2, y2, true );
+}
+
 
 // =======================================================================================
 // **                                   P S G R A P H                                   **

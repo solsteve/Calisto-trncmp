@@ -61,7 +61,7 @@ class StringTool {
     std::vector<std::string> vector;
 
   public:
-    Splitter  ( const std::string& str, const char del );
+    Splitter  ( const std::string& str, const char del = ',' );
 
     
     ~Splitter ( void );
@@ -76,58 +76,71 @@ class StringTool {
 
   static const size_t NOT_FOUND;
 
-  static std::string toString ( const bool      val );
-  static std::string toString ( const real8_t   val, const std::string fmt = "%f"   );
-  static std::string toString ( const real4_t   val, const std::string fmt = "%f"   );
-  static std::string toString ( const int64_t   val, const std::string fmt = "%ld"  );
-  static std::string toString ( const int32_t   val, const std::string fmt = "%d"   );
-  static std::string toString ( const int16_t   val, const std::string fmt = "%hd"  );
-  static std::string toString ( const int8_t    val, const std::string fmt = "%hhd" );
-  static std::string toString ( const u_int64_t val, const std::string fmt = "%lu"  );
-  static std::string toString ( const u_int32_t val, const std::string fmt = "%u"   );
-  static std::string toString ( const u_int16_t val, const std::string fmt = "%hu"  );
-  static std::string toString ( const u_int8_t  val, const std::string fmt = "%hhu" );
+  static std::string  toString     ( const bool      val );
+  static std::string  toString     ( const real8_t   val, const std::string fmt = "%f"   );
+  static std::string  toString     ( const real4_t   val, const std::string fmt = "%f"   );
+  static std::string  toString     ( const int64_t   val, const std::string fmt = "%ld"  );
+  static std::string  toString     ( const int32_t   val, const std::string fmt = "%d"   );
+  static std::string  toString     ( const int16_t   val, const std::string fmt = "%hd"  );
+  static std::string  toString     ( const int8_t    val, const std::string fmt = "%hhd" );
+  static std::string  toString     ( const u_int64_t val, const std::string fmt = "%lu"  );
+  static std::string  toString     ( const u_int32_t val, const std::string fmt = "%u"   );
+  static std::string  toString     ( const u_int16_t val, const std::string fmt = "%hu"  );
+  static std::string  toString     ( const u_int8_t  val, const std::string fmt = "%hhu" );
 
-  static std::string toString ( const std::string* lst, const size_t n );
-  static std::string toString ( const real8_t*   lst, const size_t n, const std::string fmt = "%f"   );
-  static std::string toString ( const real4_t*   lst, const size_t n, const std::string fmt = "%f"   );
-  static std::string toString ( const int64_t*   lst, const size_t n, const std::string fmt = "%ld"  );
-  static std::string toString ( const int32_t*   lst, const size_t n, const std::string fmt = "%d"   );
-  static std::string toString ( const int16_t*   lst, const size_t n, const std::string fmt = "%hd"  );
-  static std::string toString ( const int8_t*    lst, const size_t n, const std::string fmt = "%hhd" );
-  static std::string toString ( const u_int64_t* lst, const size_t n, const std::string fmt = "%lu"  );
-  static std::string toString ( const u_int32_t* lst, const size_t n, const std::string fmt = "%u"   );
-  static std::string toString ( const u_int16_t* lst, const size_t n, const std::string fmt = "%hu"  );
-  static std::string toString ( const u_int8_t*  lst, const size_t n, const std::string fmt = "%hhu" );
+  static std::string  toString     ( const std::string* lst, const size_t n );
+  static std::string  toString     ( const real8_t*   lst, const size_t n, const std::string fmt = "%f"   );
+  static std::string  toString     ( const real4_t*   lst, const size_t n, const std::string fmt = "%f"   );
+  static std::string  toString     ( const int64_t*   lst, const size_t n, const std::string fmt = "%ld"  );
+  static std::string  toString     ( const int32_t*   lst, const size_t n, const std::string fmt = "%d"   );
+  static std::string  toString     ( const int16_t*   lst, const size_t n, const std::string fmt = "%hd"  );
+  static std::string  toString     ( const int8_t*    lst, const size_t n, const std::string fmt = "%hhd" );
+  static std::string  toString     ( const u_int64_t* lst, const size_t n, const std::string fmt = "%lu"  );
+  static std::string  toString     ( const u_int32_t* lst, const size_t n, const std::string fmt = "%u"   );
+  static std::string  toString     ( const u_int16_t* lst, const size_t n, const std::string fmt = "%hu"  );
+  static std::string  toString     ( const u_int8_t*  lst, const size_t n, const std::string fmt = "%hhu" );
 
-  static std::string toHex    ( const u_int64_t val );
-  static std::string toHex    ( const u_int32_t val );
-  static std::string toHex    ( const u_int16_t val );
-  static std::string toHex    ( const u_int8_t  val );
+  static std::string  toHex        ( const u_int64_t val );
+  static std::string  toHex        ( const u_int32_t val );
+  static std::string  toHex        ( const u_int16_t val );
+  static std::string  toHex        ( const u_int8_t  val );
 
-  static std::string toHex    ( const u_int64_t* lst, const size_t n );
-  static std::string toHex    ( const u_int32_t* lst, const size_t n );
-  static std::string toHex    ( const u_int16_t* lst, const size_t n );
-  static std::string toHex    ( const u_int8_t*  lst, const size_t n );
+  static std::string  toHex        ( const u_int64_t* lst, const size_t n );
+  static std::string  toHex        ( const u_int32_t* lst, const size_t n );
+  static std::string  toHex        ( const u_int16_t* lst, const size_t n );
+  static std::string  toHex        ( const u_int8_t*  lst, const size_t n );
 
-  static bool        asBool   ( const std::string S );
-  static real8_t     asReal8  ( const std::string S );
-  static real4_t     asReal4  ( const std::string S );
-  static int64_t     asInt64  ( const std::string S, int base = 10 );
-  static int32_t     asInt32  ( const std::string S, int base = 10 );
-  static int16_t     asInt16  ( const std::string S, int base = 10 );
-  static int8_t      asInt8   ( const std::string S, int base = 10 );
-  static u_int64_t   asUInt64 ( const std::string S, int base = 10 );
-  static u_int32_t   asUInt32 ( const std::string S, int base = 10 );
-  static u_int16_t   asUInt16 ( const std::string S, int base = 10 );
-  static u_int8_t    asUInt8  ( const std::string S, int base = 10 );
+  static bool         asBool       ( const std::string S );
+  static real8_t      asReal8      ( const std::string S );
+  static real4_t      asReal4      ( const std::string S );
+  static int64_t      asInt64      ( const std::string S, int base = 10 );
+  static int32_t      asInt32      ( const std::string S, int base = 10 );
+  static int16_t      asInt16      ( const std::string S, int base = 10 );
+  static int8_t       asInt8       ( const std::string S, int base = 10 );
+  static u_int64_t    asUInt64     ( const std::string S, int base = 10 );
+  static u_int32_t    asUInt32     ( const std::string S, int base = 10 );
+  static u_int16_t    asUInt16     ( const std::string S, int base = 10 );
+  static u_int8_t     asUInt8      ( const std::string S, int base = 10 );
 
-  static std::string trim        ( const std::string str );
+  static std::string* asStringList ( size_t& n, const std::string S );
+  static bool*        asBoolList   ( size_t& n, const std::string S );
+  static real8_t*     asReal8List  ( size_t& n, const std::string S );
+  static real4_t*     asReal4List  ( size_t& n, const std::string S );
+  static int64_t*     asInt64List  ( size_t& n, const std::string S, int base = 10 );
+  static int32_t*     asInt32List  ( size_t& n, const std::string S, int base = 10 );
+  static int16_t*     asInt16List  ( size_t& n, const std::string S, int base = 10 );
+  static int8_t*      asInt8List   ( size_t& n, const std::string S, int base = 10 );
+  static u_int64_t*   asUInt64List ( size_t& n, const std::string S, int base = 10 );
+  static u_int32_t*   asUInt32List ( size_t& n, const std::string S, int base = 10 );
+  static u_int16_t*   asUInt16List ( size_t& n, const std::string S, int base = 10 );
+  static u_int8_t*    asUInt8List  ( size_t& n, const std::string S, int base = 10 );
+
+  static std::string  trim         ( const std::string str );
   
-  static std::string containedBy ( const std::string test,
-                                   const std::string lhs, const std::string rhs );
+  static std::string  containedBy  ( const std::string test,
+                                     const std::string lhs, const std::string rhs );
 
-  static size_t      find_in     ( const std::string str, const char test );
+  static size_t       find_in      ( const std::string str, const char test );
 
 }; // end class StringTool
 

@@ -1013,6 +1013,322 @@ StringTool::Splitter::Splitter( const std::string& str, const char del ) : vecto
 }
 
 
+
+
+
+
+
+// =======================================================================================
+/** @brief As String List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @return array of std::string.
+ *
+ *  Split the parameter string and create an array of std::string.
+ */
+// ---------------------------------------------------------------------------------------
+std::string* StringTool::asStringList( size_t& n, const std::string S ) {
+  // -------------------------------------------------------------------------------------
+  std::string L = "[{(";
+  std::string R = ")}]";
+  StringTool::Splitter SP( StringTool::containedBy(S,L,R), ',' );
+  n = SP.size();
+  
+  std::string* list = new std::string[n];
+
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::trim( SP[i] );
+  }
+
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As boolean List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @param[in]  base numeric base.
+ *  @return array of boolean.
+ *
+ *  Split the parameter string and create an array of boolean.
+ */
+// ---------------------------------------------------------------------------------------
+bool* StringTool::asBoolList( size_t& n, const std::string S ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  bool* list = new bool[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asBool( slist[i] );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As Real8 List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @return array of Real8.
+ *
+ *  Split the parameter string and create an array of Real8.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t* StringTool::asReal8List( size_t& n, const std::string S ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  real8_t* list = new real8_t[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asReal8( slist[i] );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As  List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @param[in]  base numeric base.
+ *  @return array of .
+ *
+ *  Split the parameter string and create an array of .
+ */
+// ---------------------------------------------------------------------------------------
+real4_t* StringTool::asReal4List( size_t& n, const std::string S ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  real4_t* list = new real4_t[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asReal4( slist[i] );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As 64 bit signed integer List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @param[in]  base numeric base.
+ *  @return array of 64 bit signed integer.
+ *
+ *  Split the parameter string and create an array of 64 bit signed integer.
+ */
+// ---------------------------------------------------------------------------------------
+int64_t* StringTool::asInt64List( size_t& n, const std::string S, int base ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  int64_t* list = new int64_t[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asInt64( slist[i], base );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As 32 bit signed integer List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @param[in]  base numeric base.
+ *  @return array of 32 bit signed integer.
+ *
+ *  Split the parameter string and create an array of 32 bit signed integer.
+ */
+// ---------------------------------------------------------------------------------------
+int32_t* StringTool::asInt32List( size_t& n, const std::string S, int base ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  int32_t* list = new int32_t[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asInt32( slist[i], base );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As 16 bit signed integer List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @param[in]  base numeric base.
+ *  @return array of 16 bit signed integer.
+ *
+ *  Split the parameter string and create an array of 16 bit signed integer.
+ */
+// ---------------------------------------------------------------------------------------
+int16_t* StringTool::asInt16List( size_t& n, const std::string S, int base ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  int16_t* list = new int16_t[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asInt16( slist[i], base );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As 8 bit signed integer List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @param[in]  base numeric base.
+ *  @return array of 8 bit signed integer.
+ *
+ *  Split the parameter string and create an array of 8 bit signed integer.
+ */
+// ---------------------------------------------------------------------------------------
+int8_t* StringTool::asInt8List( size_t& n, const std::string S, int base ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  int8_t* list = new int8_t[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asInt8( slist[i], base );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As 64 bit unsigned integer List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @param[in]  base numeric base.
+ *  @return array of 64 bit unsigned integer.
+ *
+ *  Split the parameter string and create an array of 64 bit unsigned integer.
+ */
+// ---------------------------------------------------------------------------------------
+u_int64_t* StringTool::asUInt64List( size_t& n, const std::string S, int base ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  u_int64_t* list = new u_int64_t[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asUInt64( slist[i], base );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As 32 bit unsigned integer List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @param[in]  base numeric base.
+ *  @return array of 32 bit unsigned integer.
+ *
+ *  Split the parameter string and create an array of 32 bit unsigned integer.
+ */
+// ---------------------------------------------------------------------------------------
+u_int32_t* StringTool::asUInt32List( size_t& n, const std::string S, int base ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  u_int32_t* list = new u_int32_t[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asUInt32( slist[i], base );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As 16 bit unsigned integer List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @param[in]  base numeric base.
+ *  @return array of 16 bit unsigned integer.
+ *
+ *  Split the parameter string and create an array of 16 bit unsigned integer.
+ */
+// ---------------------------------------------------------------------------------------
+u_int16_t* StringTool::asUInt16List( size_t& n, const std::string S, int base ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  u_int16_t* list = new u_int16_t[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asUInt16( slist[i], base );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
+// =======================================================================================
+/** @brief As 8 bit unsigned integer List.
+ *  @param[out] n    number of elements.
+ *  @param[in]  S    parameter string.
+ *  @param[in]  base numeric base.
+ *  @return array of 8 bit unsigned integer.
+ *
+ *  Split the parameter string and create an array of 8 bit unsigned integer.
+ */
+// ---------------------------------------------------------------------------------------
+    u_int8_t* StringTool::asUInt8List( size_t& n, const std::string S, int base ) {
+  // -------------------------------------------------------------------------------------
+  std::string* slist = StringTool::asStringList( n, S );
+  
+  u_int8_t* list = new u_int8_t[n];
+  
+  for ( size_t i=0; i<n; i++ ) {
+    list[i] = StringTool::asUInt8( slist[i], base );
+  }
+
+  delete[] slist;
+  
+  return list;
+}
+
+
 // =======================================================================================
 // **                                S T R I N G T O O L                                **
 // ======================================================================== END FILE =====

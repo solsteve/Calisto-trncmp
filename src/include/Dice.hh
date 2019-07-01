@@ -98,7 +98,7 @@ public:
 
   bool      boolean   ( real8_t thres = D_HALF );
   real8_t   uniform   ( void );
-  real8_t   gaussian  ( void );
+  real8_t   normal    ( void );
   size_t    index     ( size_t maxValue );
 }; // end class Dice
 

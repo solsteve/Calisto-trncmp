@@ -52,46 +52,48 @@ int main( void ) {
   PSGraph::Draw* pd12 = new PSGraph::Draw( 4.5, 2.5, -10.0, -10.0, 10.0, 10.0 );
   PSGraph::Draw* pd13 = new PSGraph::Draw( 4.0, 6.5, 0.0, 0.0, 4.0, 6.5 );
 
-//  pd01->drawBorder();
-//  pd02->drawBorder();
-//  pd03->drawBorder();
-//  pd04->drawBorder();
+  pd01->drawBorder();
+  pd02->drawBorder();
+  pd03->drawBorder();
+  pd04->drawBorder();
 
-//  pd11->drawBorder();
-//  pd12->drawBorder();
-//  pd13->drawBorder();
+  pd11->drawBorder();
+  pd12->drawBorder();
+  pd13->drawBorder();
 
-//  pd01->setRGB( 1.0, 0.0, 0.0 );
-//  pd01->drawEllipse( 0.0, 0.0, 30.0, 10.0, 45.0 );
-//  pd01->drawCircle(  0.0, 0.0, 10.0, 7 );
+  pd01->setRGB( 1.0, 0.0, 0.0 );
+  pd01->drawEllipse( 0.0, 0.0, 30.0, 10.0, 45.0 );
+  pd01->fillEllipse( 40.0, 0.0, 30.0, 10.0, -45.0 );
+  pd01->drawCircle(  0.0, 0.0, 10.0, 7 );
+  pd01->fillCircle( -30.0, 0.0, 10.0 );
 
-//  pd02->setRGB( Color::blue );
+  pd02->setRGB( PSGraph::Color::blue );
   pd02->drawLine( -9.0, -9.0, 9.0, 9.0 );
 
-//  pd04->write( "Heather", -10.0, -10.0, 10.0, 10.0 );
+  pd04->write( "Heather", -10.0, -10.0, 10.0, 10.0 );
 
-//  pd03->write( "Rebekah", -8.0, -8.0, 2.0, 1.0, 30 );
+  pd03->write( "Rebekah", -8.0, -8.0, 2.0, 1.0, 30 );
 
-//  pd01->saveColor();
+  pd01->saveColor();
 
-//  pd01->setRGB( Color::cyan );
-//  pd01->write_inch( "Stephen", 0.0, 0.0, 2.0, 1.0, 30.0 );
+  pd01->setRGB( PSGraph::Color::cyan );
+  pd01->write_inch( "Stephen", 0.0, 0.0, 2.0, 1.0, 30.0 );
 
-//  pd01->setRGB( Color::green );
-//  pd01->write_inch( "Stephen", 0.0, 0.0, 2.0, 1.0 );
+  pd01->setRGB( PSGraph::Color::green );
+  pd01->write_inch( "Stephen", 0.0, 0.0, 2.0, 1.0 );
 
-//  pd01->restoreColor();
-//  pd01->drawRay( -85.0, 30.0, 60.0, DEG2RAD(-45.0) ); // radians
+  pd01->restoreColor();
+  pd01->drawRay( -85.0, 30.0, 60.0, DEG2RAD(-45.0) ); // radians
 
-//  pd11->setFont( NORMAL );
-//  pd11->write_inch( "Roman Font",  0.5, 2.5, 2.0, 0.5 );
-//  pd11->setFont( BOLD );
-//  pd11->write_inch( "Bold Font",   0.5, 1.5, 2.0, 0.5 );
-//  pd11->setFont( ITALIC );
-//  pd11->write_inch( "Italic Font", 0.5, 0.5, 2.0, 0.5 );
+  pd11->setFont( PSGraph::NORMAL );
+  pd11->write_inch( "Roman Font",  0.5, 2.5, 2.0, 0.5 );
+  pd11->setFont( PSGraph::BOLD );
+  pd11->write_inch( "Bold Font",   0.5, 1.5, 2.0, 0.5 );
+  pd11->setFont( PSGraph::ITALIC );
+  pd11->write_inch( "Italic Font", 0.5, 0.5, 2.0, 0.5 );
 
-//  pd12->drawRectangle( -8.0, -8.0, -1.0, -1.0 );
-//  pd12->drawRectangle( 4.0, 4.0, 6.0, 5.0, true );
+  pd12->drawRectangle( -8.0, -8.0, -1.0, -1.0 );
+  pd12->fillRectangle(  4.0,  4.0,  6.0,  5.0 );
 
 
   double px1[] = { 0.8, 0.7, 1.4, 1.5, 3.2, 1.7, 2.0 };
@@ -102,9 +104,9 @@ int main( void ) {
   double py2[] = { 5.0, 6.2, 5.2, 5.8, 5.3, 4.4 };
   size_t pn2 = sizeof(px2)/sizeof(px2[0]);
 
-//  pd13->drawPolygon( px1, py1, pn1 );
-//  pd13->setRGB( Color::blue );
-//  pd13->drawPolygon( px2, py2, pn2, true );
+  pd13->drawPolygon( px1, py1, pn1 );
+  pd13->setRGB( PSGraph::Color::blue );
+  pd13->fillPolygon( px2, py2, pn2 );
 
   ps->add( pd01, 0, 1.0, 1.0 );
   ps->add( pd02, 0, 1.0, 4.5 );
@@ -117,6 +119,8 @@ int main( void ) {
 
   ps->pswrite( "psgraph-Cpp.ps" );
   
+  delete ps;
+
   delete pd01;
   delete pd02;
   delete pd03;
@@ -125,8 +129,6 @@ int main( void ) {
   delete pd11;
   delete pd12;
   delete pd13;
-
-  delete ps;
 
   return 0;
 }

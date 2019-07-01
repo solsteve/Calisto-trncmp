@@ -227,12 +227,143 @@ TEST( test_findin, Negative ) {
 TEST( test_split, Positive ) {
   std::string test = " Heather , Anthea, Cassiopeia ";
 
-  StringTool::Splitter SP( test, ',' );
+  StringTool::Splitter SP( test );
   size_t n = SP.size();
   EXPECT_EQ( (size_t)3, n );
   EXPECT_STREQ( "Heather",    SP[0].c_str() );
   EXPECT_STREQ( "Anthea",     SP.at(1).c_str() );
   EXPECT_STREQ( "Cassiopeia", SP[2].c_str() );
+}
+
+
+// =======================================================================================
+
+TEST( test_lists, Positive ) {
+  size_t n = 0;
+
+  { // ----- Boolean ---------------------------------------
+    std::string test = " { true, false, yes, true )  ";
+    bool* list = StringTool::asBoolList( n, test );
+    EXPECT_EQ( (size_t)4, n );
+    EXPECT_TRUE(  list[0] );
+    EXPECT_FALSE( list[1] );
+    EXPECT_TRUE(  list[2] );
+    EXPECT_TRUE(  list[3] );
+    delete[] list;
+  }
+
+  { // ----- Real8 -----------------------------------------
+    std::string test = " ( 1.2, 3.4,  5.6,7.8 ]  ";
+    real8_t* list = StringTool::asReal8List( n, test );
+    EXPECT_EQ( (size_t)4, n );
+    EXPECT_DOUBLE_EQ( (real8_t)1.2, list[0] );
+    EXPECT_DOUBLE_EQ( (real8_t)3.4, list[1] );
+    EXPECT_DOUBLE_EQ( (real8_t)5.6, list[2] );
+    EXPECT_DOUBLE_EQ( (real8_t)7.8, list[3] );
+    delete[] list;
+  }
+
+  { // ----- Real4 -----------------------------------------
+    std::string test = " ( 1.2, 3.4,  5.6,7.8 ]  ";
+    real4_t* list = StringTool::asReal4List( n, test );
+    EXPECT_EQ( (size_t)4, n );
+    EXPECT_FLOAT_EQ( (real4_t)1.2, list[0] );
+    EXPECT_FLOAT_EQ( (real4_t)3.4, list[1] );
+    EXPECT_FLOAT_EQ( (real4_t)5.6, list[2] );
+    EXPECT_FLOAT_EQ( (real4_t)7.8, list[3] );
+    delete[] list;
+  }
+
+  { // ----- Int64 -----------------------------------------
+    std::string test = " ( 17845452, 12544567, 89452678, 94523234 ]  ";
+    int64_t* list = StringTool::asInt64List( n, test );
+    EXPECT_EQ( (size_t)4, n );
+    EXPECT_EQ( (int64_t)17845452LL, list[0] );
+    EXPECT_EQ( (int64_t)12544567LL, list[1] );
+    EXPECT_EQ( (int64_t)89452678LL, list[2] );
+    EXPECT_EQ( (int64_t)94523234LL, list[3] );
+    delete[] list;
+  }
+
+  { // ----- Int32 -----------------------------------------
+    std::string test = " ( 845452, 544567, 452678, 523234 ]  ";
+    int32_t* list = StringTool::asInt32List( n, test );
+    EXPECT_EQ( (size_t)4, n );
+    EXPECT_EQ( (int32_t)845452L, list[0] );
+    EXPECT_EQ( (int32_t)544567L, list[1] );
+    EXPECT_EQ( (int32_t)452678L, list[2] );
+    EXPECT_EQ( (int32_t)523234L, list[3] );
+    delete[] list;
+  }
+
+  { // ----- Int16 -----------------------------------------
+    std::string test = " ( 5452, 4567, 2678, 3234 ]  ";
+    int16_t* list = StringTool::asInt16List( n, test );
+    EXPECT_EQ( (size_t)4, n );
+    EXPECT_EQ( (int16_t)5452, list[0] );
+    EXPECT_EQ( (int16_t)4567, list[1] );
+    EXPECT_EQ( (int16_t)2678, list[2] );
+    EXPECT_EQ( (int16_t)3234, list[3] );
+    delete[] list;
+  }
+
+  { // ----- Int8 -----------------------------------------
+    std::string test = " (  -100, 23, -64, 32 }  ";
+    int8_t* list = StringTool::asInt8List( n, test );
+    EXPECT_EQ(  (size_t)4, n );
+    EXPECT_EQ( -(int8_t)100, list[0] );
+    EXPECT_EQ(  (int8_t)23,  list[1] );
+    EXPECT_EQ( -(int8_t)64,  list[2] );
+    EXPECT_EQ(  (int8_t)32,  list[3] );
+    delete[] list;
+  }
+
+
+
+  { // ----- UInt64 -----------------------------------------
+    std::string test = " ( 17845452, 12544567, 89452678, 94523234 ]  ";
+    u_int64_t* list = StringTool::asUInt64List( n, test );
+    EXPECT_EQ( (size_t)4, n );
+    EXPECT_EQ( (u_int64_t)17845452LL, list[0] );
+    EXPECT_EQ( (u_int64_t)12544567LL, list[1] );
+    EXPECT_EQ( (u_int64_t)89452678LL, list[2] );
+    EXPECT_EQ( (u_int64_t)94523234LL, list[3] );
+    delete[] list;
+  }
+
+  { // ----- UInt32 -----------------------------------------
+    std::string test = " ( 845452, 544567, 452678, 523234 ]  ";
+    u_int32_t* list = StringTool::asUInt32List( n, test );
+    EXPECT_EQ( (size_t)4, n );
+    EXPECT_EQ( (u_int32_t)845452L, list[0] );
+    EXPECT_EQ( (u_int32_t)544567L, list[1] );
+    EXPECT_EQ( (u_int32_t)452678L, list[2] );
+    EXPECT_EQ( (u_int32_t)523234L, list[3] );
+    delete[] list;
+  }
+
+  { // ----- UInt16 -----------------------------------------
+    std::string test = " ( 5452, 4567, 2678, 3234 ]  ";
+    u_int16_t* list = StringTool::asUInt16List( n, test );
+    EXPECT_EQ( (size_t)4, n );
+    EXPECT_EQ( (u_int16_t)5452, list[0] );
+    EXPECT_EQ( (u_int16_t)4567, list[1] );
+    EXPECT_EQ( (u_int16_t)2678, list[2] );
+    EXPECT_EQ( (u_int16_t)3234, list[3] );
+    delete[] list;
+  }
+
+  { // ----- UInt8 -----------------------------------------
+    std::string test = " (  54,0x36,     2D, 0x3b }  ";
+    u_int8_t* list = StringTool::asUInt8List( n, test, 16 );
+    EXPECT_EQ( (size_t)4, n );
+    EXPECT_EQ( (u_int8_t)84, list[0] );
+    EXPECT_EQ( (u_int8_t)54, list[1] );
+    EXPECT_EQ( (u_int8_t)45, list[2] );
+    EXPECT_EQ( (u_int8_t)59, list[3] );
+    delete[] list;
+  }
+
 }
 
 

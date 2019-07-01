@@ -57,8 +57,6 @@ PSGraph::Color PSGraph::Color::yellow  ( 1.0, 1.0, 0.0 );
 int PSGraph::Draw::window_count = 0;
 
 
-#define NULL_DRAW_NODE  static_cast<PSGraph::Draw::Node*>(0)
-#define NULL_WINDOW     static_cast<PSGraph::Window*>(0)
 #define NULL_PAGE       static_cast<PSGraph::Page*>(0)
 
 
@@ -135,6 +133,7 @@ void PSGraph::Color::correct( void ) {
 PSGraph::Window::Window( void ) :
     device_width(0), device_height(0), device_x(0), device_y(0) {
   // -------------------------------------------------------------------------------------
+  std::cout << "Window()\n";
 }
 
 
@@ -149,6 +148,7 @@ PSGraph::Window::Window( real8_t dev_width, real8_t dev_height ) :
   // -------------------------------------------------------------------------------------
   device_width  = dev_width;
   device_height = dev_height;
+  std::cout << "Window()\n";
 }
 
 
@@ -158,12 +158,11 @@ PSGraph::Window::Window( real8_t dev_width, real8_t dev_height ) :
 // ---------------------------------------------------------------------------------------
 PSGraph::Window::~Window( void ) {
   // -------------------------------------------------------------------------------------
-  MARK;
 device_width  = 0.0;
 device_height = 0.0;
 device_x      = 0.0;
 device_y      = 0.0;
-  MARK;
+  std::cout << "~Window()\n";
 }
 
 
@@ -246,6 +245,7 @@ PSGraph::Draw::Draw( real8_t dev_width, real8_t dev_height,
     world_y2(0.0), slope_x(0.0), slope_y(0.0), inter_x(0.0), inter_y(0.0), last(), saved() {
   // -------------------------------------------------------------------------------------
   this->init(dev_width, dev_height, x1, y1, x2, y2);
+  std::cout << "  Draw (id=" << id << ")\n";
 }
 
 
@@ -262,6 +262,7 @@ PSGraph::Draw::Draw( real8_t dev_width, real8_t dev_height ) :
 {
   // -------------------------------------------------------------------------------------
   this->init(dev_width, dev_height, D_ZERO, D_ZERO, dev_width, dev_height);
+  std::cout << "  Draw (id=" << id << ")\n";
 }
 
 
@@ -273,6 +274,7 @@ PSGraph::Draw::~Draw( void ) {
   // -------------------------------------------------------------------------------------
   fclose(file_handle);
   unlink(temp_filename);
+  std::cout << " ~Draw (id=" << id << ")\n";
 }
 
 
@@ -292,6 +294,316 @@ void PSGraph::Draw::drawLine( real8_t x1, real8_t y1, real8_t x2, real8_t y2 ) {
 	   "%.5f %.5f %.5f %.5f DL\n",
 	   scaleX(x1), scaleY(y1), scaleX(x2), scaleY(y2) );
 }
+
+
+// ==========================================================================================
+/** @brief Draw a ray.
+ *  @param[in] xc    x coordinate of the origin of the ray.
+ *  @param[in] yc    y coordinate of the origin of the ray.
+ *  @param[in] m     magnitude.
+ *  @param[in] theta angle in radians of the semi-marjor axis 
+ *                   counter clockwise from the positive x axis.
+ *
+ *  Draw a ray length m from (x,y) and rotated theta radians.
+ */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::drawRay( real8_t xc, real8_t yc, real8_t m, real8_t theta ) {
+  // ----------------------------------------------------------------------------------------
+  real8_t x = xc + m*cos(theta);
+  real8_t y = yc + m*sin(theta);
+  drawLine( xc, yc, x, y );
+}
+
+
+
+// ==========================================================================================
+/** @brief Draw border.
+ *
+ *  Draw a rectangle around the border of this window.
+ */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::drawBorder( void ) {
+  // ----------------------------------------------------------------------------------------
+  drawLine( world_x1, world_y1,  world_x1, world_y2 );
+  drawLine( world_x1, world_y2,  world_x2, world_y2 );
+  drawLine( world_x2, world_y2,  world_x2, world_y1 );
+  drawLine( world_x2, world_y1,  world_x1, world_y1 );
+}
+
+
+// ==========================================================================================
+/** @brief Draw Polygon.
+ *  @param[in] x array of x world coordinates.
+ *  @param[in] y array of y world coordinates.
+ *  @param[in] n number of coordinates to use ( n <= x.length )
+ *  @param[in] fill fill the polygon if true.
+ *
+ *  Draw a polygon defined by a set of vertices and optionally fill.
+ */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::drawFillPolygon( real8_t* x, real8_t* y, size_t n, bool fill ) {
+  // ----------------------------------------------------------------------------------------
+
+  fprintf( file_handle, "newpath\n  %.5f %.5f moveto\n", scaleX(x[0]), scaleY(y[0]) );
+  for (size_t i=1; i<n; i++) {
+    fprintf( file_handle, "  %.5f %.5f lineto\n", scaleX(x[i]), scaleY(y[i]) );
+  }
+  fprintf( file_handle, "closepath " );
+
+  if (fill) {
+    fprintf( file_handle, "fill\n " );
+  } else {
+    fprintf( file_handle, "stroke\n " );
+  }
+}
+
+// ==========================================================================================
+    /** @brief Draw Rectangle.
+     *  @param[in] x1 lower left  in device x coordinate
+     *  @param[in] y1 lower left  in device y coordinate
+     *  @param[in] x2 upper right in device x coordinate
+     *  @param[in] y2 upper right in device x coordinate
+     *  @param[in] fill fill the polygon if true.
+     *
+     *  Draw a rectangle in this window and optionally fill.
+     */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::drawFillRectangle( real8_t x1, real8_t y1, real8_t x2, real8_t y2, bool fill ) {
+  // ----------------------------------------------------------------------------------------
+  real8_t x[4];
+  real8_t y[4];
+
+  x[0] = x1;     y[0] = y1;
+  x[1] = x2;     y[1] = y1;
+  x[2] = x2;     y[2] = y2;
+  x[3] = x1;     y[3] = y2;
+
+  if ( fill ) {
+    fillPolygon( x, y, 4 );
+  } else {
+    drawPolygon( x, y, 4 );
+  }
+}
+
+
+// ==========================================================================================
+/** @brief Draw an ellipse.
+ *  @param[in] xc    x coordinate of the center of the ellipse.
+ *  @param[in] yc    y coordinate of the center of the ellipse.
+ *  @param[in] a     value of the semi-major axis.
+ *  @param[in] b     value of the semi-minor axis.
+ *  @param[in] theta angle in radians of the semi-marjor axis 
+ *               counter clockwise from the positive x axis.
+ *  @param parts number of segments.
+ *
+ *  Draw an ellipse centered at (x,y) and rotated theta radians.
+ */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::drawEllipse( real8_t xc, real8_t yc,
+			  real8_t a, real8_t b, real8_t theta,
+			  size_t parts ) {
+  // ----------------------------------------------------------------------------------------
+  real8_t T  = 0.0;
+  real8_t dT = D_2PI / ((real8_t) parts);
+  real8_t C  = cos(theta);
+  real8_t S  = sin(theta);
+
+  real8_t x0 = xc + C*a;
+  real8_t y0 = yc + S*a;
+
+  for (size_t i=0; i<parts; i++) {
+    T += dT;
+    real8_t X = a*cos(T);
+    real8_t Y = b*sin(T);
+
+    real8_t x1 = xc + C*X - S*Y;
+    real8_t y1 = yc + S*X + C*Y;
+
+    drawLine( x0, y0, x1, y1 );
+    x0 = x1;
+    y0 = y1;
+  }
+}
+
+
+// ==========================================================================================
+/** @brief Draw an ellipse.
+ *  @param[in] xc    x coordinate of the center of the ellipse.
+ *  @param[in] yc    y coordinate of the center of the ellipse.
+ *  @param[in] a     value of the semi-major axis.
+ *  @param[in] b     value of the semi-minor axis.
+ *  @param[in] theta angle in radians of the semi-marjor axis 
+ *                   counter clockwise from the positive x axis.
+ *  @param[in] parts number of segments.
+ *
+ *  Draw an ellipse centered at (x,y) and rotated theta radians.
+ */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::fillEllipse( real8_t xc, real8_t yc,
+			  real8_t a, real8_t b, real8_t theta,
+			  size_t parts ) {
+  // ----------------------------------------------------------------------------------------
+  real8_t T  = 0.0;
+  real8_t dT = D_2PI / ((real8_t) parts);
+  real8_t C  = cos(theta);
+  real8_t S  = sin(theta);
+
+  fprintf( file_handle, "newpath\n" );
+  
+  real8_t x0 = xc + C*a;
+  real8_t y0 = yc + S*a;
+  
+  fprintf( file_handle, "%.5f %.5f moveto\n", scaleX(x0), scaleY(y0) );
+
+  for (size_t i=0; i<parts; i++) {
+    T += dT;
+    real8_t X = a*cos(T);
+    real8_t Y = b*sin(T);
+
+    real8_t x1 = xc + C*X - S*Y;
+    real8_t y1 = yc + S*X + C*Y;
+
+    fprintf( file_handle, "%.5f %.5f lineto\n", scaleX(x1), scaleY(y1) );
+  }
+
+  fprintf( file_handle, "closepath fill\n" );
+  
+}
+
+
+
+// =======================================================================================
+/** @brief Write Text.
+ *  @param[in] text string containing the text to write.
+ *  @param[in] x1 starting x world coordinates.
+ *  @param[in] y1 starting y world coordinates.
+ *  @param[in] x2 width in world coordinates.
+ *  @param[in] y2 height in world coordinates.
+ *  @param[in] theta rotation about the starting coordinates in degrees counter clockwise.
+ *
+ *  Scale a string of text within a box of width and height. Place the text at the x and y
+ *  coordinates and rotate it counter clockwise theta degrees.
+ */
+// ---------------------------------------------------------------------------------------
+void PSGraph::Draw::write( std::string text,
+		    real8_t x1, real8_t y1, real8_t x2, real8_t y2, real8_t theta ) {
+  // -------------------------------------------------------------------------------------
+  real8_t x      = scaleX(x1);
+  real8_t y      = scaleY(y1);
+  real8_t width  = scaleX(x2) - x;
+  real8_t height = scaleY(y2) - y;
+
+  fprintf( file_handle, "%f %f %f %f %f (%s) BS\n", x, y, width, height, theta, text.c_str() );
+}
+
+
+// =======================================================================================
+/** @brief Write Text.
+ *  @param[in] text string containing the text to write.
+ *  @param[in] x1 starting x device coordinates.
+ *  @param[in] y1 starting y device coordinates.
+ *  @param[in] x2 width in device coordinates.
+ *  @param[in] y2 height in device coordinates.
+ *  @param[in] theta rotation about the starting coordinates in degrees counter clockwise.
+ *
+ *  Scale a string of text within a box of width and height. Place the text at the x and y
+ *  coordinates and rotate it counter clockwise theta degrees.
+ */
+// ---------------------------------------------------------------------------------------
+void PSGraph::Draw::write_inch( std::string text,
+			 real8_t x, real8_t y, real8_t width, real8_t height, real8_t theta ) {
+  // -------------------------------------------------------------------------------------
+  fprintf( file_handle, "%f %f %f %f %f (%s) BS\n", x, y, width, height, theta, text.c_str() );
+}
+
+
+
+
+
+
+
+
+
+
+// ==========================================================================================
+/** @brief Set Color.
+ *  @param[in] C Color color.
+ *
+ *  Set the current Color value.
+ */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::setRGB( Color& C ) {
+  // ----------------------------------------------------------------------------------------
+  last.copy( C );
+  fprintf( file_handle, "%f %f %f setrgbcolor\n", last.r, last.g, last.b );
+}
+
+
+// ==========================================================================================
+/** @brief Set Color.
+ *  @param[in] r red.
+ *  @param[in] g green.
+ *  @param[in] b blue.
+ *
+ *  Set the current RGB value.
+ */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::setRGB( real8_t r, real8_t g, real8_t b ) {
+  // ----------------------------------------------------------------------------------------
+  last.set( r, g, b );
+  fprintf( file_handle, "%f %f %f setrgbcolor\n", last.r, last.g, last.b );
+}
+
+
+
+// ==========================================================================================
+/** @brief Save Color.
+ *
+ *  Save the current drawing color.
+ */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::saveColor( void ) {
+  // ----------------------------------------------------------------------------------------
+  saved.copy( last );
+}
+
+
+// ==========================================================================================
+/** @brief Restore Color.
+ *
+ *  Restore the last saved drawing color.
+ */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::restoreColor( void ) {
+  // ----------------------------------------------------------------------------------------
+  setRGB( saved.r, saved.g, saved.b );
+}
+
+
+// ==========================================================================================
+/** @brief Set Font
+ *  @param ftype font as defined by PSGraph constants
+ */
+// ------------------------------------------------------------------------------------------
+void PSGraph::Draw::setFont( PSGraph::font_enum ftype ) {
+  // ----------------------------------------------------------------------------------------
+  switch(ftype) {
+  case PSGraph::NORMAL: fprintf( file_handle, "TIMES\n"  ); break;
+  case PSGraph::BOLD:   fprintf( file_handle, "TIMESB\n" ); break;
+  case PSGraph::ITALIC: fprintf( file_handle, "TIMESI\n" ); break;
+  default:
+    MSG("What the frel");
+    fprintf( file_handle, "TIMES\n"  ); break;
+  }
+}
+
+
+
+
+
+
+
+
 
 
 // =======================================================================================
@@ -327,49 +639,13 @@ void PSGraph::Draw::pswrite( FILE* fp ) {
 
 // =======================================================================================
 /** @brief Constructor.
- */
-// ---------------------------------------------------------------------------------------
-PSGraph::Draw::Node::Node( void ) : window(0), next(0) {
-  // -------------------------------------------------------------------------------------
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- *  @param[in] w pointer to a window.
- *  @param[in] n pointer to the next PSDrawNode.
- */
-// ---------------------------------------------------------------------------------------
-PSGraph::Draw::Node::Node( PSGraph::Window* w, Node* n )  : window(w), next(n) {
-  // -------------------------------------------------------------------------------------
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- */
-// ---------------------------------------------------------------------------------------
-PSGraph::Draw::Node::~Node( void ) {
-  // -------------------------------------------------------------------------------------
-  window = NULL_WINDOW;
-  next   = NULL_DRAW_NODE;
-}
-
-
-
-
-
-
-
-
-// =======================================================================================
-/** @brief Constructor.
  *  @param[in] pn page number.
  */
 // ---------------------------------------------------------------------------------------
-PSGraph::Page::Page( size_t pn ) : firstWindow(0), name(), page_number(0) {
+PSGraph::Page::Page( size_t pn ) : wlist(), name(), page_number(0) {
   // -------------------------------------------------------------------------------------
   page_number = pn;
+  std::cout << "Page(pn=" << page_number << ")\n";
 }
 
 
@@ -379,13 +655,8 @@ PSGraph::Page::Page( size_t pn ) : firstWindow(0), name(), page_number(0) {
 // ---------------------------------------------------------------------------------------
 PSGraph::Page::~Page( void ) {
   // -------------------------------------------------------------------------------------
-  PSGraph::Window* w = NULL_WINDOW;
-  MARK;
-  while ( NULL_WINDOW != (w = pop()) ) {
-  MARK;
-    delete w;
-  MARK;
-  }
+  wlist.clear();
+  std::cout << "~Page(pn=" << page_number << ")\n";
 }
 
 
@@ -401,36 +672,9 @@ PSGraph::Page::~Page( void ) {
 // ---------------------------------------------------------------------------------------
 bool PSGraph::Page::add( PSGraph::Window* w, real8_t x, real8_t y ) {
   // -------------------------------------------------------------------------------------
-  PSGraph::Draw::Node* temp = new PSGraph::Draw::Node( w, firstWindow );
   w->setDevice( x, y );
-  firstWindow = temp;
+  wlist.push_back(w);
   return false;
-}
-
-
-// =======================================================================================
-/** @brief Pop Window.
- *  @return pointer to a window.
- *
- *  Remove the top window from the window stack.
- */
-// ---------------------------------------------------------------------------------------
-PSGraph::Window* PSGraph::Page::pop( void ) {
-  // -------------------------------------------------------------------------------------
-  if ( NULL_DRAW_NODE == firstWindow ) {
-  MARK;
-    return NULL_WINDOW;
-  }
-
-  PSGraph::Draw::Node* temp = firstWindow;
-  PSGraph::Window*     w    = temp->window;
-  firstWindow  = temp->next;
-  temp->window = NULL_WINDOW;
-  temp->next   = NULL_DRAW_NODE;
-  MARK;
-  delete temp;
-  MARK;
-  return w;
 }
 
 
@@ -443,8 +687,10 @@ void PSGraph::Page::pswrite( FILE* fp ) {
   // -------------------------------------------------------------------------------------
   write_ps_page_header( fp );
 
-  for (PSGraph::Draw::Node* node = firstWindow; node; node = node->next) {
-    node->window->pswrite( fp );
+ for (std::list<PSGraph::Window*>::iterator it=wlist.begin();
+       it != wlist.end();
+       ++it) {
+    (*it)->pswrite( fp );
   }
 
   write_ps_page_trailer( fp );

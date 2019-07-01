@@ -371,7 +371,7 @@ real8_t Dice::uniform( void ) {
  *  based on experimental results of rolling 1 trillion values.
  */
 // ---------------------------------------------------------------------------------------
-real8_t Dice::gaussian( void ) {
+real8_t Dice::normal( void ) {
   // -------------------------------------------------------------------------------------
   Entropy* ent = ent_engine;
 
