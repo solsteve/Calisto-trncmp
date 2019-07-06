@@ -56,18 +56,22 @@ class Vector3D {
 
   ~Vector3D( void );
 
+  Vector3D& operator=( const Vector3D& ) = default;
+
   void set( const real8_t s = D_ZERO );
 
   void copy ( const Vector3D& that );
   void copy ( const Vector3D* that );
   void copy ( const real8_t _x, const real8_t _y, const real8_t _z );
 
+  void fromArray ( const real8_t A[3] );
+  void toArray   ( real8_t A[3] );
+
   real8_t* load  ( real8_t* src );
   real8_t* store ( real8_t* dst );
 
+  real8_t& at ( const size_t i );
   real8_t& operator[] ( const size_t i );
-
-  Vector3D& operator=( const Vector3D& ) = default;
 
   // ----- scalar operations ------------------------------
   
@@ -84,9 +88,10 @@ class Vector3D {
   Vector3D& operator*=  ( const Vector3D& v );
   Vector3D& operator/=  ( const Vector3D& v );
 
-   real8_t  norm1  ( void ) const;
-   real8_t  norm   ( void ) const;
-   real8_t  normsq ( void ) const;
+  real8_t  norm1  ( void ) const;
+  real8_t  norm   ( void ) const;
+  real8_t  normsq ( void ) const;
+  real8_t  sum    ( void ) const;
 
   Vector3D normalize( void ) const;
 
@@ -101,12 +106,37 @@ std::string toString( Vector3D* v,
                       std::string sdel = DEFAULT_PRINT_DELIM );
 
 bool    equals ( const Vector3D& A, const Vector3D& B );
+bool    equals ( const Vector3D* A, const Vector3D* B );
 
 real8_t dist1  ( const Vector3D& A, const Vector3D& B );
 real8_t dist   ( const Vector3D& A, const Vector3D& B );
 real8_t distsq ( const Vector3D& A, const Vector3D& B );
 
 real8_t angle  ( const Vector3D& A, const Vector3D& B );
+
+
+const Vector3D operator+( const real8_t&  s, const Vector3D& v );
+const Vector3D operator+( const Vector3D& v, const real8_t&  s );
+const Vector3D operator+( const Vector3D& A, const Vector3D& B );
+
+const Vector3D operator-( const real8_t&  s, const Vector3D& v );
+const Vector3D operator-( const Vector3D& v, const real8_t&  s );
+const Vector3D operator-( const Vector3D& A, const Vector3D& B );
+
+const Vector3D operator*( const real8_t&  s, const Vector3D& v );
+const Vector3D operator*( const Vector3D& v, const real8_t&  s );
+const Vector3D operator*( const Vector3D& A, const Vector3D& B );
+
+const Vector3D operator/( const real8_t&  s, const Vector3D& v );
+const Vector3D operator/( const Vector3D& v, const real8_t&  s );
+const Vector3D operator/( const Vector3D& A, const Vector3D& B );
+
+real8_t dot( const Vector3D& A, const Vector3D& B );
+real8_t dot( const Vector3D* A, const Vector3D* B );
+
+const Vector3D cross( const Vector3D& A, const Vector3D& B );
+const Vector3D cross( const Vector3D* A, const Vector3D* B );
+
 
 // =======================================================================================
 /** @brief Equals.
@@ -139,7 +169,7 @@ inline  constexpr Vector3D::Vector3D( void ) : x(D_ZERO), y(D_ZERO), z(D_ZERO) {
  */
 // ---------------------------------------------------------------------------------------
 inline  constexpr Vector3D::Vector3D( const real8_t _x, const real8_t _y, const real8_t _z ) :
-    x(_x), y(_y), z(_z) {
+x(_x), y(_y), z(_z) {
   // -------------------------------------------------------------------------------------
 }
 
@@ -181,11 +211,6 @@ inline  constexpr Vector3D::Vector3D( const Vector3D* v ) : x(v->x), y(v->y), z(
 inline  Vector3D::~Vector3D( void ) {
   // -------------------------------------------------------------------------------------
 }
-
-
-
-
-
 
 
 
@@ -243,6 +268,32 @@ inline  void Vector3D::copy ( const real8_t _x, const real8_t _y, const real8_t 
 }
 
 
+// =======================================================================================
+/** @brief From Array.
+ *  @param[in] A reference to a three element source array.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Vector3D::fromArray ( const real8_t A[3] ) {
+  // -------------------------------------------------------------------------------------
+  this->x = A[0];
+  this->y = A[1];
+  this->z = A[2];
+}
+
+
+// =======================================================================================
+/** @brief To Array.
+ *  @param[in] A reference to a three element destination array.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Vector3D::toArray ( real8_t A[3] ) {
+  // -------------------------------------------------------------------------------------
+  A[0] = this->x;
+  A[1] = this->y;
+  A[2] = this->z;
+}
+
+
 
 
 
@@ -274,7 +325,7 @@ inline  Vector3D& Vector3D::operator=  ( const real8_t s ) {
  *  Add the scalar to all three elements of this Vector3D.
  */
 // ---------------------------------------------------------------------------------------
-  inline  Vector3D& Vector3D::operator+= ( const real8_t s ) {
+inline  Vector3D& Vector3D::operator+= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
   this->x += s;
   this->y += s;
@@ -291,7 +342,7 @@ inline  Vector3D& Vector3D::operator=  ( const real8_t s ) {
  *  Subtract the scalar from all three elements of this Vector3D.
  */
 // ---------------------------------------------------------------------------------------
-  inline  Vector3D& Vector3D::operator-= ( const real8_t s ) {
+inline  Vector3D& Vector3D::operator-= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
   this->x -= s;
   this->y -= s;
@@ -308,7 +359,7 @@ inline  Vector3D& Vector3D::operator=  ( const real8_t s ) {
  *  Multiply all three elements of this Vector3D by the scalar.
  */
 // ---------------------------------------------------------------------------------------
-  inline  Vector3D& Vector3D::operator*= ( const real8_t s ) {
+inline  Vector3D& Vector3D::operator*= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
   this->x *= s;
   this->y *= s;
@@ -325,7 +376,7 @@ inline  Vector3D& Vector3D::operator=  ( const real8_t s ) {
  *  Divide all three elements of this Vector3D by the scalar.
  */
 // ---------------------------------------------------------------------------------------
-  inline  Vector3D& Vector3D::operator/= ( const real8_t s ) {
+inline  Vector3D& Vector3D::operator/= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
   this->x /= s;
   this->y /= s;
@@ -348,7 +399,7 @@ inline  Vector3D& Vector3D::operator=  ( const real8_t s ) {
  *  Element wise addition.
  */
 // ---------------------------------------------------------------------------------------
-  inline  Vector3D& Vector3D::operator+= ( const Vector3D& that ) {
+inline  Vector3D& Vector3D::operator+= ( const Vector3D& that ) {
   // -------------------------------------------------------------------------------------
   this->x += that.x;
   this->y += that.y;
@@ -365,7 +416,7 @@ inline  Vector3D& Vector3D::operator=  ( const real8_t s ) {
  *  Element wise subtraction.
  */
 // ---------------------------------------------------------------------------------------
-  inline  Vector3D& Vector3D::operator-= ( const Vector3D& that ) {
+inline  Vector3D& Vector3D::operator-= ( const Vector3D& that ) {
   // -------------------------------------------------------------------------------------
   this->x -= that.x;
   this->y -= that.y;
@@ -382,7 +433,7 @@ inline  Vector3D& Vector3D::operator=  ( const real8_t s ) {
  *  Element wise multiplication.
  */
 // ---------------------------------------------------------------------------------------
-  inline  Vector3D& Vector3D::operator*= ( const Vector3D& that ) {
+inline  Vector3D& Vector3D::operator*= ( const Vector3D& that ) {
   // -------------------------------------------------------------------------------------
   this->x *= that.x;
   this->y *= that.y;
@@ -399,7 +450,7 @@ inline  Vector3D& Vector3D::operator=  ( const real8_t s ) {
  *  Element wise division.
  */
 // ---------------------------------------------------------------------------------------
-  inline  Vector3D& Vector3D::operator/= ( const Vector3D& that ) {
+inline  Vector3D& Vector3D::operator/= ( const Vector3D& that ) {
   // -------------------------------------------------------------------------------------
   this->x /= that.x;
   this->y /= that.y;
@@ -491,7 +542,7 @@ inline  const Vector3D operator-( const real8_t& s, const Vector3D& v ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector3D operator-( const Vector3D& v, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-return Vector3D( v.x-s, v.y-s, v.z-s );
+  return Vector3D( v.x-s, v.y-s, v.z-s );
 }
 
 
@@ -540,7 +591,7 @@ inline  const Vector3D operator*( const real8_t& s, const Vector3D& v ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector3D operator*( const Vector3D& v, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-return Vector3D( v.x*s, v.y*s, v.z*s );
+  return Vector3D( v.x*s, v.y*s, v.z*s );
 }
 
 
@@ -588,7 +639,7 @@ inline  const Vector3D operator/( const real8_t& s, const Vector3D& v ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector3D operator/( const Vector3D& v, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-return Vector3D( v.x/s, v.y/s, v.z/s );
+  return Vector3D( v.x/s, v.y/s, v.z/s );
 }
 
 
@@ -647,6 +698,29 @@ inline   real8_t Vector3D::normsq( void ) const {
 
 
 // =======================================================================================
+/** @brief Sum.
+ *  @return sum of the elements.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t Vector3D::sum( void ) const {
+  // -------------------------------------------------------------------------------------
+  return x+y+z;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// =======================================================================================
 /** @brief Dot Product.
  *  @param[in] A reference to the first  Vector3D.
  *  @param[in] B reference to the second Vector3D.
@@ -685,7 +759,7 @@ inline  real8_t dot( const Vector3D* A, const Vector3D* B ) {
  *  Cross Vector3D A to Vector3D B.
  */
 // ---------------------------------------------------------------------------------------
-inline  Vector3D cross( const Vector3D& A, const Vector3D& B ) {
+inline  const Vector3D cross( const Vector3D& A, const Vector3D& B ) {
   // -------------------------------------------------------------------------------------
   return Vector3D( (A.y*B.z) - (A.z*B.y),
                    (A.z*B.x) - (A.x*B.z),
@@ -702,7 +776,7 @@ inline  Vector3D cross( const Vector3D& A, const Vector3D& B ) {
  *  Cross Vector3D A to Vector3D B.
  */
 // ---------------------------------------------------------------------------------------
-inline  Vector3D cross( const Vector3D* A, const Vector3D* B ) {
+inline  const Vector3D cross( const Vector3D* A, const Vector3D* B ) {
   // -------------------------------------------------------------------------------------
   return cross( *A, *B );
 }

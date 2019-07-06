@@ -41,7 +41,7 @@ add_subdirectory ( base )
 add_subdirectory ( arrays )
 add_subdirectory ( strings )
 add_subdirectory ( configdb )
-add_subdirectory ( vector )
+add_subdirectory ( matvec )
 
 #/ =======================================================================================
 #/ **                              UTest - C M A K E L I S T                            **

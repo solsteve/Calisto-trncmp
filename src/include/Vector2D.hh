@@ -61,9 +61,13 @@ public:
   void copy ( const Vector2D* that );
   void copy ( const real8_t _x, const real8_t _y );
 
+  void fromArray ( const real8_t A[2] );
+  void toArray   ( real8_t A[2] );
+
   real8_t* load  ( real8_t* src );
   real8_t* store ( real8_t* dst );
 
+  real8_t& at         ( const size_t i );
   real8_t& operator[] ( const size_t i );
 
   Vector2D& operator=( const Vector2D& ) = default;
@@ -84,6 +88,7 @@ public:
   real8_t  norm1  ( void ) const;
   real8_t  norm   ( void ) const;
   real8_t  normsq ( void ) const;
+  real8_t  sum    ( void ) const;
 
   Vector2D normalize( void ) const;
 
@@ -106,6 +111,27 @@ real8_t distsq ( const Vector2D& A, const Vector2D& B );
 
 real8_t angle  ( const Vector2D& A, const Vector2D& B );
 
+const Vector2D operator+( const real8_t&  s, const Vector2D& v );
+const Vector2D operator+( const Vector2D& v, const real8_t&  s );
+const Vector2D operator+( const Vector2D& A, const Vector2D& B );
+
+const Vector2D operator-( const real8_t&  s, const Vector2D& v );
+const Vector2D operator-( const Vector2D& v, const real8_t&  s );
+const Vector2D operator-( const Vector2D& A, const Vector2D& B );
+
+const Vector2D operator*( const real8_t&  s, const Vector2D& v );
+const Vector2D operator*( const Vector2D& v, const real8_t&  s );
+const Vector2D operator*( const Vector2D& A, const Vector2D& B );
+
+const Vector2D operator/( const real8_t&  s, const Vector2D& v );
+const Vector2D operator/( const Vector2D& v, const real8_t&  s );
+const Vector2D operator/( const Vector2D& A, const Vector2D& B );
+
+  real8_t dot( const Vector2D& A, const Vector2D& B );
+  real8_t dot( const Vector2D* A, const Vector2D* B );
+
+  real8_t cross( const Vector2D& A, const Vector2D& B );
+  real8_t cross( const Vector2D* A, const Vector2D* B );
 
 // =======================================================================================
 /** @brief Equals.
@@ -236,6 +262,30 @@ inline  void Vector2D::copy ( const real8_t _x, const real8_t _y ) {
 }
 
 
+// =======================================================================================
+/** @brief From Array.
+ *  @param[in] A reference to a three element source array.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Vector2D::fromArray ( const real8_t A[2] ) {
+  // -------------------------------------------------------------------------------------
+  this->x = A[0];
+  this->y = A[1];
+}
+
+
+// =======================================================================================
+/** @brief To Array.
+ *  @param[in] A reference to a three element destination array.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Vector2D::toArray ( real8_t A[2] ) {
+  // -------------------------------------------------------------------------------------
+  A[0] = this->x;
+  A[1] = this->y;
+}
+
+
 
 
 
@@ -250,7 +300,7 @@ inline  void Vector2D::copy ( const real8_t _x, const real8_t _y ) {
  *  Set all three elements to the value of the scalar.
  */
 // ---------------------------------------------------------------------------------------
-inline  Vector2D& Vector2D::operator=  ( const real8_t s ) {
+inline  Vector2D& Vector2D::operator= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
   this->x = s;
   this->y = s;
@@ -628,6 +678,18 @@ inline  real8_t Vector2D::normsq( void ) const {
   // -------------------------------------------------------------------------------------
   return (x*x) + (y*y);
 }
+
+// =======================================================================================
+/** @brief Sum.
+ *  @return sum of the elements.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t Vector2D::sum( void ) const {
+  // -------------------------------------------------------------------------------------
+  return x+y;
+}
+
+
 
 
 // =======================================================================================

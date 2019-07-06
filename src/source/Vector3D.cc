@@ -74,7 +74,26 @@ real8_t* Vector3D::load( real8_t* src ) {
 
 // =======================================================================================
 /** @brief Index operator.
- *  @param .
+ *  @param i index.
+ *  @return reference to the ith position in this vector.
+ *
+ *  x=0, y=1, z=2
+ */
+// ---------------------------------------------------------------------------------------
+real8_t& Vector3D::at( const size_t i ) {
+  // -------------------------------------------------------------------------------------
+  if ( i==0 ) { return this->x; }
+  if ( i==1 ) { return this->y; }
+  if ( i==2 ) { return this->z; }
+  char buf[64];
+  snprintf( buf, 63, "out of range: %lu expected (0, 1 or 2)", i );
+  throw( new std::invalid_argument(buf) );
+}
+
+
+// =======================================================================================
+/** @brief Index operator.
+ *  @param i index.
  *  @return reference to the ith position in this vector.
  *
  *  x=0, y=1, z=2

@@ -72,7 +72,25 @@ real8_t* Vector2D::load( real8_t* src ) {
 
 // =======================================================================================
 /** @brief Index operator.
- *  @param .
+ *  @param i index.
+ *  @return reference to the ith position in this vector.
+ *
+ *  x=0, y=1, z=2
+ */
+// ---------------------------------------------------------------------------------------
+real8_t& Vector2D::at( const size_t i ) {
+  // -------------------------------------------------------------------------------------
+  if ( i==0 ) { return this->x; }
+  if ( i==1 ) { return this->y; }
+  char buf[64];
+  snprintf( buf, 63, "out of range: %lu expected (0 or 1)", i );
+  throw( new std::invalid_argument(buf) );
+}
+
+
+// =======================================================================================
+/** @brief Index operator.
+ *  @param i index.
  *  @return reference to the ith position in this vector.
  *
  *  x=0, y=1, z=2
@@ -103,6 +121,9 @@ Vector2D Vector2D::normalize( void ) const {
   }
   throw( new std::domain_error( "Can not normalize a zero norm vector" ) );
 }
+
+
+
 
 
 // =======================================================================================

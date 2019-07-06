@@ -33,11 +33,13 @@
 #/
 #/ =======================================================================================
 
-project( vector CXX )
+project( matvec CXX )
 
 add_executable(${PROJECT_NAME} ../main.cc
   utest_vector2d
   utest_vector3d
+  utest_matrix2d
+  utest_matrix3d
   )
 
 target_link_libraries(${PROJECT_NAME} GTest::GTest GTest::Main callisto)
