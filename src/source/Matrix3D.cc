@@ -190,6 +190,10 @@ real8_t* Matrix3D::load( const real8_t* src, matrix3d_format_e order ) {
       a02 = a20;
       a12 = a21;
       break;
+
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
   }
   
   return q;
@@ -233,6 +237,10 @@ real8_t* Matrix3D::store( const real8_t* dst, matrix3d_format_e order ) {
       *q++ = a10;    *q++ = a11;
       *q++ = a20;    *q++ = a21;    *q++ = a22;
       break;
+
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
   }
   
   return q;
@@ -388,6 +396,59 @@ const Matrix3D Matrix3D::inverse( void ) {
                    ((a10*a21) - (a20*a11)) / D,
                    ((a20*a01) - (a00*a21)) / D,
                    ((a00*a11) - (a10*a01)) / D );
+}
+
+
+// =======================================================================================
+/** @brief Sum.
+ *  @return sum of the elements.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t sum( const Matrix3D& M ) {
+  // -------------------------------------------------------------------------------------
+  return
+      M.a00 + M.a01 + M.a02 +
+      M.a10 + M.a11 + M.a12 +
+      M.a20 + M.a21 + M.a22;
+}
+
+// =======================================================================================
+/** @brief Sum Squared.
+ *  @return sum of the squares of the elements.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t sumsq( const Matrix3D& M ) {
+  // -------------------------------------------------------------------------------------
+  return
+      (M.a00*M.a00) + (M.a01*M.a01) + (M.a02*M.a02) + 
+      (M.a10*M.a10) + (M.a11*M.a11) + (M.a12*M.a12) + 
+      (M.a20*M.a20) + (M.a21*M.a21) + (M.a22*M.a22);
+}
+
+
+// =======================================================================================
+/** @brief Sum Square.
+ *  @param[in] A reference to the first  Matrix3D.
+ *  @param[in] B reference to the second Matrix3D.
+ *  @return Sum of the square differences of the elements.
+ *  @nodet this is an alias of distsq
+ */
+// ---------------------------------------------------------------------------------------
+real8_t sumsq( const Matrix3D& A, const Matrix3D& B ) {
+  // -------------------------------------------------------------------------------------
+  real8_t d0 = (A.a00 - B.a00);
+  real8_t d1 = (A.a01 - B.a01);
+  real8_t d2 = (A.a02 - B.a02);
+  real8_t d3 = (A.a10 - B.a10);
+  real8_t d4 = (A.a11 - B.a11);
+  real8_t d5 = (A.a12 - B.a12);
+  real8_t d6 = (A.a20 - B.a20);
+  real8_t d7 = (A.a21 - B.a21);
+  real8_t d8 = (A.a22 - B.a22);
+  return
+      (d0*d0)+(d1*d1)+(d2*d2)+
+      (d3*d3)+(d4*d4)+(d5*d5)+
+      (d6*d6)+(d7*d7)+(d8*d8);
 }
 
 

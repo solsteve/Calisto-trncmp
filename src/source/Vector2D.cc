@@ -47,8 +47,8 @@
 // ---------------------------------------------------------------------------------------
 real8_t* Vector2D::load( real8_t* src ) {
   // -------------------------------------------------------------------------------------
-  this->x = src[0];
-  this->y = src[1];
+  this->x[0] = src[0];
+  this->x[1] = src[1];
   return (src+2);
 }
 
@@ -64,8 +64,8 @@ real8_t* Vector2D::load( real8_t* src ) {
 // ---------------------------------------------------------------------------------------
   real8_t* Vector2D::store( real8_t* dst ) {
   // -------------------------------------------------------------------------------------
-  dst[0] = this->x;
-  dst[1] = this->y;
+  dst[0] = this->x[0];
+  dst[1] = this->x[1];
   return (dst+2);
 }
 
@@ -75,13 +75,13 @@ real8_t* Vector2D::load( real8_t* src ) {
  *  @param i index.
  *  @return reference to the ith position in this vector.
  *
- *  x=0, y=1, z=2
+ *  x[0]=0, x[1]=1, z=2
  */
 // ---------------------------------------------------------------------------------------
 real8_t& Vector2D::at( const size_t i ) {
   // -------------------------------------------------------------------------------------
-  if ( i==0 ) { return this->x; }
-  if ( i==1 ) { return this->y; }
+  if ( i==0 ) { return this->x[0]; }
+  if ( i==1 ) { return this->x[1]; }
   char buf[64];
   snprintf( buf, 63, "out of range: %lu expected (0 or 1)", i );
   throw( new std::invalid_argument(buf) );
@@ -93,13 +93,13 @@ real8_t& Vector2D::at( const size_t i ) {
  *  @param i index.
  *  @return reference to the ith position in this vector.
  *
- *  x=0, y=1, z=2
+ *  x[0]=0, x[1]=1, z=2
  */
 // ---------------------------------------------------------------------------------------
 real8_t& Vector2D::operator[]( const size_t i ) {
   // -------------------------------------------------------------------------------------
-  if ( i==0 ) { return this->x; }
-  if ( i==1 ) { return this->y; }
+  if ( i==0 ) { return this->x[0]; }
+  if ( i==1 ) { return this->x[1]; }
   char buf[64];
   snprintf( buf, 63, "out of range: %lu expected (0 or 1)", i );
   throw( new std::invalid_argument(buf) );
@@ -117,7 +117,7 @@ Vector2D Vector2D::normalize( void ) const {
   // -------------------------------------------------------------------------------------
   real8_t s = norm();
   if ( D_ZERO < s ) {
-    return Vector2D( x/s, y/s );
+    return Vector2D( x[0]/s, x[1]/s );
   }
   throw( new std::domain_error( "Can not normalize a zero norm vector" ) );
 }
@@ -170,10 +170,10 @@ std::string toString( Vector2D* v, std::string sfmt, std::string sdel ) {
 // ---------------------------------------------------------------------------------------
 bool equals( const Vector2D& A, const Vector2D& B ) {
   // -------------------------------------------------------------------------------------
-  if ( A.x < B.x ) { return false; }
-  if ( A.x > B.x ) { return false; }
-  if ( A.y < B.y ) { return false; }
-  if ( A.y > B.y ) { return false; }
+  if ( A.x[0] < B.x[0] ) { return false; }
+  if ( A.x[0] > B.x[0] ) { return false; }
+  if ( A.x[1] < B.x[1] ) { return false; }
+  if ( A.x[1] > B.x[1] ) { return false; }
   return true;
 }
 
@@ -187,8 +187,8 @@ bool equals( const Vector2D& A, const Vector2D& B ) {
 // ---------------------------------------------------------------------------------------
 real8_t dist1( const Vector2D& A, const Vector2D& B ) {
   // -------------------------------------------------------------------------------------
-  real8_t dx = A.x - B.x;
-  real8_t dy = A.y - B.y;
+  real8_t dx = A.x[0] - B.x[0];
+  real8_t dy = A.x[1] - B.x[1];
   return Abs(dx) + Abs(dy);
 }
 
@@ -202,8 +202,8 @@ real8_t dist1( const Vector2D& A, const Vector2D& B ) {
 // ---------------------------------------------------------------------------------------
 real8_t dist( const Vector2D& A, const Vector2D& B ) {
   // -------------------------------------------------------------------------------------
-  real8_t dx = A.x - B.x;
-  real8_t dy = A.y - B.y;
+  real8_t dx = A.x[0] - B.x[0];
+  real8_t dy = A.x[1] - B.x[1];
   return sqrt( (dx*dx) + (dy*dy) );
 }
 
@@ -217,8 +217,8 @@ real8_t dist( const Vector2D& A, const Vector2D& B ) {
 // ---------------------------------------------------------------------------------------
 real8_t distsq( const Vector2D& A, const Vector2D& B ) {
   // -------------------------------------------------------------------------------------
-  real8_t dx = A.x - B.x;
-  real8_t dy = A.y - B.y;
+  real8_t dx = A.x[0] - B.x[0];
+  real8_t dy = A.x[1] - B.x[1];
   return (dx*dx) + (dy*dy);
 }
 

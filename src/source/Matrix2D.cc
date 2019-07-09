@@ -178,6 +178,10 @@ real8_t* Matrix2D::load( const real8_t* src, matrix2d_format_e order ) {
       a10 = *q++;    a11 = *q++;
       a01 = a10;
       break;
+
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
   }
   
   return q;
@@ -217,6 +221,10 @@ real8_t* Matrix2D::store( const real8_t* dst, matrix2d_format_e order ) {
       *q++ = a00;
       *q++ = a10;    *q++ = a11;
       break;
+
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
   }
   
   return q;
@@ -336,6 +344,49 @@ const Matrix2D Matrix2D::inverse( void ) {
   
   return Matrix2D(  a11 / D, -a01 / D,
                    -a10 / D,  a00 / D );
+}
+
+
+// =======================================================================================
+/** @brief Sum.
+ *  @return sum of the elements.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t sum( const Matrix2D& M ) {
+  // -------------------------------------------------------------------------------------
+  return
+      M.a00 + M.a01 +
+      M.a10 + M.a11;
+}
+
+// =======================================================================================
+/** @brief Sum Squared.
+ *  @return sum of the squares of the elements.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t sumsq( const Matrix2D& M ) {
+  // -------------------------------------------------------------------------------------
+  return
+      (M.a00*M.a00) + (M.a01*M.a01) + 
+      (M.a10*M.a10) + (M.a11*M.a11);
+}
+
+
+// =======================================================================================
+/** @brief Sum Square.
+ *  @param[in] A reference to the first  Matrix2D.
+ *  @param[in] B reference to the second Matrix2D.
+ *  @return Sum of the square differences of the elements.
+ *  @nodet this is an alias of distsq
+ */
+// ---------------------------------------------------------------------------------------
+real8_t sumsq( const Matrix2D& A, const Matrix2D& B ) {
+  // -------------------------------------------------------------------------------------
+  real8_t d0 = (A.a00 - B.a00);
+  real8_t d1 = (A.a01 - B.a01);
+  real8_t d2 = (A.a10 - B.a10);
+  real8_t d3 = (A.a11 - B.a11);
+  return (d0*d0)+(d1*d1)+(d2*d2)+(d3*d3);
 }
 
 

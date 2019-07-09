@@ -35,7 +35,7 @@
 
 
 #include <limits.h>
-#include "Vector2D.hh"
+#include <Vector2D.hh>
 #include "gtest/gtest.h"
 #include <Dice.hh>
 
@@ -43,76 +43,96 @@
 namespace {
 
 
+// =====================================================================================
+bool check(Vector2D& V, real8_t* a ) {
+  // -----------------------------------------------------------------------------------
+  real8_t sum =
+      ((V.x[0]-a[0])*(V.x[0]-a[0])) +
+      ((V.x[1]-a[1])*(V.x[1]-a[1]));
+
+  if ( sum < -D_EPSILON ) {
+    fprintf( stdout, "%19.12e < %19.12e\n", sum, -D_EPSILON );
+    return false;
+  }
+  if ( sum >  D_EPSILON ) {
+    fprintf( stdout, "%19.12e > %19.12e\n", sum,  D_EPSILON );
+    return false;
+  }
+
+  return true;
+}
+
+
   // =====================================================================================
-  TEST(test_construct2, Positive) {
+  TEST(test_construct_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     {
       Vector2D A;
-      EXPECT_DOUBLE_EQ( 0.0, A.x );
-      EXPECT_DOUBLE_EQ( 0.0, A.y );
+      EXPECT_DOUBLE_EQ( 0.0, A.x[0] );
+      EXPECT_DOUBLE_EQ( 0.0, A.x[1] );
     }
 
     {
       Vector2D A = { 1.2, 3.4 };
-      EXPECT_DOUBLE_EQ( 1.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 1.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
     }
 
     {
       Vector2D A(1.2, 3.4);
-      EXPECT_DOUBLE_EQ( 1.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 1.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
     }
 
     {
       real8_t q[] = { 1.2, 3.4 };
       Vector2D A(q);
-      EXPECT_DOUBLE_EQ( 1.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 1.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
     }
 
     {
       real8_t q[] = { 1.2, 3.4 };
       Vector2D T(q);
       Vector2D A(T);
-      EXPECT_DOUBLE_EQ( 1.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 1.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
     }
 
     {
       real8_t q[] = { 1.2, 3.4 };
       Vector2D* T = new Vector2D(q);
       Vector2D A(T);
-      EXPECT_DOUBLE_EQ( 1.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 1.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
       delete T;
     }
   }
 
 
   // =====================================================================================
-  TEST(test_set2, Positive) {
+  TEST(test_set_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     {
       Vector2D A = { 1.2, 3.4 };
       A.set();
     
-      EXPECT_DOUBLE_EQ( 0.0, A.x );
-      EXPECT_DOUBLE_EQ( 0.0, A.y );
+      EXPECT_DOUBLE_EQ( 0.0, A.x[0] );
+      EXPECT_DOUBLE_EQ( 0.0, A.x[1] );
     }
 
     {
       Vector2D A = { 1.2, 3.4 };
       A.set(7.2);
     
-      EXPECT_DOUBLE_EQ( 7.2, A.x );
-      EXPECT_DOUBLE_EQ( 7.2, A.y );
+      EXPECT_DOUBLE_EQ( 7.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 7.2, A.x[1] );
     }
   }
 
 
   // =====================================================================================
-  TEST(test_copy2, Positive) {
+  TEST(test_copy_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     {
       Vector2D A = { 6.5, 4.3 };
@@ -120,8 +140,8 @@ namespace {
 
       A.copy( B );
     
-      EXPECT_DOUBLE_EQ( 1.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 1.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
     }
   
     {
@@ -131,8 +151,8 @@ namespace {
     
       A.copy( B );
     
-      EXPECT_DOUBLE_EQ( 1.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 1.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
 
       delete B;
     }
@@ -142,8 +162,8 @@ namespace {
 
       A.copy( 1.2, 3.4 );
     
-      EXPECT_DOUBLE_EQ( 1.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 1.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
     }
   
     {
@@ -152,21 +172,21 @@ namespace {
 
       A = B;
     
-      EXPECT_DOUBLE_EQ( 1.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 1.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
     }
   }
 
 
   // =====================================================================================
-  TEST(test_access2, Positive) {
+  TEST(test_access_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     Vector2D A;
     A[0] = 1.23;
     A[1] = 4.56;
 
-    A.x += 3.1;
-    A.y += 2.2;
+    A.x[0] += 3.1;
+    A.x[1] += 2.2;
 
     real8_t a0 = A[0];
     real8_t a1 = A[1];
@@ -177,7 +197,7 @@ namespace {
 
 
   // =====================================================================================
-  TEST(test_format2, Positive) {
+  TEST(test_format_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     Vector2D A( 6.40, 1.28 );
 
@@ -188,47 +208,47 @@ namespace {
 
 
   // =====================================================================================
-  TEST(test_unary_scale2, Positive) {
+  TEST(test_unary_scale_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     {
       Vector2D A( 6.40, 1.28 );
       A = 3.4;
-      EXPECT_DOUBLE_EQ( 3.4, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
     }
 
     {
       Vector2D A( 6.40, 1.28 );
       A += 3.4;
-      EXPECT_DOUBLE_EQ( 9.80, A.x );
-      EXPECT_DOUBLE_EQ( 4.68, A.y );
+      EXPECT_DOUBLE_EQ( 9.80, A.x[0] );
+      EXPECT_DOUBLE_EQ( 4.68, A.x[1] );
     }
 
     {
       Vector2D A( 6.40, 1.28 );
       A -= 3.1;
-      EXPECT_DOUBLE_EQ(  3.30, A.x );
-      EXPECT_DOUBLE_EQ( -1.82, A.y );
+      EXPECT_DOUBLE_EQ(  3.30, A.x[0] );
+      EXPECT_DOUBLE_EQ( -1.82, A.x[1] );
     }
 
     {
       Vector2D A( 6.40, 1.28 );
       A *= 2.1;
-      EXPECT_DOUBLE_EQ( 13.44, A.x );
-      EXPECT_DOUBLE_EQ( 2.688, A.y );
+      EXPECT_DOUBLE_EQ( 13.44, A.x[0] );
+      EXPECT_DOUBLE_EQ( 2.688, A.x[1] );
     }
 
     {
       Vector2D A( 6.40, 1.28 );
       A /= 2.0;
-      EXPECT_DOUBLE_EQ( 3.20, A.x );
-      EXPECT_DOUBLE_EQ( 0.64, A.y );
+      EXPECT_DOUBLE_EQ( 3.20, A.x[0] );
+      EXPECT_DOUBLE_EQ( 0.64, A.x[1] );
     }
   }
 
 
   // =====================================================================================
-  TEST(test_unary_vector2, Positive) {
+  TEST(test_unary_vector_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     {
       Vector2D A( 1.2, 3.4 );
@@ -236,8 +256,8 @@ namespace {
 
       A += B;
 
-      EXPECT_DOUBLE_EQ( 7.7, A.x );
-      EXPECT_DOUBLE_EQ( 7.7, A.y );
+      EXPECT_DOUBLE_EQ( 7.7, A.x[0] );
+      EXPECT_DOUBLE_EQ( 7.7, A.x[1] );
     }
 
     {
@@ -246,8 +266,8 @@ namespace {
 
       A -= B;
 
-      EXPECT_DOUBLE_EQ( -5.3, A.x );
-      EXPECT_DOUBLE_EQ( -0.9, A.y );
+      EXPECT_DOUBLE_EQ( -5.3, A.x[0] );
+      EXPECT_DOUBLE_EQ( -0.9, A.x[1] );
     }
 
     {
@@ -256,8 +276,8 @@ namespace {
 
       A *= B;
 
-      EXPECT_DOUBLE_EQ(  7.80, A.x );
-      EXPECT_DOUBLE_EQ( 14.62, A.y );
+      EXPECT_DOUBLE_EQ(  7.80, A.x[0] );
+      EXPECT_DOUBLE_EQ( 14.62, A.x[1] );
     }
 
     {
@@ -266,14 +286,14 @@ namespace {
 
       A /= B;
 
-      EXPECT_DOUBLE_EQ( 1.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.4, A.y );
+      EXPECT_DOUBLE_EQ( 1.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.4, A.x[1] );
     }
   }
 
 
   // =====================================================================================
-  TEST(test_binary_add2, Positive) {
+  TEST(test_binary_add_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     {
       Vector2D A( 1.1, 2.2 );
@@ -281,8 +301,8 @@ namespace {
 
       A = 3.1 + B;
 
-      EXPECT_DOUBLE_EQ( 4.3, A.x );
-      EXPECT_DOUBLE_EQ( 6.5, A.y );
+      EXPECT_DOUBLE_EQ( 4.3, A.x[0] );
+      EXPECT_DOUBLE_EQ( 6.5, A.x[1] );
     }
 
     {
@@ -291,8 +311,8 @@ namespace {
 
       A = B + 3.1;
 
-      EXPECT_DOUBLE_EQ( 4.3, A.x );
-      EXPECT_DOUBLE_EQ( 6.5, A.y );
+      EXPECT_DOUBLE_EQ( 4.3, A.x[0] );
+      EXPECT_DOUBLE_EQ( 6.5, A.x[1] );
     }
 
     {
@@ -302,8 +322,8 @@ namespace {
 
       C = A + B;
 
-      EXPECT_DOUBLE_EQ( 7.7, C.x );
-      EXPECT_DOUBLE_EQ( 7.7, C.y );
+      EXPECT_DOUBLE_EQ( 7.7, C.x[0] );
+      EXPECT_DOUBLE_EQ( 7.7, C.x[1] );
     }
   
     {
@@ -314,14 +334,14 @@ namespace {
 
       D = C + (A + B);
 
-      EXPECT_DOUBLE_EQ( 8.8, D.x );
-      EXPECT_DOUBLE_EQ( 9.9, D.y );
+      EXPECT_DOUBLE_EQ( 8.8, D.x[0] );
+      EXPECT_DOUBLE_EQ( 9.9, D.x[1] );
     } 
   }
 
 
   // =====================================================================================
-  TEST(test_binary_sub2, Positive) {
+  TEST(test_binary_sub_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     {
       Vector2D A( 1.1, 2.2 );
@@ -329,8 +349,8 @@ namespace {
 
       A = 3.1 - B;
 
-      EXPECT_DOUBLE_EQ(  1.90, A.x );
-      EXPECT_DOUBLE_EQ( -0.30, A.y );
+      EXPECT_DOUBLE_EQ(  1.90, A.x[0] );
+      EXPECT_DOUBLE_EQ( -0.30, A.x[1] );
     }
 
     {
@@ -339,8 +359,8 @@ namespace {
 
       A = B - 3.1;
 
-      EXPECT_DOUBLE_EQ( -1.90, A.x );
-      EXPECT_DOUBLE_EQ(  0.30, A.y );
+      EXPECT_DOUBLE_EQ( -1.90, A.x[0] );
+      EXPECT_DOUBLE_EQ(  0.30, A.x[1] );
     }
 
     {
@@ -350,8 +370,8 @@ namespace {
 
       C = A - B;
 
-      EXPECT_DOUBLE_EQ(  5.3, C.x );
-      EXPECT_DOUBLE_EQ(  0.9, C.y );
+      EXPECT_DOUBLE_EQ(  5.3, C.x[0] );
+      EXPECT_DOUBLE_EQ(  0.9, C.x[1] );
     }
   
     {
@@ -362,14 +382,14 @@ namespace {
 
       D = C - (A - B);
 
-      EXPECT_DOUBLE_EQ( -4.2, D.x );
-      EXPECT_DOUBLE_EQ(  1.3, D.y );
+      EXPECT_DOUBLE_EQ( -4.2, D.x[0] );
+      EXPECT_DOUBLE_EQ(  1.3, D.x[1] );
     } 
   }
 
 
   // =====================================================================================
-  TEST(test_binary_mul2, Positive) {
+  TEST(test_binary_mul_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     {
       Vector2D A( 1.1, 2.2 );
@@ -377,8 +397,8 @@ namespace {
 
       A = 3.1 * B;
 
-      EXPECT_DOUBLE_EQ(  3.72, A.x );
-      EXPECT_DOUBLE_EQ( 10.54, A.y );
+      EXPECT_DOUBLE_EQ(  3.72, A.x[0] );
+      EXPECT_DOUBLE_EQ( 10.54, A.x[1] );
     }
 
     {
@@ -387,8 +407,8 @@ namespace {
 
       A = B * 3.1;
 
-      EXPECT_DOUBLE_EQ(  3.72, A.x );
-      EXPECT_DOUBLE_EQ( 10.54, A.y );
+      EXPECT_DOUBLE_EQ(  3.72, A.x[0] );
+      EXPECT_DOUBLE_EQ( 10.54, A.x[1] );
     }
 
     {
@@ -398,8 +418,8 @@ namespace {
 
       C = A * B;
 
-      EXPECT_DOUBLE_EQ(  7.80, C.x );
-      EXPECT_DOUBLE_EQ( 14.62, C.y );
+      EXPECT_DOUBLE_EQ(  7.80, C.x[0] );
+      EXPECT_DOUBLE_EQ( 14.62, C.x[1] );
     }
   
     {
@@ -410,14 +430,14 @@ namespace {
 
       D = C * (A + B);
 
-      EXPECT_DOUBLE_EQ(  8.47, D.x );
-      EXPECT_DOUBLE_EQ( 16.94, D.y );
+      EXPECT_DOUBLE_EQ(  8.47, D.x[0] );
+      EXPECT_DOUBLE_EQ( 16.94, D.x[1] );
     } 
   }
 
 
   // =====================================================================================
-  TEST(test_binary_div2, Positive) {
+  TEST(test_binary_div_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     {
       Vector2D A( 1.1, 2.2 );
@@ -425,8 +445,8 @@ namespace {
 
       A = 6.4 / B;
 
-      EXPECT_DOUBLE_EQ( 3.2, A.x );
-      EXPECT_DOUBLE_EQ( 1.6, A.y );
+      EXPECT_DOUBLE_EQ( 3.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 1.6, A.x[1] );
     }
 
     {
@@ -435,8 +455,8 @@ namespace {
 
       A = B / 3.1;
 
-      EXPECT_DOUBLE_EQ( 2.2, A.x );
-      EXPECT_DOUBLE_EQ( 3.3, A.y );
+      EXPECT_DOUBLE_EQ( 2.2, A.x[0] );
+      EXPECT_DOUBLE_EQ( 3.3, A.x[1] );
     }
 
     {
@@ -446,8 +466,8 @@ namespace {
 
       C = A / B;
 
-      EXPECT_DOUBLE_EQ( 5.5, C.x );
-      EXPECT_DOUBLE_EQ( 4.4, C.y );
+      EXPECT_DOUBLE_EQ( 5.5, C.x[0] );
+      EXPECT_DOUBLE_EQ( 4.4, C.x[1] );
     }
   
     {
@@ -458,13 +478,13 @@ namespace {
 
       D = C / (A + B);
 
-      EXPECT_DOUBLE_EQ( 2.7, D.x );
-      EXPECT_DOUBLE_EQ( 3.1, D.y );
+      EXPECT_DOUBLE_EQ( 2.7, D.x[0] );
+      EXPECT_DOUBLE_EQ( 3.1, D.x[1] );
     } 
   }
 
   // =====================================================================================
-  TEST(test_equals2, Positive) {
+  TEST(test_equals_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     {
       Vector2D  rA( 6.5, 4.3 );
@@ -487,22 +507,33 @@ namespace {
     }
   }
 
-  // =====================================================================================
-  TEST(test_norm3, Positive) {
-    // -----------------------------------------------------------------------------------
+// =====================================================================================
+TEST(test_sum_vec2, Positive) {
+  // -----------------------------------------------------------------------------------
+  Vector2D A( -1.2,  3.4 );
+  Vector2D B(  4.3, -1.1 );
+
+  EXPECT_DOUBLE_EQ(  2.2, sum(A) );
+  EXPECT_DOUBLE_EQ( 13.0, sumsq(A) );
+  EXPECT_DOUBLE_EQ( 50.5, sumsq(A,B) );    
+}
+
+// =====================================================================================
+TEST(test_norm_vec2, Positive) {
+  // -----------------------------------------------------------------------------------
     Vector2D  A( -1.2,  3.4 );
 
-    EXPECT_DOUBLE_EQ( 4.6, A.norm1() );
+    EXPECT_DOUBLE_EQ( 2.2, sum(A) );
     EXPECT_DOUBLE_EQ( sqrt(13.0), A.norm() );
     EXPECT_DOUBLE_EQ( 13.0, A.normsq() );
-    EXPECT_DOUBLE_EQ( 2.2, A.sum() );
+    EXPECT_DOUBLE_EQ( 2.2, sum(A) );
     
     Vector2D N = A.normalize();
     EXPECT_DOUBLE_EQ( D_ONE, N.norm() ); 
   }
 
   // =====================================================================================
-  TEST(test_dot_cross2, Positive) {
+  TEST(test_dot_cross_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     Vector2D  A( -1.2,  3.4 );
     Vector2D  B(  6.5, -4.3 );
@@ -513,7 +544,7 @@ namespace {
 
 
   // =====================================================================================
-  TEST(test_dist2, Positive) {
+  TEST(test_dist_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     Vector2D  A( -1.2,  3.4 );
     Vector2D  B(  6.5, -5.4 );
@@ -525,7 +556,7 @@ namespace {
   
 
   // =====================================================================================
-  TEST(test_ang3, Positive) {
+  TEST(test_ang_vec2, Positive) {
     // -----------------------------------------------------------------------------------
     real8_t TV[40][5] =
       {
@@ -581,7 +612,26 @@ namespace {
     }
   }
   
-    
+ // =====================================================================================
+TEST(test_swap_vec2, Positive) {
+  // -----------------------------------------------------------------------------------
+  real8_t adat[3] = {9.7, 9.3};
+  real8_t bdat[3] = {4.2, 5.3};
+
+  {
+    Vector2D A( adat );
+    Vector2D B( bdat );
+    EXPECT_TRUE( check( A, adat ) );
+    EXPECT_TRUE( check( B, bdat ) );
+    A.swap( B );
+    EXPECT_TRUE( check( A, bdat ) );
+    EXPECT_TRUE( check( B, adat ) );
+  }
+
+}
+
+
+   
 } // end namespace
 
 

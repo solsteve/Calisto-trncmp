@@ -278,6 +278,21 @@ size_t  hex2bin           ( u_int8_t* bin, const char* hex, size_t nh );
 int64_t gcd               ( const int64_t cu, const int64_t cv );
 int32_t gcd               ( const int32_t cu, const int32_t cv );
 
+// =======================================================================================t
+/** @brief Swap
+ *  @param[inout] A reference to first  object.
+ *  @param[inout] B reference to second object.
+ *
+ *  Swap the values.
+ */
+// ---------------------------------------------------------------------------------------
+template< class T >
+inline void swap( T& a, T& b ) {
+  // -------------------------------------------------------------------------------------
+  T t = a;
+  a   = b;
+  b   = t;
+}
 
 // =======================================================================================t
 /** @brief Are two values equal.

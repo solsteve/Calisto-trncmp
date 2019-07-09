@@ -61,28 +61,40 @@ class Matrix2D {
 
   ~Matrix2D ( void );
 
-  Matrix2D&       operator=  ( const Matrix2D& ) = default;
+  Matrix2D&       operator=   ( const Matrix2D& ) = default;
 
-  void            set        ( const real8_t s = D_ZERO );
-  void            copy       ( const Matrix2D& that );
-  void            copy       ( const Matrix2D* that );
+  void            set         ( const real8_t s = D_ZERO );
+  void            copy        ( const Matrix2D& that );
+  void            copy        ( const Matrix2D* that );
 
-  void            fromArray  ( const real8_t A[2][2] );
-  void            toArray    ( real8_t A[2][2] );
+  void            fromArray   ( const real8_t A[2][2] );
+  void            toArray     ( real8_t A[2][2] );
 
-  real8_t*        load       ( const real8_t* src, matrix2d_format_e order = ROW_MAJOR );
-  real8_t*        store      ( const real8_t* dst, matrix2d_format_e order = ROW_MAJOR );
+  real8_t*        load        ( const real8_t* src, matrix2d_format_e order = ROW_MAJOR );
+  real8_t*        store       ( const real8_t* dst, matrix2d_format_e order = ROW_MAJOR );
 
-  static Matrix2D Zero       ( void );
-  static Matrix2D Ident      ( void );
+  static Matrix2D Zero        ( void );
+  static Matrix2D Ident       ( void );
 
-  const Matrix2D  T          ( void );
+  const Matrix2D  T           ( void );
 
-  real8_t         det        ( void ) const;
-  const Matrix2D  inverse    ( void );
+  real8_t         det         ( void ) const;
+  const Matrix2D  inverse     ( void );
   
-  real8_t&        at         ( const size_t r, const size_t c );
-  real8_t&        operator() ( const size_t r, const size_t c );
+  real8_t&        at          ( const size_t r, const size_t c );
+  real8_t&        operator()  ( const size_t r, const size_t c );
+
+  void            swap        ( Matrix2D& M );
+  void            swap_row    ( void );
+  void            swap_col    ( void );
+
+  void            getRow      ( real8_t r[2], size_t i );
+  void            getColumn   ( real8_t c[2], size_t i );
+  void            getDiagonal ( real8_t d[2] );
+
+  void            setRow      ( const real8_t r[2], size_t i );
+  void            setColumn   ( const real8_t c[2], size_t i );
+  void            setDiagonal ( const real8_t d[2] );
 
   // ----- inplace element operations -------------------------------------
 
@@ -117,6 +129,9 @@ const Matrix2D operator/ ( const Matrix2D& A, const Matrix2D& B );
 const Matrix2D dot       ( const Matrix2D& A, const Matrix2D& B );
 const Matrix2D dot       ( const Matrix2D* A, const Matrix2D* B );
 
+real8_t        sum       ( const Matrix2D& M );
+real8_t        sumsq     ( const Matrix2D& M );
+real8_t        sumsq     ( const Matrix2D& A, const Matrix2D& B );
 
 std::string    toString  ( Matrix2D& M,
                            std::string sfmt = DEFAULT_PRINT_FORMAT,
@@ -382,6 +397,186 @@ inline  real8_t Matrix2D::det( void ) const {
   // -------------------------------------------------------------------------------------
   return (a00 * a11) - (a01 * a10);
 }
+
+
+// =======================================================================================
+/** @brief Swap.
+ *  @param[inout] that reference to a matrix.
+ *
+ *  Swap the contents of this with that.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix2D::swap( Matrix2D& that ) {
+  // -------------------------------------------------------------------------------------
+  ::swap( this->a00, that.a00 );
+  ::swap( this->a01, that.a01 );
+  ::swap( this->a10, that.a10 );
+  ::swap( this->a11, that.a11 );
+}
+
+
+// =======================================================================================
+/** @brief Swap Rows.
+ *
+ *  Swap the contents of two rows with each other.
+ */ 
+// ---------------------------------------------------------------------------------------
+inline  void Matrix2D::swap_row( void ) {
+  // -------------------------------------------------------------------------------------
+  ::swap( a00, a10 );
+      ::swap( a01, a11 );
+}
+
+
+// =======================================================================================
+/** @brief Swap Columns.
+ *
+ *  Swap the contents of two colums with each other.
+ */ 
+// ---------------------------------------------------------------------------------------
+inline  void Matrix2D::swap_col( void ) {
+  // -------------------------------------------------------------------------------------
+      ::swap( a00, a01 );
+      ::swap( a10, a11 );
+}
+
+
+// =======================================================================================
+/** @brief Get Row.
+ *  @param[out] r reference to a two element array.
+ *  @param[in]  i index.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix2D::getRow( real8_t r[2], size_t i ) {
+  // -------------------------------------------------------------------------------------
+  switch(i%2) {
+    case 0:
+      r[0] = this->a00;
+      r[1] = this->a01;
+      break;
+    
+    case 1:
+      r[0] = this->a10;
+      r[1] = this->a11;
+      break;
+    
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
+  }
+}
+
+
+// =======================================================================================
+/** @brief Get Column.
+ *  @param[out] c reference to a two element array.
+ *  @param[in]  i index.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix2D::getColumn( real8_t c[2], size_t i ) {
+  // -------------------------------------------------------------------------------------
+  switch(i%2) {
+    case 0:
+      c[0] = this->a00;
+      c[1] = this->a10;
+      break;
+    
+    case 1:
+      c[0] = this->a01;
+      c[1] = this->a11;
+      break;
+    
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
+  }
+}
+
+
+// =======================================================================================
+/** @brief Get Diagonal.
+ *  @param[out] d reference to a two element array.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix2D::getDiagonal( real8_t d[2] ) {
+  // -------------------------------------------------------------------------------------
+  d[0] = this->a00;
+  d[1] = this->a11;
+}
+
+
+// =======================================================================================
+/** @brief Set Row.
+ *  @param[in] r reference to a two element array.
+ *  @param[in] i index.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix2D::setRow( const real8_t r[2], size_t i ) {
+  // -------------------------------------------------------------------------------------
+  switch(i%2) {
+    case 0:
+      this->a00 = r[0];
+      this->a01 = r[1];
+      break;
+      
+    case 1:
+      this->a10 = r[0];
+      this->a11 = r[1];
+      break;
+      
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
+  }
+}
+
+
+// =======================================================================================
+/** @brief Set Column.
+ *  @param[in] c reference to a two element array.
+ *  @param[in] i index.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix2D::setColumn( const real8_t c[2], size_t i ) {
+  // -------------------------------------------------------------------------------------
+  switch(i%3) {
+    case 0:
+      this->a00 = c[0];
+      this->a10 = c[1];
+      break;
+      
+    case 1:
+      this->a01 = c[0];
+      this->a11 = c[1];
+      break;
+      
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
+  }
+}
+
+
+// =======================================================================================
+/** @brief Set Diagonal.
+ *  @param[in] d reference to a two element array.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix2D::setDiagonal( const real8_t d[2] ) {
+  // -------------------------------------------------------------------------------------
+  this->a00 = d[0];
+  this->a11 = d[1];
+}
+
+
+
+
+
+
+
+
+
+
 
 
 // =======================================================================================

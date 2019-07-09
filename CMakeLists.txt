@@ -57,7 +57,14 @@ message ( STATUS "Path = ${CMAKE_MODULE_PATH}" )
 find_package(Threads REQUIRED)
 find_package(GTest REQUIRED)
 
+find_package(BLAS)
+find_package(LAPACK)
+if(LAPACK_FOUND AND BLAS_FOUND)
+  set(lapackblas_libraries ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
+endif()
 
+
+  
 #/ =======================================================================================
 
 if ( "${CMAKE_BUILD_TYPE}" STREQUAL "" )

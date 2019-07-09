@@ -1,5 +1,5 @@
 #/ ====================================================================== BEGIN FILE =====
-#/ **                             vector - C M A K E L I S T                            **
+#/ **                             matvec - C M A K E L I S T                            **
 #/ =======================================================================================
 #/ **                                                                                   **
 #/ **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
@@ -51,5 +51,5 @@ install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib)
 
 #/ =======================================================================================
-#/ **                             arrays - C M A K E L I S T                            **
+#/ **                             matvec - C M A K E L I S T                            **
 #/ =========================================================================== END FILE ==

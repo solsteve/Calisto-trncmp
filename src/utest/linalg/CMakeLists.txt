@@ -1,5 +1,5 @@
 #/ ====================================================================== BEGIN FILE =====
-#/ **                             CTests - C M A K E L I S T                            **
+#/ **                             linalg - C M A K E L I S T                            **
 #/ =======================================================================================
 #/ **                                                                                   **
 #/ **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
@@ -29,30 +29,25 @@
 #/ @details Provides a common build environment.
 #/
 #/ @author  Stephen W. Soliday
-#/ @date    2019-Apr-11
+#/ @date    2019-Apr-28
 #/
 #/ =======================================================================================
 
-project ( ctest CXX )
+project( linalg CXX )
 
-file ( GLOB csrc "ctest_*.cc" )
+add_executable(${PROJECT_NAME} ../main.cc
+  utest_linalg2d
+  utest_linalg3d
+  )
 
-foreach ( ct ${csrc} )
-  get_filename_component ( _exec ${ct} NAME_WE )
+target_link_libraries(${PROJECT_NAME} GTest::GTest GTest::Main callisto)
+add_test(All${PROJECT_NAME}InBase ${PROJECT_NAME})
 
-  set ( CMAKE_CXX_DIRECTORY ${PROJECT_BINARY_DIR}/temp )
-
-  add_executable ( ${_exec} ${ct} )
-
-  target_link_libraries ( ${_exec} callisto ${lapackblas_libraries} )
-
-  install (TARGETS ${_exec}
-    RUNTIME DESTINATION bin
-    LIBRARY DESTINATION lib
-    ARCHIVE DESTINATION lib)
-  
-endforeach ( )
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION test
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
 #/ =======================================================================================
-#/ **                             CTests - C M A K E L I S T                            **
+#/ **                             linalg - C M A K E L I S T                            **
 #/ =========================================================================== END FILE ==

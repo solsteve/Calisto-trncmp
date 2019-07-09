@@ -43,9 +43,8 @@
 // =======================================================================================
 class Vector2D {
   // -------------------------------------------------------------------------------------
-public:
-  real8_t x;  ///< Abscissa.
-  real8_t y;  ///< Ordinate.
+ public:
+  real8_t x[2];  ///< Abscissa and Ordinate.
 
   constexpr Vector2D( void );
   constexpr Vector2D( const real8_t _x, const real8_t _y );
@@ -66,6 +65,8 @@ public:
 
   real8_t* load  ( real8_t* src );
   real8_t* store ( real8_t* dst );
+
+  void     swap       ( Vector2D& M );
 
   real8_t& at         ( const size_t i );
   real8_t& operator[] ( const size_t i );
@@ -88,7 +89,6 @@ public:
   real8_t  norm1  ( void ) const;
   real8_t  norm   ( void ) const;
   real8_t  normsq ( void ) const;
-  real8_t  sum    ( void ) const;
 
   Vector2D normalize( void ) const;
 
@@ -111,6 +111,10 @@ real8_t distsq ( const Vector2D& A, const Vector2D& B );
 
 real8_t angle  ( const Vector2D& A, const Vector2D& B );
 
+real8_t sum    ( const Vector2D& A );
+real8_t sumsq  ( const Vector2D& A );
+real8_t sumsq  ( const Vector2D& A, const Vector2D& B );
+
 const Vector2D operator+( const real8_t&  s, const Vector2D& v );
 const Vector2D operator+( const Vector2D& v, const real8_t&  s );
 const Vector2D operator+( const Vector2D& A, const Vector2D& B );
@@ -127,11 +131,11 @@ const Vector2D operator/( const real8_t&  s, const Vector2D& v );
 const Vector2D operator/( const Vector2D& v, const real8_t&  s );
 const Vector2D operator/( const Vector2D& A, const Vector2D& B );
 
-  real8_t dot( const Vector2D& A, const Vector2D& B );
-  real8_t dot( const Vector2D* A, const Vector2D* B );
+real8_t dot( const Vector2D& A, const Vector2D& B );
+real8_t dot( const Vector2D* A, const Vector2D* B );
 
-  real8_t cross( const Vector2D& A, const Vector2D& B );
-  real8_t cross( const Vector2D* A, const Vector2D* B );
+real8_t cross( const Vector2D& A, const Vector2D& B );
+real8_t cross( const Vector2D* A, const Vector2D* B );
 
 // =======================================================================================
 /** @brief Equals.
@@ -151,7 +155,7 @@ inline  bool equals( const Vector2D* A, const Vector2D* B ) {
  *  Default constructor, all zeros.
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Vector2D::Vector2D( void ) : x(D_ZERO), y(D_ZERO) {
+inline  constexpr Vector2D::Vector2D( void ) : x{D_ZERO,D_ZERO} {
   // -------------------------------------------------------------------------------------
 }
 
@@ -163,7 +167,7 @@ inline  constexpr Vector2D::Vector2D( void ) : x(D_ZERO), y(D_ZERO) {
  */
 // ---------------------------------------------------------------------------------------
 inline  constexpr Vector2D::Vector2D( const real8_t _x, const real8_t _y ) :
-  x(_x), y(_y) {
+  x{_x,_y} {
   // -------------------------------------------------------------------------------------
 }
 
@@ -173,7 +177,7 @@ inline  constexpr Vector2D::Vector2D( const real8_t _x, const real8_t _y ) :
  *  @param[in] q pointer to an array containing the three values.
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Vector2D::Vector2D( const real8_t* q ) : x(q[0]), y(q[1]) {
+inline  constexpr Vector2D::Vector2D( const real8_t* q ) : x{q[0],q[1]} {
   // -------------------------------------------------------------------------------------
 }
 
@@ -183,7 +187,7 @@ inline  constexpr Vector2D::Vector2D( const real8_t* q ) : x(q[0]), y(q[1]) {
  *  @param[in] v reference to a source Vector2D.
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Vector2D::Vector2D( const Vector2D& v ) : x(v.x), y(v.y) {
+inline  constexpr Vector2D::Vector2D( const Vector2D& v ) : x{v.x[0],v.x[1]} {
   // -------------------------------------------------------------------------------------
 }
 
@@ -193,7 +197,7 @@ inline  constexpr Vector2D::Vector2D( const Vector2D& v ) : x(v.x), y(v.y) {
  *  @param[in] v pointer to a source Vector2D.
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Vector2D::Vector2D( const Vector2D* v ) : x(v->x), y(v->y) {
+inline  constexpr Vector2D::Vector2D( const Vector2D* v ) : x{v->x[0],v->x[1]} {
   // -------------------------------------------------------------------------------------
 }
 
@@ -220,8 +224,8 @@ inline  Vector2D::~Vector2D( void ) {
 // ---------------------------------------------------------------------------------------
 inline  void Vector2D::set( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->x = s;
-  this->y = s;
+  this->x[0] = s;
+  this->x[1] = s;
 }
 
 
@@ -232,8 +236,8 @@ inline  void Vector2D::set( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  void Vector2D::copy ( const Vector2D& that ) {
   // -------------------------------------------------------------------------------------
-  this->x = that.x;
-  this->y = that.y;
+  this->x[0] = that.x[0];
+  this->x[1] = that.x[1];
 }
 
 
@@ -244,8 +248,8 @@ inline  void Vector2D::copy ( const Vector2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  void Vector2D::copy ( const Vector2D* that ) {
   // -------------------------------------------------------------------------------------
-  this->x = that->x;
-  this->y = that->y;
+  this->x[0] = that->x[0];
+  this->x[1] = that->x[1];
 }
 
 
@@ -257,8 +261,8 @@ inline  void Vector2D::copy ( const Vector2D* that ) {
 // ---------------------------------------------------------------------------------------
 inline  void Vector2D::copy ( const real8_t _x, const real8_t _y ) {
   // -------------------------------------------------------------------------------------
-  this->x = _x;
-  this->y = _y;
+  this->x[0] = _x;
+  this->x[1] = _y;
 }
 
 
@@ -269,8 +273,8 @@ inline  void Vector2D::copy ( const real8_t _x, const real8_t _y ) {
 // ---------------------------------------------------------------------------------------
 inline  void Vector2D::fromArray ( const real8_t A[2] ) {
   // -------------------------------------------------------------------------------------
-  this->x = A[0];
-  this->y = A[1];
+  this->x[0] = A[0];
+  this->x[1] = A[1];
 }
 
 
@@ -281,8 +285,8 @@ inline  void Vector2D::fromArray ( const real8_t A[2] ) {
 // ---------------------------------------------------------------------------------------
 inline  void Vector2D::toArray ( real8_t A[2] ) {
   // -------------------------------------------------------------------------------------
-  A[0] = this->x;
-  A[1] = this->y;
+  A[0] = this->x[0];
+  A[1] = this->x[1];
 }
 
 
@@ -302,8 +306,8 @@ inline  void Vector2D::toArray ( real8_t A[2] ) {
 // ---------------------------------------------------------------------------------------
 inline  Vector2D& Vector2D::operator= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->x = s;
-  this->y = s;
+  this->x[0] = s;
+  this->x[1] = s;
   return *this;
 }
 
@@ -318,8 +322,8 @@ inline  Vector2D& Vector2D::operator= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Vector2D& Vector2D::operator+= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->x += s;
-  this->y += s;
+  this->x[0] += s;
+  this->x[1] += s;
   return *this;
 }
 
@@ -334,8 +338,8 @@ inline  Vector2D& Vector2D::operator+= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Vector2D& Vector2D::operator-= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->x -= s;
-  this->y -= s;
+  this->x[0] -= s;
+  this->x[1] -= s;
   return *this;
 }
 
@@ -350,8 +354,8 @@ inline  Vector2D& Vector2D::operator-= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Vector2D& Vector2D::operator*= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->x *= s;
-  this->y *= s;
+  this->x[0] *= s;
+  this->x[1] *= s;
   return *this;
 }
 
@@ -366,8 +370,8 @@ inline  Vector2D& Vector2D::operator*= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Vector2D& Vector2D::operator/= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->x /= s;
-  this->y /= s;
+  this->x[0] /= s;
+  this->x[1] /= s;
   return *this;
 }
 
@@ -388,8 +392,8 @@ inline  Vector2D& Vector2D::operator/= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Vector2D& Vector2D::operator+= ( const Vector2D& that ) {
   // -------------------------------------------------------------------------------------
-  this->x += that.x;
-  this->y += that.y;
+  this->x[0] += that.x[0];
+  this->x[1] += that.x[1];
   return *this;
 }
 
@@ -404,8 +408,8 @@ inline  Vector2D& Vector2D::operator+= ( const Vector2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  Vector2D& Vector2D::operator-= ( const Vector2D& that ) {
   // -------------------------------------------------------------------------------------
-  this->x -= that.x;
-  this->y -= that.y;
+  this->x[0] -= that.x[0];
+  this->x[1] -= that.x[1];
   return *this;
 }
 
@@ -420,8 +424,8 @@ inline  Vector2D& Vector2D::operator-= ( const Vector2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  Vector2D& Vector2D::operator*= ( const Vector2D& that ) {
   // -------------------------------------------------------------------------------------
-  this->x *= that.x;
-  this->y *= that.y;
+  this->x[0] *= that.x[0];
+  this->x[1] *= that.x[1];
   return *this;
 }
 
@@ -436,11 +440,23 @@ inline  Vector2D& Vector2D::operator*= ( const Vector2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  Vector2D& Vector2D::operator/= ( const Vector2D& that ) {
   // -------------------------------------------------------------------------------------
-  this->x /= that.x;
-  this->y /= that.y;
+  this->x[0] /= that.x[0];
+  this->x[1] /= that.x[1];
   return *this;
 }
 
+// =======================================================================================
+/** @brief Swap.
+ *  @param[inout] that reference to a vector.
+ *
+ *  Swap the contents of this with that.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Vector2D::swap( Vector2D& that ) {
+  // -------------------------------------------------------------------------------------
+  ::swap( this->x[0], that.x[0] );
+  ::swap( this->x[1], that.x[1] );
+}
 
 
 
@@ -459,7 +475,7 @@ inline  Vector2D& Vector2D::operator/= ( const Vector2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator+( const real8_t& s, const Vector2D& v ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( v.x+s, v.y+s );
+  return Vector2D( v.x[0]+s, v.x[1]+s );
 }
 
 
@@ -474,7 +490,7 @@ inline  const Vector2D operator+( const real8_t& s, const Vector2D& v ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator+( const Vector2D& v, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( v.x+s, v.y+s );
+  return Vector2D( v.x[0]+s, v.x[1]+s );
 }
 
 
@@ -489,7 +505,7 @@ inline  const Vector2D operator+( const Vector2D& v, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator+( const Vector2D& A, const Vector2D& B ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( A.x+B.x, A.y+B.y );
+  return Vector2D( A.x[0]+B.x[0], A.x[1]+B.x[1] );
 }
 
 
@@ -510,7 +526,7 @@ inline  const Vector2D operator+( const Vector2D& A, const Vector2D& B ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator-( const real8_t& s, const Vector2D& v ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( s-v.x, s-v.y );
+  return Vector2D( s-v.x[0], s-v.x[1] );
 }
 
 
@@ -525,7 +541,7 @@ inline  const Vector2D operator-( const real8_t& s, const Vector2D& v ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator-( const Vector2D& v, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( v.x-s, v.y-s );
+  return Vector2D( v.x[0]-s, v.x[1]-s );
 }
 
 
@@ -540,7 +556,7 @@ inline  const Vector2D operator-( const Vector2D& v, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator-( const Vector2D& A, const Vector2D& B ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( A.x-B.x, A.y-B.y );
+  return Vector2D( A.x[0]-B.x[0], A.x[1]-B.x[1] );
 }
 
 
@@ -559,7 +575,7 @@ inline  const Vector2D operator-( const Vector2D& A, const Vector2D& B ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator*( const real8_t& s, const Vector2D& v ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( s*v.x, s*v.y );
+  return Vector2D( s*v.x[0], s*v.x[1] );
 }
 
 
@@ -574,7 +590,7 @@ inline  const Vector2D operator*( const real8_t& s, const Vector2D& v ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator*( const Vector2D& v, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( v.x*s, v.y*s );
+  return Vector2D( v.x[0]*s, v.x[1]*s );
 }
 
 
@@ -589,7 +605,7 @@ inline  const Vector2D operator*( const Vector2D& v, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator*( const Vector2D& A, const Vector2D& B ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( A.x*B.x, A.y*B.y );
+  return Vector2D( A.x[0]*B.x[0], A.x[1]*B.x[1] );
 }
 
 
@@ -607,7 +623,7 @@ inline  const Vector2D operator*( const Vector2D& A, const Vector2D& B ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator/( const real8_t& s, const Vector2D& v ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( s/v.x, s/v.y );
+  return Vector2D( s/v.x[0], s/v.x[1] );
 }
 
 
@@ -622,7 +638,7 @@ inline  const Vector2D operator/( const real8_t& s, const Vector2D& v ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator/( const Vector2D& v, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( v.x/s, v.y/s );
+  return Vector2D( v.x[0]/s, v.x[1]/s );
 }
 
 
@@ -637,7 +653,7 @@ inline  const Vector2D operator/( const Vector2D& v, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D operator/( const Vector2D& A, const Vector2D& B ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( A.x/B.x, A.y/B.y );
+  return Vector2D( A.x[0]/B.x[0], A.x[1]/B.x[1] );
 }
 
 
@@ -654,7 +670,7 @@ inline  const Vector2D operator/( const Vector2D& A, const Vector2D& B ) {
 // ---------------------------------------------------------------------------------------
 inline  real8_t Vector2D::norm1( void ) const {
   // -------------------------------------------------------------------------------------
-  return Abs(x) + Abs(y);
+  return Abs(x[0]) + Abs(x[1]);
 }
 
 
@@ -665,7 +681,7 @@ inline  real8_t Vector2D::norm1( void ) const {
 // ---------------------------------------------------------------------------------------
 inline  real8_t Vector2D::norm( void ) const {
   // -------------------------------------------------------------------------------------
-  return sqrt( (x*x) + (y*y) );
+  return sqrt( (x[0]*x[0]) + (x[1]*x[1]) );
 }
 
 
@@ -676,17 +692,7 @@ inline  real8_t Vector2D::norm( void ) const {
 // ---------------------------------------------------------------------------------------
 inline  real8_t Vector2D::normsq( void ) const {
   // -------------------------------------------------------------------------------------
-  return (x*x) + (y*y);
-}
-
-// =======================================================================================
-/** @brief Sum.
- *  @return sum of the elements.
- */
-// ---------------------------------------------------------------------------------------
-inline  real8_t Vector2D::sum( void ) const {
-  // -------------------------------------------------------------------------------------
-  return x+y;
+  return (x[0]*x[0]) + (x[1]*x[1]);
 }
 
 
@@ -703,7 +709,7 @@ inline  real8_t Vector2D::sum( void ) const {
 // ---------------------------------------------------------------------------------------
 inline  real8_t dot( const Vector2D& A, const Vector2D& B ) {
   // -------------------------------------------------------------------------------------
-  return ( A.x*B.x ) + ( A.y*B.y );
+  return ( A.x[0]*B.x[0] ) + ( A.x[1]*B.x[1] );
 }
 
 
@@ -733,7 +739,7 @@ inline  real8_t dot( const Vector2D* A, const Vector2D* B ) {
 // ---------------------------------------------------------------------------------------
 inline  real8_t cross( const Vector2D& A, const Vector2D& B ) {
   // -------------------------------------------------------------------------------------
-  return (A.x*B.y) - (A.y*B.x);
+  return (A.x[0]*B.x[1]) - (A.x[1]*B.x[0]);
 }
 
 
@@ -805,6 +811,43 @@ inline  real8_t distsq( const Vector2D* A, const Vector2D* B ) {
 inline  real8_t angle( const Vector2D* A, const Vector2D* B ) {
   // -------------------------------------------------------------------------------------
   return angle( *A, *B );
+}
+
+
+// =======================================================================================
+/** @brief Sum.
+ *  @return sum of the elements.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t sum( const Vector2D& A ) {
+  // -------------------------------------------------------------------------------------
+  return A.x[0] + A.x[1];
+}
+
+// =======================================================================================
+/** @brief Sum Squared.
+ *  @return sum of the squares of the elements.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t sumsq( const Vector2D& A ) {
+  // -------------------------------------------------------------------------------------
+  return (A.x[0]*A.x[0]) + (A.x[1]*A.x[1]);
+}
+
+
+// =======================================================================================
+/** @brief Sum Square.
+ *  @param[in] A reference to the first  Vector2D.
+ *  @param[in] B reference to the second Vector2D.
+ *  @return Sum of the square differences of the elements.
+ *  @nodet this is an alias of distsq
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t sumsq( const Vector2D& A, const Vector2D& B ) {
+  // -------------------------------------------------------------------------------------
+  real8_t dx = A.x[0] - B.x[0];
+  real8_t dy = A.x[1] - B.x[1];
+  return (dx*dx) + (dy*dy);
 }
 
 

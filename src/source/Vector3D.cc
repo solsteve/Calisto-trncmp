@@ -47,9 +47,9 @@
 // ---------------------------------------------------------------------------------------
 real8_t* Vector3D::load( real8_t* src ) {
   // -------------------------------------------------------------------------------------
-  this->x = src[0];
-  this->y = src[1];
-  this->z = src[2];
+  this->x[0] = src[0];
+  this->x[1] = src[1];
+  this->x[2] = src[2];
   return (src+3);
 }
 
@@ -65,9 +65,9 @@ real8_t* Vector3D::load( real8_t* src ) {
 // ---------------------------------------------------------------------------------------
   real8_t* Vector3D::store( real8_t* dst ) {
   // -------------------------------------------------------------------------------------
-  dst[0] = this->x;
-  dst[1] = this->y;
-  dst[2] = this->z;
+  dst[0] = this->x[0];
+  dst[1] = this->x[1];
+  dst[2] = this->x[2];
   return (dst+3);
 }
 
@@ -77,14 +77,14 @@ real8_t* Vector3D::load( real8_t* src ) {
  *  @param i index.
  *  @return reference to the ith position in this vector.
  *
- *  x=0, y=1, z=2
+ *  x[0]=0, x[1]=1, x[2]=2
  */
 // ---------------------------------------------------------------------------------------
 real8_t& Vector3D::at( const size_t i ) {
   // -------------------------------------------------------------------------------------
-  if ( i==0 ) { return this->x; }
-  if ( i==1 ) { return this->y; }
-  if ( i==2 ) { return this->z; }
+  if ( i==0 ) { return this->x[0]; }
+  if ( i==1 ) { return this->x[1]; }
+  if ( i==2 ) { return this->x[2]; }
   char buf[64];
   snprintf( buf, 63, "out of range: %lu expected (0, 1 or 2)", i );
   throw( new std::invalid_argument(buf) );
@@ -92,20 +92,20 @@ real8_t& Vector3D::at( const size_t i ) {
 
 
 // =======================================================================================
-/** @brief Index operator.
- *  @param i index.
+/** @brief Index[0] operator.
+ *  @param i index[0].
  *  @return reference to the ith position in this vector.
  *
- *  x=0, y=1, z=2
+ *  x=0, x[1]=1, x[2]=2
  */
 // ---------------------------------------------------------------------------------------
 real8_t& Vector3D::operator[]( const size_t i ) {
   // -------------------------------------------------------------------------------------
-  if ( i==0 ) { return this->x; }
-  if ( i==1 ) { return this->y; }
-  if ( i==2 ) { return this->z; }
+  if ( i==0 ) { return this->x[0]; }
+  if ( i==1 ) { return this->x[1]; }
+  if ( i==2 ) { return this->x[2]; }
   char buf[64];
-  snprintf( buf, 63, "out of range: %lu expected (0, 1 or 2)", i );
+  snprintf( buf, 63, "out of range: %lu ex[0]pected (0, 1 or 2)", i );
   throw( new std::invalid_argument(buf) );
 }
 
@@ -121,7 +121,7 @@ Vector3D Vector3D::normalize( void ) const {
   // -------------------------------------------------------------------------------------
   real8_t s = norm();
   if ( D_ZERO < s ) {
-    return Vector3D( x/s, y/s, z/s );
+    return Vector3D( x[0]/s, x[1]/s, x[2]/s );
   }
   throw( new std::domain_error( "Can not normalize a zero norm vector" ) );
 }
@@ -171,12 +171,12 @@ std::string toString( Vector3D* v, std::string sfmt, std::string sdel ) {
 // ---------------------------------------------------------------------------------------
 bool equals( const Vector3D& A, const Vector3D& B ) {
   // -------------------------------------------------------------------------------------
-  if ( A.x < B.x ) { return false; }
-  if ( A.x > B.x ) { return false; }
-  if ( A.y < B.y ) { return false; }
-  if ( A.y > B.y ) { return false; }
-  if ( A.z < B.z ) { return false; }
-  if ( A.z > B.z ) { return false; }
+  if ( A.x[0] < B.x[0] ) { return false; }
+  if ( A.x[0] > B.x[0] ) { return false; }
+  if ( A.x[1] < B.x[1] ) { return false; }
+  if ( A.x[1] > B.x[1] ) { return false; }
+  if ( A.x[2] < B.x[2] ) { return false; }
+  if ( A.x[2] > B.x[2] ) { return false; }
   return true;
 }
 
@@ -189,9 +189,9 @@ bool equals( const Vector3D& A, const Vector3D& B ) {
 // ---------------------------------------------------------------------------------------
 real8_t dist1( const Vector3D& A, const Vector3D& B ) {
   // -------------------------------------------------------------------------------------
-  real8_t dx = A.x - B.x;
-  real8_t dy = A.y - B.y;
-  real8_t dz = A.z - B.z;
+  real8_t dx = A.x[0] - B.x[0];
+  real8_t dy = A.x[1] - B.x[1];
+  real8_t dz = A.x[2] - B.x[2];
   return Abs(dx) + Abs(dy) + Abs(dz);
 }
 
@@ -205,9 +205,9 @@ real8_t dist1( const Vector3D& A, const Vector3D& B ) {
 // ---------------------------------------------------------------------------------------
 real8_t dist( const Vector3D& A, const Vector3D& B ) {
   // -------------------------------------------------------------------------------------
-  real8_t dx = A.x - B.x;
-  real8_t dy = A.y - B.y;
-  real8_t dz = A.z - B.z;
+  real8_t dx = A.x[0] - B.x[0];
+  real8_t dy = A.x[1] - B.x[1];
+  real8_t dz = A.x[2] - B.x[2];
   return sqrt( (dx*dx) + (dy*dy) + (dz*dz) );
 }
 
@@ -221,9 +221,9 @@ real8_t dist( const Vector3D& A, const Vector3D& B ) {
 // ---------------------------------------------------------------------------------------
 real8_t distsq( const Vector3D& A, const Vector3D& B ) {
   // -------------------------------------------------------------------------------------
-  real8_t dx = A.x - B.x;
-  real8_t dy = A.y - B.y;
-  real8_t dz = A.z - B.z;
+  real8_t dx = A.x[0] - B.x[0];
+  real8_t dy = A.x[1] - B.x[1];
+  real8_t dz = A.x[2] - B.x[2];
   return (dx*dx) + (dy*dy) + (dz*dz);
 }
 

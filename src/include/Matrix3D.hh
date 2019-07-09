@@ -63,28 +63,41 @@ class Matrix3D {
 
   ~Matrix3D ( void );
 
-  Matrix3D&       operator=  ( const Matrix3D& ) = default;
+  Matrix3D&       operator=   ( const Matrix3D& ) = default;
 
-  void            set        ( const real8_t s = D_ZERO );
-  void            copy       ( const Matrix3D& that );
-  void            copy       ( const Matrix3D* that );
+  void            set         ( const real8_t s = D_ZERO );
+  void            copy        ( const Matrix3D& that );
+  void            copy        ( const Matrix3D* that );
 
-  void            fromArray  ( const real8_t A[3][3] );
-  void            toArray    ( real8_t A[3][3] );
+  void            fromArray   ( const real8_t A[3][3] );
+  void            toArray     ( real8_t A[3][3] );
 
-  real8_t*        load       ( const real8_t* src, matrix3d_format_e order = ROW_MAJOR );
-  real8_t*        store      ( const real8_t* dst, matrix3d_format_e order = ROW_MAJOR );
+  real8_t*        load        ( const real8_t* src, matrix3d_format_e order = ROW_MAJOR );
+  real8_t*        store       ( const real8_t* dst, matrix3d_format_e order = ROW_MAJOR );
 
-  static Matrix3D Zero       ( void );
-  static Matrix3D Ident      ( void );
+  static Matrix3D Zero        ( void );
+  static Matrix3D Ident       ( void );
 
-  const Matrix3D  T          ( void );
+  const Matrix3D  T           ( void );
 
-  real8_t         det        ( void ) const;
-  const Matrix3D  inverse    ( void );
+  real8_t         det         ( void ) const;
+  const Matrix3D  inverse     ( void );
   
-  real8_t&        at         ( const size_t r, const size_t c );
-  real8_t&        operator() ( const size_t r, const size_t c );
+  real8_t&        at          ( const size_t r, const size_t c );
+  real8_t&        operator()  ( const size_t r, const size_t c );
+
+  void            swap        ( Matrix3D& M );
+  void            swap_row    ( size_t ia, size_t ib );
+  void            swap_col    ( size_t ia, size_t ib );
+
+  void            getRow      ( real8_t r[3], size_t i );
+  void            getColumn   ( real8_t c[3], size_t i );
+  void            getDiagonal ( real8_t d[3] );
+
+  void            setRow      ( const real8_t r[3], size_t i );
+  void            setColumn   ( const real8_t c[3], size_t i );
+  void            setDiagonal ( const real8_t d[3] );
+
 
   // ----- inplace element operations -------------------------------------
 
@@ -118,6 +131,10 @@ const Matrix3D operator/ ( const Matrix3D& A, const Matrix3D& B );
 
 const Matrix3D dot       ( const Matrix3D& A, const Matrix3D& B );
 const Matrix3D dot       ( const Matrix3D* A, const Matrix3D* B );
+
+real8_t        sum       ( const Matrix3D& A );
+real8_t        sumsq     ( const Matrix3D& A );
+real8_t        sumsq     ( const Matrix3D& A, const Matrix3D& B );
 
 
 std::string    toString  ( Matrix3D& M,
@@ -395,7 +412,6 @@ inline  Matrix3D& Matrix3D::operator/= ( const Matrix3D& that ) {
 }
 
 
-
 // =======================================================================================
 /** @brief Determinant.
  *  @return determinant of this matrix.
@@ -408,6 +424,302 @@ inline  real8_t Matrix3D::det( void ) const {
       ( this->a10 * ((this->a21 * this->a02) - (this->a01 * this->a22)) ) +
       ( this->a20 * ((this->a01 * this->a12) - (this->a11 * this->a02)) );
 }
+
+
+// =======================================================================================
+/** @brief Swap.
+ *  @param[inout] that reference to a matrix.
+ *
+ *  Swap the contents of this with that.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix3D::swap( Matrix3D& that ) {
+  // -------------------------------------------------------------------------------------
+  ::swap( this->a00, that.a00 );
+  ::swap( this->a01, that.a01 );
+  ::swap( this->a02, that.a02 );
+  ::swap( this->a10, that.a10 );
+  ::swap( this->a11, that.a11 );
+  ::swap( this->a12, that.a12 );
+  ::swap( this->a20, that.a20 );
+  ::swap( this->a21, that.a21 );
+  ::swap( this->a22, that.a22 );
+}
+
+
+// =======================================================================================
+/** @brief Swap Rows.
+ *  @param[in] ia first  row.
+ *  @param[in] ia second row.
+ *
+ *  Swap the contents of two rows with each other.
+ */ 
+// ---------------------------------------------------------------------------------------
+inline  void Matrix3D::swap_row( size_t ia, size_t ib ) {
+  // -------------------------------------------------------------------------------------
+  if ( 0 == ia ) {
+    if ( 1 == ib ) {
+      ::swap( a00, a10 );
+      ::swap( a01, a11 );
+      ::swap( a02, a12 );
+    }
+    if ( 2 == ib ) {
+      ::swap( a00, a20 );
+      ::swap( a01, a21 );
+      ::swap( a02, a22 );
+    }
+  }
+
+  if ( 1 == ia ) {
+    if ( 0 == ib ) {
+      ::swap( a10, a00 );
+      ::swap( a11, a01 );
+      ::swap( a12, a02 );
+    }
+    if ( 2 == ib ) {
+      ::swap( a10, a20 );
+      ::swap( a11, a21 );
+      ::swap( a12, a22 );
+    }
+  }
+
+  if ( 2 == ia ) {
+    if ( 0 == ib ) {
+      ::swap( a20, a00 );
+      ::swap( a21, a01 );
+      ::swap( a22, a02 );
+    }
+    if ( 1 == ib ) {
+      ::swap( a20, a10 );
+      ::swap( a21, a11 );
+      ::swap( a22, a12 );
+    }
+  }
+
+}
+
+
+// =======================================================================================
+/** @brief Swap Columns.
+ *  @param[in] ia first  column.
+ *  @param[in] ia second column.
+ *
+ *  Swap the contents of two colums with each other.
+ */ 
+// ---------------------------------------------------------------------------------------
+inline  void Matrix3D::swap_col( size_t ia, size_t ib ) {
+  // -------------------------------------------------------------------------------------
+  if ( 0 == ia ) {
+    if ( 1 == ib ) {
+      ::swap( a00, a01 );
+      ::swap( a10, a11 );
+      ::swap( a20, a21 );
+    }
+    if ( 2 == ib ) {
+      ::swap( a00, a02 );
+      ::swap( a10, a12 );
+      ::swap( a20, a22 );
+    }
+  }
+
+  if ( 1 == ia ) {
+    if ( 0 == ib ) {
+      ::swap( a01, a00 );
+      ::swap( a11, a10 );
+      ::swap( a21, a20 );
+    }
+    if ( 2 == ib ) {
+      ::swap( a01, a02 );
+      ::swap( a11, a12 );
+      ::swap( a21, a22 );
+    }
+  }
+
+  if ( 2 == ia ) {
+    if ( 0 == ib ) {
+      ::swap( a02, a00 );
+      ::swap( a12, a10 );
+      ::swap( a22, a20 );
+    }
+    if ( 1 == ib ) {
+      ::swap( a02, a01 );
+      ::swap( a12, a11 );
+      ::swap( a22, a21 );
+    }
+  }
+
+}
+
+
+// =======================================================================================
+/** @brief Get Row.
+ *  @param[out] r reference to a three element array.
+ *  @param[in]  i index.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix3D::getRow( real8_t r[3], size_t i ) {
+  // -------------------------------------------------------------------------------------
+  switch(i%3) {
+    case 0:
+      r[0] = this->a00;
+      r[1] = this->a01;
+      r[2] = this->a02;
+      break;
+    
+    case 1:
+      r[0] = this->a10;
+      r[1] = this->a11;
+      r[2] = this->a12;
+      break;
+    
+    case 2:
+      r[0] = this->a20;
+      r[1] = this->a21;
+      r[2] = this->a22;
+      break;
+
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
+  }
+}
+
+  
+// =======================================================================================
+/** @brief Get Column.
+ *  @param[out] c reference to a three element array.
+ *  @param[in]  i index.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix3D::getColumn( real8_t c[3], size_t i ) {
+  // -------------------------------------------------------------------------------------
+  switch(i%3) {
+    case 0:
+      c[0] = this->a00;
+      c[1] = this->a10;
+      c[2] = this->a20;
+      break;
+    
+    case 1:
+      c[0] = this->a01;
+      c[1] = this->a11;
+      c[2] = this->a21;
+      break;
+    
+    case 2:
+      c[0] = this->a02;
+      c[1] = this->a12;
+      c[2] = this->a22;
+      break;
+
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
+  }
+}
+
+  
+// =======================================================================================
+/** @brief Get Diagonal.
+ *  @param[out] d reference to a three element array.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix3D::getDiagonal( real8_t d[3] ) {
+  // -------------------------------------------------------------------------------------
+  d[0] = this->a00;
+  d[1] = this->a11;
+  d[2] = this->a22;
+}
+
+  
+// =======================================================================================
+/** @brief Set Row.
+ *  @param[in] r reference to a three element array.
+ *  @param[in] i index.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix3D::setRow( const real8_t r[3], size_t i ) {
+  // -------------------------------------------------------------------------------------
+  switch(i%3) {
+    case 0:
+      this->a00 = r[0];
+      this->a01 = r[1];
+      this->a02 = r[2];
+      break;
+      
+    case 1:
+      this->a10 = r[0];
+      this->a11 = r[1];
+      this->a12 = r[2];
+      break;
+      
+    case 2:
+      this->a20 = r[0];
+      this->a21 = r[1];
+      this->a22 = r[2];
+      break;
+
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
+  }
+}
+
+  
+// =======================================================================================
+/** @brief Set Column.
+ *  @param[in] c reference to a three element array.
+ *  @param[in] i index.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix3D::setColumn( const real8_t c[3], size_t i ) {
+  // -------------------------------------------------------------------------------------
+  switch(i%3) {
+    case 0:
+      this->a00 = c[0];
+      this->a10 = c[1];
+      this->a20 = c[2];
+      break;
+      
+    case 1:
+      this->a01 = c[0];
+      this->a11 = c[1];
+      this->a21 = c[2];
+      break;
+      
+    case 2:
+      this->a02 = c[0];
+      this->a12 = c[1];
+      this->a22 = c[2];
+      break;
+
+    default:
+      std::cerr << "This Should not be possible\n";
+      throw 1;
+  }
+}
+
+  
+// =======================================================================================
+/** @brief Set Diagonal.
+ *  @param[in] d reference to a three element array.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix3D::setDiagonal( const real8_t d[3] ) {
+  // -------------------------------------------------------------------------------------
+  this->a00 = d[0];
+  this->a11 = d[1];
+  this->a22 = d[2];
+}
+
+
+
+
+
+
+
+
+
 
 
 // =======================================================================================

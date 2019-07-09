@@ -37,29 +37,31 @@
 #include <limits.h>
 #include <Matrix2D.hh>
 #include "gtest/gtest.h"
-#include <Dice.hh>
 
 
 namespace {
 
 
+/*
 // =====================================================================================
 void out( Matrix2D& M, real8_t a[2][2] ) {
-  // -----------------------------------------------------------------------------------
-  fprintf( stdout, "%18.14f %18.14f     %18.14f %18.14f\n",
-           M.a00, M.a01,    a[0][0], a[0][1] );
-  fprintf( stdout, "%18.14f %18.14f     %18.14f %18.14f\n",
-           M.a10, M.a11,    a[1][0], a[1][1] );
+// -----------------------------------------------------------------------------------
+fprintf( stdout, "%18.14f %18.14f     %18.14f %18.14f\n",
+M.a00, M.a01,    a[0][0], a[0][1] );
+fprintf( stdout, "%18.14f %18.14f     %18.14f %18.14f\n",
+M.a10, M.a11,    a[1][0], a[1][1] );
 }
+
 
 // =====================================================================================
 void out( Matrix2D& M, real8_t* a ) {
-  // -----------------------------------------------------------------------------------
-  fprintf( stdout, "%18.14f %18.14f     %18.14f %18.14f\n",
-           M.a00, M.a01,    a[0], a[1] );
-  fprintf( stdout, "%18.14f %18.14f     %18.14f %18.14f\n",
-           M.a10, M.a11,    a[2], a[3] );
+// -----------------------------------------------------------------------------------
+fprintf( stdout, "%18.14f %18.14f     %18.14f %18.14f\n",
+M.a00, M.a01,    a[0], a[1] );
+fprintf( stdout, "%18.14f %18.14f     %18.14f %18.14f\n",
+M.a10, M.a11,    a[2], a[3] );
 }
+*/
 
 // =====================================================================================
 bool check( Matrix2D& M, real8_t a[2][2] ) {
@@ -106,7 +108,7 @@ bool check( Matrix2D& M, real8_t* a ) {
 
 
 // =====================================================================================
-TEST(test_construct3, Positive) {
+TEST(test_construct_mat2, Positive) {
   // -----------------------------------------------------------------------------------
   {
     real8_t data[] =
@@ -138,7 +140,7 @@ TEST(test_construct3, Positive) {
 	{ 1.1, 1.2,
 	  2.1, 2.2, };
     Matrix2D A( { 1.1, 1.2,
-                  2.1, 2.2 } );
+            2.1, 2.2 } );
     EXPECT_TRUE( check( A, data ) );
   }
 
@@ -227,7 +229,7 @@ TEST(test_construct3, Positive) {
 }
 
 // =====================================================================================
-TEST(test_copyset3, Positive) {
+TEST(test_copyset_mat2, Positive) {
   // -----------------------------------------------------------------------------------
   {
     real8_t data[] =
@@ -292,7 +294,7 @@ TEST(test_copyset3, Positive) {
 }
 
 // =====================================================================================
-TEST(test_loadstore, Positive) {
+TEST(test_loadstore_mat2, Positive) {
   // -----------------------------------------------------------------------------------
   {
     real8_t data[2][2] = { { 1.1, 2.1, },
@@ -322,7 +324,7 @@ TEST(test_loadstore, Positive) {
 }
 
 // =====================================================================================
-TEST(test_unary_scale3, Positive) {
+TEST(test_unary_scale_mat2, Positive) {
   // -----------------------------------------------------------------------------------
   real8_t adat[2][2] = {
     {9.7, 9.3},
@@ -371,7 +373,7 @@ TEST(test_unary_scale3, Positive) {
 }
 
 // =====================================================================================
-TEST(test_unary_matrix3, Positive) {
+TEST(test_unary_matrix_mat2, Positive) {
   // -----------------------------------------------------------------------------------
   real8_t adat[2][2] = {
     {9.7, 9.3},
@@ -429,7 +431,7 @@ TEST(test_unary_matrix3, Positive) {
 
 
 // =====================================================================================
-TEST(test_binary_add3, Positive) {
+TEST(test_binary_add_mat2, Positive) {
   // -----------------------------------------------------------------------------------
   real8_t adat[2][2] = {
     {9.7, 9.3},
@@ -479,7 +481,7 @@ TEST(test_binary_add3, Positive) {
 
 
 // =====================================================================================
-TEST(test_binary_sub3, Positive) {
+TEST(test_binary_sub_mat2, Positive) {
   // -----------------------------------------------------------------------------------
   real8_t adat[2][2] = {
     {9.7, 9.3},
@@ -527,7 +529,7 @@ TEST(test_binary_sub3, Positive) {
 }
 
 // =====================================================================================
-TEST(test_binary_mul3, Positive) {
+TEST(test_binary_mul_mat2, Positive) {
   // -----------------------------------------------------------------------------------
   real8_t adat[2][2] = {
     {9.7, 9.3},
@@ -575,7 +577,7 @@ TEST(test_binary_mul3, Positive) {
 }
 
 // =====================================================================================
-TEST(test_binary_div3, Positive) {
+TEST(test_binary_div_mat2, Positive) {
   // -----------------------------------------------------------------------------------
   real8_t adat[2][2] = {
     {9.7, 9.3},
@@ -623,7 +625,7 @@ TEST(test_binary_div3, Positive) {
 }
 
 // =====================================================================================
-TEST(test_inverse3, Positive) {
+TEST(test_inverse_mat2, Positive) {
   // -----------------------------------------------------------------------------------
   real8_t adat[2][2] = {
     {9.7, 9.3},
@@ -656,6 +658,182 @@ TEST(test_inverse3, Positive) {
     EXPECT_TRUE( check( B, test ) );
   }
 
+}
+
+// =====================================================================================
+TEST(test_get_slice_mat2, Positive) {
+  // -----------------------------------------------------------------------------------
+  real8_t data[2][2] = {
+    {1.1, 1.2},
+    {2.1, 2.2}
+  };
+
+  {
+    Matrix2D A( data );
+    real8_t test[2];
+    A.getRow(test, 0);
+    EXPECT_DOUBLE_EQ( 1.1, test[0] );
+    EXPECT_DOUBLE_EQ( 1.2, test[1] );
+  }
+
+  {
+    Matrix2D A( data );
+    real8_t test[2];
+    A.getRow(test, 1);
+    EXPECT_DOUBLE_EQ( 2.1, test[0] );
+    EXPECT_DOUBLE_EQ( 2.2, test[1] );
+  }
+
+  {
+    Matrix2D A( data );
+    real8_t test[2];
+    A.getColumn(test, 0);
+    EXPECT_DOUBLE_EQ( 1.1, test[0] );
+    EXPECT_DOUBLE_EQ( 2.1, test[1] );
+  }
+
+  {
+    Matrix2D A( data );
+    real8_t test[2];
+    A.getColumn(test, 1);
+    EXPECT_DOUBLE_EQ( 1.2, test[0] );
+    EXPECT_DOUBLE_EQ( 2.2, test[1] );
+  }
+
+  {
+    Matrix2D A( data );
+    real8_t test[2];
+    A.getDiagonal(test);
+    EXPECT_DOUBLE_EQ( 1.1, test[0] );
+    EXPECT_DOUBLE_EQ( 2.2, test[1] );
+  }
+
+  
+}
+
+// =====================================================================================
+TEST(test_set_slice_mat2, Positive) {
+  // -----------------------------------------------------------------------------------
+  real8_t data[2][2] = {
+    {1.1, 1.2},
+    {2.1, 2.2}
+  };
+
+  {
+    Matrix2D A( data );
+    real8_t tset[2] = {4.4, 5.5};
+    real8_t test[2][2] = {
+      {4.4, 5.5},
+      {2.1, 2.2}
+    };
+    A.setRow( tset, 0 );
+    EXPECT_TRUE( check( A, test ) );
+  }
+    
+  {
+    Matrix2D A( data );
+    real8_t tset[2] = {4.4, 5.5};
+    real8_t test[2][2] = {
+      {1.1, 1.2},
+      {4.4, 5.5}
+    };
+    A.setRow( tset, 1 );
+    EXPECT_TRUE( check( A, test ) );
+  }
+    
+  {
+    Matrix2D A( data );
+    real8_t tset[2] = {4.4, 5.5};
+    real8_t test[2][2] = {
+      {4.4, 1.2},
+      {5.5, 2.2}
+    };
+    A.setColumn( tset, 0 );
+    EXPECT_TRUE( check( A, test ) );
+  }
+    
+  {
+    Matrix2D A( data );
+    real8_t tset[2] = {4.4, 5.5};
+    real8_t test[2][2] = {
+      {1.1, 4.4},
+      {2.1, 5.5}
+    };
+    A.setColumn( tset, 1 );
+    EXPECT_TRUE( check( A, test ) );
+  }
+        
+  {
+    Matrix2D A( data );
+    real8_t tset[2] = {4.4, 5.5};
+    real8_t test[2][2] = {
+      {4.4, 1.2},
+      {2.1, 5.5}
+    };
+    A.setDiagonal( tset );
+    EXPECT_TRUE( check( A, test ) );
+  }
+    
+}
+
+
+// =====================================================================================
+TEST(test_swap_mat2, Positive) {
+  // -----------------------------------------------------------------------------------
+  real8_t adat[2][2] = {
+    {9.7, 9.3},
+    {8.4, 6.2}
+  };
+  real8_t bdat[2][2] = {
+    {6.9, 6.1},
+    {4.2, 5.3}
+  };
+
+  {
+    Matrix2D A( adat );
+    Matrix2D B( bdat );
+    EXPECT_TRUE( check( A, adat ) );
+    EXPECT_TRUE( check( B, bdat ) );
+    A.swap( B );
+    EXPECT_TRUE( check( A, bdat ) );
+    EXPECT_TRUE( check( B, adat ) );
+  }
+
+  {
+    Matrix2D A( adat );
+    real8_t test[2][2] = {
+      {8.4, 6.2},
+      {9.7, 9.3}
+    };
+    EXPECT_TRUE( check( A, adat ) );
+    A.swap_row();
+    EXPECT_TRUE( check( A, test ) );
+  }
+
+  {
+    Matrix2D A( adat );
+    real8_t test[2][2] = {
+      {9.3, 9.7},
+      {6.2, 8.4}
+    };
+    EXPECT_TRUE( check( A, adat ) );
+    A.swap_col();
+    EXPECT_TRUE( check( A, test ) );
+  }
+ 
+}
+
+// =====================================================================================
+TEST(test_sum_mat2, Positive) {
+  // -----------------------------------------------------------------------------------
+  real8_t adat[2][2] = {{1.2,2.3},{3.4,4.5}};
+  real8_t bdat[2][2] = {{2.3,3.4},{4.6,8.7}};
+  Matrix2D A( adat );
+  Matrix2D B( bdat );
+
+  EXPECT_DOUBLE_EQ( 11.40, sum(A) );
+  EXPECT_DOUBLE_EQ( 38.54, sumsq(A) );
+  EXPECT_DOUBLE_EQ( 21.50, sumsq(A,B) );
 }
 
 } // end namespace

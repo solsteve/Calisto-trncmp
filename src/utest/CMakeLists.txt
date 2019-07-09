@@ -42,6 +42,7 @@ add_subdirectory ( arrays )
 add_subdirectory ( strings )
 add_subdirectory ( configdb )
 add_subdirectory ( matvec )
+add_subdirectory ( linalg )
 
 #/ =======================================================================================
 #/ **                              UTest - C M A K E L I S T                            **

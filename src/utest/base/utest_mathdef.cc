@@ -44,6 +44,54 @@ namespace {
 
 // =======================================================================================
 
+TEST( swap, Positive ) {
+  real8_t A8  = 3.1;
+  real8_t B8  = 2.7;
+  real4_t A4  = 6.2f;
+  real4_t B4  = 5.3f;
+  int32_t A32 = 123456L;
+  int32_t B32 = 654321L;
+
+  {
+    real8_t a = A8;
+    real8_t b = B8;
+    swap( a, b );
+    EXPECT_DOUBLE_EQ( a, B8 );
+    EXPECT_DOUBLE_EQ( b, A8 );
+  }
+
+  {
+    real4_t a = A4;
+    real4_t b = B4;
+    swap( a, b );
+    EXPECT_FLOAT_EQ( a, B4 );
+    EXPECT_FLOAT_EQ( b, A4 );
+  }
+
+  {
+    int32_t a = A32;
+    int32_t b = B32;
+    swap( a, b );
+    EXPECT_EQ( a, B32 );
+    EXPECT_EQ( b, A32 );
+  }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+  
+
+// =======================================================================================
+
 
 TEST( pf_mod8, Positive ) {
   real8_t original[] = { -7.0, -6.0, -5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0,
