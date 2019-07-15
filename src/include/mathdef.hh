@@ -1532,6 +1532,34 @@ inline  int64_t lcm( const int64_t m, const int64_t n ) {
 }
 
 
+// =======================================================================================
+/** @brief Minimum.
+ *  @param a first  test.
+ *  @param b second test.
+ *  @return a or b which ever has a less numerical value.
+ */
+// ---------------------------------------------------------------------------------------
+template< class T >
+inline  T Min( T a, T b ) {
+  // -------------------------------------------------------------------------------------
+  return ( (b<a) ? (b) : (a) );
+}
+
+
+// =======================================================================================
+/** @brief Maximium.
+ *  @param a first  test.
+ *  @param b second test.
+ *  @return a or b which ever has a greater numerical value.
+ */
+// ---------------------------------------------------------------------------------------
+template< class T >
+inline  T Max( T a, T b ) {
+  // -------------------------------------------------------------------------------------
+  return ( (b>a) ? (b) : (a) );
+}
+
+
 #endif
 
 

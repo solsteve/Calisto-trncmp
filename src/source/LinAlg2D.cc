@@ -79,8 +79,8 @@ void covariance( Matrix2D& M, real8_t data[][2], size_t n ) {
 
   // -------------------------------------------------------------------------------------
 
-  M.a00 = xx / fnm1;    M.a01 = xy / fnm1;
-  M.a10 = xy / fnm1;    M.a11 = yy / fnm1;
+  M.q[0] = xx / fnm1;    M.q[1] = xy / fnm1;
+  M.q[3] = xy / fnm1;    M.q[4] = yy / fnm1;
 }
 
 
@@ -127,8 +127,8 @@ void covariance( Matrix2D& M, Vector2D *data, size_t n ) {
   
   // -------------------------------------------------------------------------------------
 
-  M.a00 = xx / fnm1;    M.a01 = xy / fnm1;
-  M.a10 = xy / fnm1;    M.a11 = yy / fnm1;
+  M.q[0] = xx / fnm1;    M.q[1] = xy / fnm1;
+  M.q[3] = xy / fnm1;    M.q[4] = yy / fnm1;
 }
 
 
@@ -198,10 +198,10 @@ const Matrix2D ROT( const real8_t ang ) {
 // ---------------------------------------------------------------------------------------
 bool eigen( Vector2D& eval, Vector2D& ev1, Vector2D& ev2, const Matrix2D& M ) {
   // -------------------------------------------------------------------------------------
-  const real8_t a = M.a00;
-  const real8_t b = M.a01;
-  const real8_t c = M.a10;
-  const real8_t d = M.a11;
+  const real8_t a = M.q[0];
+  const real8_t b = M.q[1];
+  const real8_t c = M.q[3];
+  const real8_t d = M.q[4];
 
   const real8_t T =  a + d;
   const real8_t D = (a * d) - (b * c);

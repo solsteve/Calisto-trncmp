@@ -35,7 +35,7 @@
 
 #include <Matrix3D.hh>
 
-#define INIT_VAR(a) a00(a), a01(a), a02(a), a10(a), a11(a), a12(a), a20(a), a21(a), a22(a)
+#define INIT_VAR(a) m{0,0,0}, q{ a,a,a,a,a,a,a,a,a }
 
 
 // =======================================================================================
@@ -46,9 +46,10 @@
  *  order: ROW_MAJOR, COLUMN_MAJOR, UPPER_TRIANGLE, LOWER_TRIANGLE
  */
 // ---------------------------------------------------------------------------------------
-Matrix3D::Matrix3D( const real8_t* q, matrix3d_format_e order ) : INIT_VAR(D_ZERO) {
+Matrix3D::Matrix3D( const real8_t* _q, matrix3d_format_e order ) : INIT_VAR(D_ZERO) {
   // -------------------------------------------------------------------------------------
-  this->load( q, order );
+  setRowPointer();
+  this->load( _q, order );
 }
 
 
@@ -57,9 +58,10 @@ Matrix3D::Matrix3D( const real8_t* q, matrix3d_format_e order ) : INIT_VAR(D_ZER
  *  @param[in] m reference to source Matrix3D.
  */
 // ---------------------------------------------------------------------------------------
-Matrix3D::Matrix3D( const Matrix3D& m ) : INIT_VAR(D_ZERO) {
+Matrix3D::Matrix3D( const Matrix3D& _m ) : INIT_VAR(D_ZERO) {
   // -------------------------------------------------------------------------------------
-  this->copy(m);
+  setRowPointer();
+  this->copy(_m);
 }
 
 
@@ -68,9 +70,10 @@ Matrix3D::Matrix3D( const Matrix3D& m ) : INIT_VAR(D_ZERO) {
  *  @param[in] m pointer to source Matrix3D.
  */
 // ---------------------------------------------------------------------------------------
-Matrix3D::Matrix3D( const Matrix3D* m ) : INIT_VAR(D_ZERO) {
+Matrix3D::Matrix3D( const Matrix3D* _m ) : INIT_VAR(D_ZERO) {
   // -------------------------------------------------------------------------------------
-  this->copy(m);
+  setRowPointer();
+  this->copy(_m);
 }
 
 
@@ -80,7 +83,11 @@ Matrix3D::Matrix3D( const Matrix3D* m ) : INIT_VAR(D_ZERO) {
 // ---------------------------------------------------------------------------------------
 Matrix3D::~Matrix3D( void ) {
   // -------------------------------------------------------------------------------------
-  this->set(0.0e0);
+  this->set(D_ZERO);
+  m[0] = static_cast<real8_t*>(0);
+  m[1] = static_cast<real8_t*>(0);
+  m[2] = static_cast<real8_t*>(0);
+  
 }
 
 
@@ -91,9 +98,9 @@ Matrix3D::~Matrix3D( void ) {
 // ---------------------------------------------------------------------------------------
 void Matrix3D::set( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  a00 = s;    a01 = s;    a02 = s;
-  a10 = s;    a11 = s;    a12 = s;
-  a20 = s;    a21 = s;    a22 = s;
+  q[0] = s;    q[1] = s;    q[2] = s;
+  q[3] = s;    q[4] = s;    q[5] = s;
+  q[6] = s;    q[7] = s;    q[8] = s;
 }
 
 
@@ -104,9 +111,9 @@ void Matrix3D::set( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 void Matrix3D::copy( const Matrix3D& that ) {
   // -------------------------------------------------------------------------------------
-  this->a00 = that.a00;    this->a01 = that.a01;    this->a02 = that.a02;
-  this->a10 = that.a10;    this->a11 = that.a11;    this->a12 = that.a12;
-  this->a20 = that.a20;    this->a21 = that.a21;    this->a22 = that.a22;
+  this->q[0] = that.q[0];    this->q[1] = that.q[1];    this->q[2] = that.q[2];
+  this->q[3] = that.q[3];    this->q[4] = that.q[4];    this->q[5] = that.q[5];
+  this->q[6] = that.q[6];    this->q[7] = that.q[7];    this->q[8] = that.q[8];
 }
 
 
@@ -128,9 +135,9 @@ void Matrix3D::copy( const Matrix3D* that ) {
 // ---------------------------------------------------------------------------------------
 void Matrix3D::fromArray( const real8_t A[3][3] ) {
   // -------------------------------------------------------------------------------------
-  a00 = A[0][0];    a01 = A[0][1];    a02 = A[0][2];
-  a10 = A[1][0];    a11 = A[1][1];    a12 = A[1][2];
-  a20 = A[2][0];    a21 = A[2][1];    a22 = A[2][2];
+  q[0] = A[0][0];    q[1] = A[0][1];    q[2] = A[0][2];
+  q[3] = A[1][0];    q[4] = A[1][1];    q[5] = A[1][2];
+  q[6] = A[2][0];    q[7] = A[2][1];    q[8] = A[2][2];
 }
 
 
@@ -141,9 +148,9 @@ void Matrix3D::fromArray( const real8_t A[3][3] ) {
 // ---------------------------------------------------------------------------------------
 void Matrix3D::toArray( real8_t A[3][3] ) {
   // -------------------------------------------------------------------------------------
-  A[0][0] = a00;    A[0][1] = a01;    A[0][2] = a02;
-  A[1][0] = a10;    A[1][1] = a11;    A[1][2] = a12;
-  A[2][0] = a20;    A[2][1] = a21;    A[2][2] = a22;
+  A[0][0] = q[0];    A[0][1] = q[1];    A[0][2] = q[2];
+  A[1][0] = q[3];    A[1][1] = q[4];    A[1][2] = q[5];
+  A[2][0] = q[6];    A[2][1] = q[7];    A[2][2] = q[8];
 }
 
 
@@ -158,37 +165,37 @@ void Matrix3D::toArray( real8_t A[3][3] ) {
 // ---------------------------------------------------------------------------------------
 real8_t* Matrix3D::load( const real8_t* src, matrix3d_format_e order ) {
   // -------------------------------------------------------------------------------------
-  real8_t* q = const_cast<real8_t*>(src);
+  real8_t* p = const_cast<real8_t*>(src);
   
   switch(order) {
     case ROW_MAJOR:
-      a00 = *q++;    a01 = *q++;    a02 = *q++;
-      a10 = *q++;    a11 = *q++;    a12 = *q++;
-      a20 = *q++;    a21 = *q++;    a22 = *q++;
+      q[0] = *p++;    q[1] = *p++;    q[2] = *p++;
+      q[3] = *p++;    q[4] = *p++;    q[5] = *p++;
+      q[6] = *p++;    q[7] = *p++;    q[8] = *p++;
       break;
 
     case COLUMN_MAJOR:
-      a00 = *q++;    a10 = *q++;    a20 = *q++;
-      a01 = *q++;    a11 = *q++;    a21 = *q++;
-      a02 = *q++;    a12 = *q++;    a22 = *q++;
+      q[0] = *p++;    q[3] = *p++;    q[6] = *p++;
+      q[1] = *p++;    q[4] = *p++;    q[7] = *p++;
+      q[2] = *p++;    q[5] = *p++;    q[8] = *p++;
       break;
 
     case UPPER_TRIANGLE:
-      a00 = *q++;    a01 = *q++;    a02 = *q++;
-      /*      */     a11 = *q++;    a12 = *q++;
-      /*                      */    a22 = *q++;
-      a10 = a01;
-      a20 = a02;
-      a21 = a12;
+      q[0] = *p++;    q[1] = *p++;    q[2] = *p++;
+      /*       */     q[4] = *p++;    q[5] = *p++;
+      /*                        */    q[8] = *p++;
+      q[3] = q[1];
+      q[6] = q[2];
+      q[7] = q[5];
       break;
 
     case LOWER_TRIANGLE:
-      a00 = *q++;
-      a10 = *q++;    a11 = *q++;
-      a20 = *q++;    a21 = *q++;    a22 = *q++;
-      a01 = a10;
-      a02 = a20;
-      a12 = a21;
+      q[0] = *p++;
+      q[3] = *p++;    q[4] = *p++;
+      q[6] = *p++;    q[7] = *p++;    q[8] = *p++;
+      q[1] = q[3];
+      q[2] = q[6];
+      q[5] = q[7];
       break;
 
     default:
@@ -196,7 +203,7 @@ real8_t* Matrix3D::load( const real8_t* src, matrix3d_format_e order ) {
       throw 1;
   }
   
-  return q;
+  return p;
 }
 
 
@@ -211,31 +218,31 @@ real8_t* Matrix3D::load( const real8_t* src, matrix3d_format_e order ) {
 // ---------------------------------------------------------------------------------------
 real8_t* Matrix3D::store( const real8_t* dst, matrix3d_format_e order ) {
   // -------------------------------------------------------------------------------------
-  real8_t* q = const_cast<real8_t*>(dst);
+  real8_t* p = const_cast<real8_t*>(dst);
   
   switch(order) {
     case ROW_MAJOR:
-      *q++ = a00;    *q++ = a01;    *q++ = a02;
-      *q++ = a10;    *q++ = a11;    *q++ = a12;
-      *q++ = a20;    *q++ = a21;    *q++ = a22;
+      *p++ = q[0];    *p++ = q[1];    *p++ = q[2];
+      *p++ = q[3];    *p++ = q[4];    *p++ = q[5];
+      *p++ = q[6];    *p++ = q[7];    *p++ = q[8];
       break;
 
     case COLUMN_MAJOR:
-      *q++ = a00;    *q++ = a10;    *q++ = a20;
-      *q++ = a01;    *q++ = a11;    *q++ = a21;
-      *q++ = a02;    *q++ = a12;    *q++ = a22;
+      *p++ = q[0];    *p++ = q[3];    *p++ = q[6];
+      *p++ = q[1];    *p++ = q[4];    *p++ = q[7];
+      *p++ = q[2];    *p++ = q[5];    *p++ = q[8];
       break;
 
     case UPPER_TRIANGLE:
-      *q++ = a00;    *q++ = a01;    *q++ = a02;
-      /*      */     *q++ = a11;    *q++ = a12;
-      /*                      */    *q++ = a22;
+      *p++ = q[0];    *p++ = q[1];    *p++ = q[2];
+      /*        */    *p++ = q[4];    *p++ = q[5];
+      /*                        */    *p++ = q[8];
       break;
 
     case LOWER_TRIANGLE:
-      *q++ = a00;
-      *q++ = a10;    *q++ = a11;
-      *q++ = a20;    *q++ = a21;    *q++ = a22;
+      *p++ = q[0];
+      *p++ = q[3];    *p++ = q[4];
+      *p++ = q[6];    *p++ = q[7];    *p++ = q[8];
       break;
 
     default:
@@ -243,7 +250,7 @@ real8_t* Matrix3D::store( const real8_t* dst, matrix3d_format_e order ) {
       throw 1;
   }
   
-  return q;
+  return p;
 }
 
 
@@ -268,86 +275,6 @@ std::string toString( Matrix3D& M, std::string sfmt, std::string cdel, std::stri
   
 
 // =======================================================================================
-/** @brief Index operator.
- *  @param r row    index.
- *  @param c column index.
- *  @return reference to the (r,c) position in this Matrix.
- */
-// ---------------------------------------------------------------------------------------
-real8_t& Matrix3D::at( const size_t r, const size_t c ) {
-  // -------------------------------------------------------------------------------------
-  char buf[64];
-
-  if ( r==0 ) {
-    if ( c==0 ) { return this->a00; }
-    if ( c==1 ) { return this->a01; }
-    if ( c==2 ) { return this->a02; }
-    snprintf( buf, 63, "column out of range: %lu expected (0, 1 or 2)", c );
-    throw( new std::invalid_argument(buf) );
-  }
-  
-  if ( r==1 ) {
-    if ( c==0 ) { return this->a10; }
-    if ( c==1 ) { return this->a11; }
-    if ( c==2 ) { return this->a12; }
-    snprintf( buf, 63, "column out of range: %lu expected (0, 1 or 2)", c );
-    throw( new std::invalid_argument(buf) );
-  }
-  
-  if ( r==2 ) {
-    if ( c==0 ) { return this->a20; }
-    if ( c==1 ) { return this->a21; }
-    if ( c==2 ) { return this->a22; }
-    snprintf( buf, 63, "column out of range: %lu expected (0, 1 or 2)", c );
-    throw( new std::invalid_argument(buf) );
-  }
-
-  snprintf( buf, 63, "row out of range: %lu expected (0, 1 or 2)", r );
-  throw( new std::invalid_argument(buf) );
-}
-
-
-// =======================================================================================
-/** @brief Index operator.
- *  @param r row    index.
- *  @param c column index.
- *  @return reference to the (r,c) position in this Matrix.
- */
-// ---------------------------------------------------------------------------------------
-real8_t& Matrix3D::operator()( const size_t r, const size_t c ) {
-  // -------------------------------------------------------------------------------------
-  char buf[64];
-
-  if ( r==0 ) {
-    if ( c==0 ) { return this->a00; }
-    if ( c==1 ) { return this->a01; }
-    if ( c==2 ) { return this->a02; }
-    snprintf( buf, 63, "column out of range: %lu expected (0, 1 or 2)", c );
-    throw( new std::invalid_argument(buf) );
-  }
-  
-  if ( r==1 ) {
-    if ( c==0 ) { return this->a10; }
-    if ( c==1 ) { return this->a11; }
-    if ( c==2 ) { return this->a12; }
-    snprintf( buf, 63, "column out of range: %lu expected (0, 1 or 2)", c );
-    throw( new std::invalid_argument(buf) );
-  }
-  
-  if ( r==2 ) {
-    if ( c==0 ) { return this->a20; }
-    if ( c==1 ) { return this->a21; }
-    if ( c==2 ) { return this->a22; }
-    snprintf( buf, 63, "column out of range: %lu expected (0, 1 or 2)", c );
-    throw( new std::invalid_argument(buf) );
-  }
-
-  snprintf( buf, 63, "row out of range: %lu expected (0, 1 or 2)", r );
-  throw( new std::invalid_argument(buf) );
-}
-
-
-// =======================================================================================
 /** @brief Dot Product.
  *  @param[in] A pointer to the first  Matrix3D.
  *  @param[in] B pointer to the second Matrix3D.
@@ -359,17 +286,17 @@ real8_t& Matrix3D::operator()( const size_t r, const size_t c ) {
 const Matrix3D dot( const Matrix3D& A, const Matrix3D& B ) {
   // -------------------------------------------------------------------------------------
   
-  return Matrix3D( A.a00*B.a00 + A.a01*B.a10 + A.a02*B.a20,
-                   A.a00*B.a01 + A.a01*B.a11 + A.a02*B.a21,
-                   A.a00*B.a02 + A.a01*B.a12 + A.a02*B.a22,
+  return Matrix3D( A.q[0]*B.q[0] + A.q[1]*B.q[3] + A.q[2]*B.q[6],
+                   A.q[0]*B.q[1] + A.q[1]*B.q[4] + A.q[2]*B.q[7],
+                   A.q[0]*B.q[2] + A.q[1]*B.q[5] + A.q[2]*B.q[8],
                    
-                   A.a10*B.a00 + A.a11*B.a10 + A.a12*B.a20,
-                   A.a10*B.a01 + A.a11*B.a11 + A.a12*B.a21,
-                   A.a10*B.a02 + A.a11*B.a12 + A.a12*B.a22,
+                   A.q[3]*B.q[0] + A.q[4]*B.q[3] + A.q[5]*B.q[6],
+                   A.q[3]*B.q[1] + A.q[4]*B.q[4] + A.q[5]*B.q[7],
+                   A.q[3]*B.q[2] + A.q[4]*B.q[5] + A.q[5]*B.q[8],
                    
-                   A.a20*B.a00 + A.a21*B.a10 + A.a22*B.a20,
-                   A.a20*B.a01 + A.a21*B.a11 + A.a22*B.a21,
-                   A.a20*B.a02 + A.a21*B.a12 + A.a22*B.a22 );
+                   A.q[6]*B.q[0] + A.q[7]*B.q[3] + A.q[8]*B.q[6],
+                   A.q[6]*B.q[1] + A.q[7]*B.q[4] + A.q[8]*B.q[7],
+                   A.q[6]*B.q[2] + A.q[7]*B.q[5] + A.q[8]*B.q[8] );
 }
 
 
@@ -385,17 +312,17 @@ const Matrix3D Matrix3D::inverse( void ) {
     throw( new std::domain_error( "Singular Matrix" ) );
   }
   
-  return Matrix3D( ((a11*a22) - (a21*a12)) / D,
-                   ((a21*a02) - (a01*a22)) / D,
-                   ((a01*a12) - (a11*a02)) / D,
+  return Matrix3D( ((q[4]*q[8]) - (q[7]*q[5])) / D,
+                   ((q[7]*q[2]) - (q[1]*q[8])) / D,
+                   ((q[1]*q[5]) - (q[4]*q[2])) / D,
                    
-                   ((a20*a12) - (a10*a22)) / D,
-                   ((a00*a22) - (a20*a02)) / D,
-                   ((a10*a02) - (a00*a12)) / D,
+                   ((q[6]*q[5]) - (q[3]*q[8])) / D,
+                   ((q[0]*q[8]) - (q[6]*q[2])) / D,
+                   ((q[3]*q[2]) - (q[0]*q[5])) / D,
                    
-                   ((a10*a21) - (a20*a11)) / D,
-                   ((a20*a01) - (a00*a21)) / D,
-                   ((a00*a11) - (a10*a01)) / D );
+                   ((q[3]*q[7]) - (q[6]*q[4])) / D,
+                   ((q[6]*q[1]) - (q[0]*q[7])) / D,
+                   ((q[0]*q[4]) - (q[3]*q[1])) / D );
 }
 
 
@@ -407,9 +334,9 @@ const Matrix3D Matrix3D::inverse( void ) {
 real8_t sum( const Matrix3D& M ) {
   // -------------------------------------------------------------------------------------
   return
-      M.a00 + M.a01 + M.a02 +
-      M.a10 + M.a11 + M.a12 +
-      M.a20 + M.a21 + M.a22;
+      M.q[0] + M.q[1] + M.q[2] +
+      M.q[3] + M.q[4] + M.q[5] +
+      M.q[6] + M.q[7] + M.q[8];
 }
 
 // =======================================================================================
@@ -420,9 +347,9 @@ real8_t sum( const Matrix3D& M ) {
 real8_t sumsq( const Matrix3D& M ) {
   // -------------------------------------------------------------------------------------
   return
-      (M.a00*M.a00) + (M.a01*M.a01) + (M.a02*M.a02) + 
-      (M.a10*M.a10) + (M.a11*M.a11) + (M.a12*M.a12) + 
-      (M.a20*M.a20) + (M.a21*M.a21) + (M.a22*M.a22);
+      (M.q[0]*M.q[0]) + (M.q[1]*M.q[1]) + (M.q[2]*M.q[2]) + 
+      (M.q[3]*M.q[3]) + (M.q[4]*M.q[4]) + (M.q[5]*M.q[5]) + 
+      (M.q[6]*M.q[6]) + (M.q[7]*M.q[7]) + (M.q[8]*M.q[8]);
 }
 
 
@@ -436,15 +363,15 @@ real8_t sumsq( const Matrix3D& M ) {
 // ---------------------------------------------------------------------------------------
 real8_t sumsq( const Matrix3D& A, const Matrix3D& B ) {
   // -------------------------------------------------------------------------------------
-  real8_t d0 = (A.a00 - B.a00);
-  real8_t d1 = (A.a01 - B.a01);
-  real8_t d2 = (A.a02 - B.a02);
-  real8_t d3 = (A.a10 - B.a10);
-  real8_t d4 = (A.a11 - B.a11);
-  real8_t d5 = (A.a12 - B.a12);
-  real8_t d6 = (A.a20 - B.a20);
-  real8_t d7 = (A.a21 - B.a21);
-  real8_t d8 = (A.a22 - B.a22);
+  real8_t d0 = (A.q[0] - B.q[0]);
+  real8_t d1 = (A.q[1] - B.q[1]);
+  real8_t d2 = (A.q[2] - B.q[2]);
+  real8_t d3 = (A.q[3] - B.q[3]);
+  real8_t d4 = (A.q[4] - B.q[4]);
+  real8_t d5 = (A.q[5] - B.q[5]);
+  real8_t d6 = (A.q[6] - B.q[6]);
+  real8_t d7 = (A.q[7] - B.q[7]);
+  real8_t d8 = (A.q[8] - B.q[8]);
   return
       (d0*d0)+(d1*d1)+(d2*d2)+
       (d3*d3)+(d4*d4)+(d5*d5)+

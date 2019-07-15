@@ -63,6 +63,9 @@ protected:
   int32_t  LWORK;   ///< The dimension	of the array WORK.
   int32_t  INFO;    ///< Return status form LAPACK driver routine.  
 
+  real8_t**  vec_real;  ///< Real eigenvectors
+  real8_t**  vec_imag;  ///< Imaginary eigenvectors
+  
   EigenSystem( int32_t n, bool sym );
 
 public:
@@ -90,6 +93,8 @@ public:
   real8_t      ieval          ( const size_t i );
   real8_t*     evec           ( const size_t i );
   real8_t      evec           ( const size_t i, const size_t j );
+  real8_t*     ievec          ( const size_t i );
+  real8_t      ievec          ( const size_t i, const size_t j );
 
   void display( std::ostream& os, std::string fmt );
 };

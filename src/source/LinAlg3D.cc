@@ -90,9 +90,9 @@ void covariance( Matrix3D& M, real8_t data[][3], size_t n ) {
 
   // -------------------------------------------------------------------------------------
 
-  M.a00 = xx / fnm1;    M.a01 = xy / fnm1;    M.a02 = xz / fnm1;
-  M.a10 = xy / fnm1;    M.a11 = yy / fnm1;    M.a12 = yz / fnm1;
-  M.a20 = xz / fnm1;    M.a21 = yz / fnm1;    M.a22 = zz / fnm1;
+  M.q[0] = xx / fnm1;    M.q[1] = xy / fnm1;    M.q[2] = xz / fnm1;
+  M.q[3] = xy / fnm1;    M.q[4] = yy / fnm1;    M.q[5] = yz / fnm1;
+  M.q[6] = xz / fnm1;    M.q[7] = yz / fnm1;    M.q[8] = zz / fnm1;
 }
 
 
@@ -150,9 +150,9 @@ void covariance( Matrix3D& M, Vector3D *data, size_t n ) {
 
   // -------------------------------------------------------------------------------------
 
-  M.a00 = xx / fnm1;    M.a01 = xy / fnm1;    M.a02 = xy / fnm1;
-  M.a10 = xy / fnm1;    M.a11 = yy / fnm1;    M.a12 = yz / fnm1;
-  M.a20 = xz / fnm1;    M.a21 = yz / fnm1;    M.a22 = zz / fnm1;
+  M.q[0] = xx / fnm1;    M.q[1] = xy / fnm1;    M.q[2] = xy / fnm1;
+  M.q[3] = xy / fnm1;    M.q[4] = yy / fnm1;    M.q[5] = yz / fnm1;
+  M.q[6] = xz / fnm1;    M.q[7] = yz / fnm1;    M.q[8] = zz / fnm1;
 }
 
 

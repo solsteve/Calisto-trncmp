@@ -71,42 +71,6 @@ real8_t* Vector2D::load( real8_t* src ) {
 
 
 // =======================================================================================
-/** @brief Index operator.
- *  @param i index.
- *  @return reference to the ith position in this vector.
- *
- *  x[0]=0, x[1]=1, z=2
- */
-// ---------------------------------------------------------------------------------------
-real8_t& Vector2D::at( const size_t i ) {
-  // -------------------------------------------------------------------------------------
-  if ( i==0 ) { return this->x[0]; }
-  if ( i==1 ) { return this->x[1]; }
-  char buf[64];
-  snprintf( buf, 63, "out of range: %lu expected (0 or 1)", i );
-  throw( new std::invalid_argument(buf) );
-}
-
-
-// =======================================================================================
-/** @brief Index operator.
- *  @param i index.
- *  @return reference to the ith position in this vector.
- *
- *  x[0]=0, x[1]=1, z=2
- */
-// ---------------------------------------------------------------------------------------
-real8_t& Vector2D::operator[]( const size_t i ) {
-  // -------------------------------------------------------------------------------------
-  if ( i==0 ) { return this->x[0]; }
-  if ( i==1 ) { return this->x[1]; }
-  char buf[64];
-  snprintf( buf, 63, "out of range: %lu expected (0 or 1)", i );
-  throw( new std::invalid_argument(buf) );
-}
-
-
-// =======================================================================================
 /** @brief Normalize.
  *  @return new vector.
  *

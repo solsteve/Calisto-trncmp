@@ -45,21 +45,23 @@ typedef enum { ROW_MAJOR, COLUMN_MAJOR, UPPER_TRIANGLE, LOWER_TRIANGLE } matrix3
 // =======================================================================================
 class Matrix3D {
   // -------------------------------------------------------------------------------------
- public:
-  real8_t  a00, a01, a02;   ///< First  row
-  real8_t  a10, a11, a12;   ///< Second row
-  real8_t  a20, a21, a22;   ///< Third  row
+ protected:
+  void setRowPointer( void );
+  real8_t*  m[3];   ///< row pointer
 
-  constexpr Matrix3D ( void );
-  constexpr Matrix3D ( const real8_t q[3][3] );
-  constexpr Matrix3D ( const real8_t* q );
-  constexpr Matrix3D ( const real8_t q00, const real8_t q01, const real8_t q02,
-                       const real8_t q10, const real8_t q11, const real8_t q12,
-                       const real8_t q20, const real8_t q21, const real8_t q22 );
+public:
+  real8_t   q[9];   ///< matrix buffer
+
+  Matrix3D  ( void );
+  Matrix3D  ( const real8_t  _q[3][3] );
+  Matrix3D  ( const real8_t* q );
+  Matrix3D  ( const real8_t q00, const real8_t q01, const real8_t q02,
+              const real8_t q10, const real8_t q11, const real8_t q12,
+              const real8_t q20, const real8_t q21, const real8_t q22 );
   
-  Matrix3D  ( const real8_t* q, matrix3d_format_e order );
-  Matrix3D  ( const Matrix3D& m );
-  Matrix3D  ( const Matrix3D* m );
+  Matrix3D  ( const real8_t* _q, matrix3d_format_e order );
+  Matrix3D  ( const Matrix3D& _m );
+  Matrix3D  ( const Matrix3D* _m );
 
   ~Matrix3D ( void );
 
@@ -70,7 +72,7 @@ class Matrix3D {
   void            copy        ( const Matrix3D* that );
 
   void            fromArray   ( const real8_t A[3][3] );
-  void            toArray     ( real8_t A[3][3] );
+  void            toArray     (       real8_t A[3][3] );
 
   real8_t*        load        ( const real8_t* src, matrix3d_format_e order = ROW_MAJOR );
   real8_t*        store       ( const real8_t* dst, matrix3d_format_e order = ROW_MAJOR );
@@ -83,8 +85,8 @@ class Matrix3D {
   real8_t         det         ( void ) const;
   const Matrix3D  inverse     ( void );
   
-  real8_t&        at          ( const size_t r, const size_t c );
-  real8_t&        operator()  ( const size_t r, const size_t c );
+  real8_t*        at          ( const size_t r );
+  real8_t*        operator[]  ( const size_t r );
 
   void            swap        ( Matrix3D& M );
   void            swap_row    ( size_t ia, size_t ib );
@@ -151,14 +153,52 @@ std::string    toString  ( Matrix3D* M,
 
 
 // =======================================================================================
+/** @brief Set Row Pointers.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix3D::setRowPointer( void ) {
+  // -------------------------------------------------------------------------------------
+  m[0] = (q+0);
+  m[1] = (q+3);
+  m[2] = (q+6);
+}
+
+// =======================================================================================
+/** @brief Index operator.
+ *  @param i index.
+ *  @return pointer to the ith row in this matrix.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t* Matrix3D::at( const size_t i ) {
+  // -------------------------------------------------------------------------------------
+  return m[i];
+}
+
+
+// =======================================================================================
+/** @brief Index operator.
+ *  @param i index.
+ *  @return pointer to the ith row in this matrix.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t* Matrix3D::operator[]( const size_t i ) {
+  // -------------------------------------------------------------------------------------
+  return m[i];
+}
+
+
+// =======================================================================================
 /** @brief Constructor.
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Matrix3D::Matrix3D( void )
-:   a00(D_ZERO), a01(D_ZERO), a02(D_ZERO),
-    a10(D_ZERO), a11(D_ZERO), a12(D_ZERO),
-    a20(D_ZERO), a21(D_ZERO), a22(D_ZERO) {
+inline  Matrix3D::Matrix3D( void ) :
+    m{0,0,0},
+    q{ D_ZERO, D_ZERO, D_ZERO, 
+          D_ZERO, D_ZERO, D_ZERO,
+          D_ZERO, D_ZERO, D_ZERO }
+{
   // -------------------------------------------------------------------------------------
+  setRowPointer();
 }
 
 
@@ -175,13 +215,17 @@ inline  constexpr Matrix3D::Matrix3D( void )
  *  @param q22 element at index (2,2)
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Matrix3D::Matrix3D( const real8_t q00, const real8_t q01, const real8_t q02,
-                                      const real8_t q10, const real8_t q11, const real8_t q12,
-                                      const real8_t q20, const real8_t q21, const real8_t q22 )
-:   a00(q00), a01(q01), a02(q02),
-    a10(q10), a11(q11), a12(q12),
-    a20(q20), a21(q21), a22(q22) {
+inline  Matrix3D::Matrix3D(
+    const real8_t q00, const real8_t q01, const real8_t q02,
+    const real8_t q10, const real8_t q11, const real8_t q12,
+    const real8_t q20, const real8_t q21, const real8_t q22 ) :
+    m{0,0,0},
+    q{ q00, q01, q02,
+          q10, q11, q12,
+          q20, q21, q22 }
+{
   // -------------------------------------------------------------------------------------
+  setRowPointer();
 }
 
     
@@ -190,11 +234,14 @@ inline  constexpr Matrix3D::Matrix3D( const real8_t q00, const real8_t q01, cons
  *  @param q three by three static array.
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Matrix3D::Matrix3D( const real8_t q[3][3] )
-:   a00(q[0][0]), a01(q[0][1]), a02(q[0][2]),
-    a10(q[1][0]), a11(q[1][1]), a12(q[1][2]),
-    a20(q[2][0]), a21(q[2][1]), a22(q[2][2]) {
+inline  Matrix3D::Matrix3D( const real8_t _q[3][3] ) :
+    m{0,0,0},
+    q{ _q[0][0], _q[0][1], _q[0][2],
+          _q[1][0], _q[1][1], _q[1][2],
+          _q[2][0], _q[2][1], _q[2][2] }
+{
   // -------------------------------------------------------------------------------------
+  setRowPointer();
 }
 
 
@@ -206,11 +253,14 @@ inline  constexpr Matrix3D::Matrix3D( const real8_t q[3][3] )
  *  order: ROW_MAJOR, COLUMN_MAJOR, UPPER_TRIANGLE, LOWER_TRIANGLE
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Matrix3D::Matrix3D( const real8_t* q )
-:   a00(q[0]), a01(q[1]), a02(q[2]),
-    a10(q[3]), a11(q[4]), a12(q[5]),
-    a20(q[6]), a21(q[7]), a22(q[8]) {
+inline  Matrix3D::Matrix3D( const real8_t* _q ) :
+    m{0,0,0},
+    q{ _q[0], _q[1], _q[2],
+          _q[3], _q[4], _q[5],
+          _q[6], _q[7], _q[8] }
+{
   // -------------------------------------------------------------------------------------
+  setRowPointer();
 }
 
 
@@ -247,9 +297,9 @@ inline Matrix3D Matrix3D::Ident( void ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D Matrix3D::T( void ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( this->a00, this->a10, this->a20,
-                   this->a01, this->a11, this->a21,
-                   this->a02, this->a12, this->a22 );
+  return Matrix3D( this->q[0], this->q[3], this->q[6],
+                   this->q[1], this->q[4], this->q[7],
+                   this->q[2], this->q[5], this->q[8] );
 }
 
 
@@ -281,9 +331,9 @@ inline  std::string toString( Matrix3D* M, std::string sfmt,
 // ---------------------------------------------------------------------------------------
 inline  Matrix3D& Matrix3D::operator+= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->a00 += s;  this->a01 += s;  this->a02 += s;
-  this->a10 += s;  this->a11 += s;  this->a12 += s;
-  this->a20 += s;  this->a21 += s;  this->a22 += s;
+  this->q[0] += s;  this->q[1] += s;  this->q[2] += s;
+  this->q[3] += s;  this->q[4] += s;  this->q[5] += s;
+  this->q[6] += s;  this->q[7] += s;  this->q[8] += s;
   return *this;
 }
 
@@ -298,9 +348,9 @@ inline  Matrix3D& Matrix3D::operator+= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix3D& Matrix3D::operator-= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->a00 -= s;  this->a01 -= s;  this->a02 -= s;
-  this->a10 -= s;  this->a11 -= s;  this->a12 -= s;
-  this->a20 -= s;  this->a21 -= s;  this->a22 -= s;
+  this->q[0] -= s;  this->q[1] -= s;  this->q[2] -= s;
+  this->q[3] -= s;  this->q[4] -= s;  this->q[5] -= s;
+  this->q[6] -= s;  this->q[7] -= s;  this->q[8] -= s;
   return *this;
 }
 
@@ -315,9 +365,9 @@ inline  Matrix3D& Matrix3D::operator-= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix3D& Matrix3D::operator*= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->a00 *= s;  this->a01 *= s;  this->a02 *= s;
-  this->a10 *= s;  this->a11 *= s;  this->a12 *= s;
-  this->a20 *= s;  this->a21 *= s;  this->a22 *= s;
+  this->q[0] *= s;  this->q[1] *= s;  this->q[2] *= s;
+  this->q[3] *= s;  this->q[4] *= s;  this->q[5] *= s;
+  this->q[6] *= s;  this->q[7] *= s;  this->q[8] *= s;
   return *this;
 }
 
@@ -332,9 +382,9 @@ inline  Matrix3D& Matrix3D::operator*= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix3D& Matrix3D::operator/= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->a00 /= s;  this->a01 /= s;  this->a02 /= s;
-  this->a10 /= s;  this->a11 /= s;  this->a12 /= s;
-  this->a20 /= s;  this->a21 /= s;  this->a22 /= s;
+  this->q[0] /= s;  this->q[1] /= s;  this->q[2] /= s;
+  this->q[3] /= s;  this->q[4] /= s;  this->q[5] /= s;
+  this->q[6] /= s;  this->q[7] /= s;  this->q[8] /= s;
   return *this;
 }
 
@@ -354,9 +404,9 @@ inline  Matrix3D& Matrix3D::operator/= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix3D& Matrix3D::operator+= ( const Matrix3D& that ) {
   // -------------------------------------------------------------------------------------
-  this->a00 += that.a00;  this->a01 += that.a01;  this->a02 += that.a02;
-  this->a10 += that.a10;  this->a11 += that.a11;  this->a12 += that.a12;
-  this->a20 += that.a20;  this->a21 += that.a21;  this->a22 += that.a22;
+  this->q[0] += that.q[0];  this->q[1] += that.q[1];  this->q[2] += that.q[2];
+  this->q[3] += that.q[3];  this->q[4] += that.q[4];  this->q[5] += that.q[5];
+  this->q[6] += that.q[6];  this->q[7] += that.q[7];  this->q[8] += that.q[8];
   return *this;
 }
 
@@ -371,9 +421,9 @@ inline  Matrix3D& Matrix3D::operator+= ( const Matrix3D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix3D& Matrix3D::operator-= ( const Matrix3D& that ) {
   // -------------------------------------------------------------------------------------
-  this->a00 -= that.a00;  this->a01 -= that.a01;  this->a02 -= that.a02;
-  this->a10 -= that.a10;  this->a11 -= that.a11;  this->a12 -= that.a12;
-  this->a20 -= that.a20;  this->a21 -= that.a21;  this->a22 -= that.a22;
+  this->q[0] -= that.q[0];  this->q[1] -= that.q[1];  this->q[2] -= that.q[2];
+  this->q[3] -= that.q[3];  this->q[4] -= that.q[4];  this->q[5] -= that.q[5];
+  this->q[6] -= that.q[6];  this->q[7] -= that.q[7];  this->q[8] -= that.q[8];
   return *this;
 }
 
@@ -388,9 +438,9 @@ inline  Matrix3D& Matrix3D::operator-= ( const Matrix3D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix3D& Matrix3D::operator*= ( const Matrix3D& that ) {
   // -------------------------------------------------------------------------------------
-  this->a00 *= that.a00;  this->a01 *= that.a01;  this->a02 *= that.a02;
-  this->a10 *= that.a10;  this->a11 *= that.a11;  this->a12 *= that.a12;
-  this->a20 *= that.a20;  this->a21 *= that.a21;  this->a22 *= that.a22;
+  this->q[0] *= that.q[0];  this->q[1] *= that.q[1];  this->q[2] *= that.q[2];
+  this->q[3] *= that.q[3];  this->q[4] *= that.q[4];  this->q[5] *= that.q[5];
+  this->q[6] *= that.q[6];  this->q[7] *= that.q[7];  this->q[8] *= that.q[8];
   return *this;
 }
 
@@ -405,9 +455,9 @@ inline  Matrix3D& Matrix3D::operator*= ( const Matrix3D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix3D& Matrix3D::operator/= ( const Matrix3D& that ) {
   // -------------------------------------------------------------------------------------
-  this->a00 /= that.a00;  this->a01 /= that.a01;  this->a02 /= that.a02;
-  this->a10 /= that.a10;  this->a11 /= that.a11;  this->a12 /= that.a12;
-  this->a20 /= that.a20;  this->a21 /= that.a21;  this->a22 /= that.a22;
+  this->q[0] /= that.q[0];  this->q[1] /= that.q[1];  this->q[2] /= that.q[2];
+  this->q[3] /= that.q[3];  this->q[4] /= that.q[4];  this->q[5] /= that.q[5];
+  this->q[6] /= that.q[6];  this->q[7] /= that.q[7];  this->q[8] /= that.q[8];
   return *this;
 }
 
@@ -420,9 +470,9 @@ inline  Matrix3D& Matrix3D::operator/= ( const Matrix3D& that ) {
 inline  real8_t Matrix3D::det( void ) const {
   // -------------------------------------------------------------------------------------
   return
-      ( this->a00 * ((this->a11 * this->a22) - (this->a21 * this->a12)) ) +
-      ( this->a10 * ((this->a21 * this->a02) - (this->a01 * this->a22)) ) +
-      ( this->a20 * ((this->a01 * this->a12) - (this->a11 * this->a02)) );
+      ( this->q[0] * ((this->q[4] * this->q[8]) - (this->q[7] * this->q[5])) ) +
+      ( this->q[3] * ((this->q[7] * this->q[2]) - (this->q[1] * this->q[8])) ) +
+      ( this->q[6] * ((this->q[1] * this->q[5]) - (this->q[4] * this->q[2])) );
 }
 
 
@@ -435,15 +485,15 @@ inline  real8_t Matrix3D::det( void ) const {
 // ---------------------------------------------------------------------------------------
 inline  void Matrix3D::swap( Matrix3D& that ) {
   // -------------------------------------------------------------------------------------
-  ::swap( this->a00, that.a00 );
-  ::swap( this->a01, that.a01 );
-  ::swap( this->a02, that.a02 );
-  ::swap( this->a10, that.a10 );
-  ::swap( this->a11, that.a11 );
-  ::swap( this->a12, that.a12 );
-  ::swap( this->a20, that.a20 );
-  ::swap( this->a21, that.a21 );
-  ::swap( this->a22, that.a22 );
+  ::swap( this->q[0], that.q[0] );
+  ::swap( this->q[1], that.q[1] );
+  ::swap( this->q[2], that.q[2] );
+  ::swap( this->q[3], that.q[3] );
+  ::swap( this->q[4], that.q[4] );
+  ::swap( this->q[5], that.q[5] );
+  ::swap( this->q[6], that.q[6] );
+  ::swap( this->q[7], that.q[7] );
+  ::swap( this->q[8], that.q[8] );
 }
 
 
@@ -459,40 +509,40 @@ inline  void Matrix3D::swap_row( size_t ia, size_t ib ) {
   // -------------------------------------------------------------------------------------
   if ( 0 == ia ) {
     if ( 1 == ib ) {
-      ::swap( a00, a10 );
-      ::swap( a01, a11 );
-      ::swap( a02, a12 );
+      ::swap( q[0], q[3] );
+      ::swap( q[1], q[4] );
+      ::swap( q[2], q[5] );
     }
     if ( 2 == ib ) {
-      ::swap( a00, a20 );
-      ::swap( a01, a21 );
-      ::swap( a02, a22 );
+      ::swap( q[0], q[6] );
+      ::swap( q[1], q[7] );
+      ::swap( q[2], q[8] );
     }
   }
 
   if ( 1 == ia ) {
     if ( 0 == ib ) {
-      ::swap( a10, a00 );
-      ::swap( a11, a01 );
-      ::swap( a12, a02 );
+      ::swap( q[3], q[0] );
+      ::swap( q[4], q[1] );
+      ::swap( q[5], q[2] );
     }
     if ( 2 == ib ) {
-      ::swap( a10, a20 );
-      ::swap( a11, a21 );
-      ::swap( a12, a22 );
+      ::swap( q[3], q[6] );
+      ::swap( q[4], q[7] );
+      ::swap( q[5], q[8] );
     }
   }
 
   if ( 2 == ia ) {
     if ( 0 == ib ) {
-      ::swap( a20, a00 );
-      ::swap( a21, a01 );
-      ::swap( a22, a02 );
+      ::swap( q[6], q[0] );
+      ::swap( q[7], q[1] );
+      ::swap( q[8], q[2] );
     }
     if ( 1 == ib ) {
-      ::swap( a20, a10 );
-      ::swap( a21, a11 );
-      ::swap( a22, a12 );
+      ::swap( q[6], q[3] );
+      ::swap( q[7], q[4] );
+      ::swap( q[8], q[5] );
     }
   }
 
@@ -511,40 +561,40 @@ inline  void Matrix3D::swap_col( size_t ia, size_t ib ) {
   // -------------------------------------------------------------------------------------
   if ( 0 == ia ) {
     if ( 1 == ib ) {
-      ::swap( a00, a01 );
-      ::swap( a10, a11 );
-      ::swap( a20, a21 );
+      ::swap( q[0], q[1] );
+      ::swap( q[3], q[4] );
+      ::swap( q[6], q[7] );
     }
     if ( 2 == ib ) {
-      ::swap( a00, a02 );
-      ::swap( a10, a12 );
-      ::swap( a20, a22 );
+      ::swap( q[0], q[2] );
+      ::swap( q[3], q[5] );
+      ::swap( q[6], q[8] );
     }
   }
 
   if ( 1 == ia ) {
     if ( 0 == ib ) {
-      ::swap( a01, a00 );
-      ::swap( a11, a10 );
-      ::swap( a21, a20 );
+      ::swap( q[1], q[0] );
+      ::swap( q[4], q[3] );
+      ::swap( q[7], q[6] );
     }
     if ( 2 == ib ) {
-      ::swap( a01, a02 );
-      ::swap( a11, a12 );
-      ::swap( a21, a22 );
+      ::swap( q[1], q[2] );
+      ::swap( q[4], q[5] );
+      ::swap( q[7], q[8] );
     }
   }
 
   if ( 2 == ia ) {
     if ( 0 == ib ) {
-      ::swap( a02, a00 );
-      ::swap( a12, a10 );
-      ::swap( a22, a20 );
+      ::swap( q[2], q[0] );
+      ::swap( q[5], q[3] );
+      ::swap( q[8], q[6] );
     }
     if ( 1 == ib ) {
-      ::swap( a02, a01 );
-      ::swap( a12, a11 );
-      ::swap( a22, a21 );
+      ::swap( q[2], q[1] );
+      ::swap( q[5], q[4] );
+      ::swap( q[8], q[7] );
     }
   }
 
@@ -561,21 +611,21 @@ inline  void Matrix3D::getRow( real8_t r[3], size_t i ) {
   // -------------------------------------------------------------------------------------
   switch(i%3) {
     case 0:
-      r[0] = this->a00;
-      r[1] = this->a01;
-      r[2] = this->a02;
+      r[0] = this->q[0];
+      r[1] = this->q[1];
+      r[2] = this->q[2];
       break;
     
     case 1:
-      r[0] = this->a10;
-      r[1] = this->a11;
-      r[2] = this->a12;
+      r[0] = this->q[3];
+      r[1] = this->q[4];
+      r[2] = this->q[5];
       break;
     
     case 2:
-      r[0] = this->a20;
-      r[1] = this->a21;
-      r[2] = this->a22;
+      r[0] = this->q[6];
+      r[1] = this->q[7];
+      r[2] = this->q[8];
       break;
 
     default:
@@ -595,21 +645,21 @@ inline  void Matrix3D::getColumn( real8_t c[3], size_t i ) {
   // -------------------------------------------------------------------------------------
   switch(i%3) {
     case 0:
-      c[0] = this->a00;
-      c[1] = this->a10;
-      c[2] = this->a20;
+      c[0] = this->q[0];
+      c[1] = this->q[3];
+      c[2] = this->q[6];
       break;
     
     case 1:
-      c[0] = this->a01;
-      c[1] = this->a11;
-      c[2] = this->a21;
+      c[0] = this->q[1];
+      c[1] = this->q[4];
+      c[2] = this->q[7];
       break;
     
     case 2:
-      c[0] = this->a02;
-      c[1] = this->a12;
-      c[2] = this->a22;
+      c[0] = this->q[2];
+      c[1] = this->q[5];
+      c[2] = this->q[8];
       break;
 
     default:
@@ -626,9 +676,9 @@ inline  void Matrix3D::getColumn( real8_t c[3], size_t i ) {
 // ---------------------------------------------------------------------------------------
 inline  void Matrix3D::getDiagonal( real8_t d[3] ) {
   // -------------------------------------------------------------------------------------
-  d[0] = this->a00;
-  d[1] = this->a11;
-  d[2] = this->a22;
+  d[0] = this->q[0];
+  d[1] = this->q[4];
+  d[2] = this->q[8];
 }
 
   
@@ -642,21 +692,21 @@ inline  void Matrix3D::setRow( const real8_t r[3], size_t i ) {
   // -------------------------------------------------------------------------------------
   switch(i%3) {
     case 0:
-      this->a00 = r[0];
-      this->a01 = r[1];
-      this->a02 = r[2];
+      this->q[0] = r[0];
+      this->q[1] = r[1];
+      this->q[2] = r[2];
       break;
       
     case 1:
-      this->a10 = r[0];
-      this->a11 = r[1];
-      this->a12 = r[2];
+      this->q[3] = r[0];
+      this->q[4] = r[1];
+      this->q[5] = r[2];
       break;
       
     case 2:
-      this->a20 = r[0];
-      this->a21 = r[1];
-      this->a22 = r[2];
+      this->q[6] = r[0];
+      this->q[7] = r[1];
+      this->q[8] = r[2];
       break;
 
     default:
@@ -676,21 +726,21 @@ inline  void Matrix3D::setColumn( const real8_t c[3], size_t i ) {
   // -------------------------------------------------------------------------------------
   switch(i%3) {
     case 0:
-      this->a00 = c[0];
-      this->a10 = c[1];
-      this->a20 = c[2];
+      this->q[0] = c[0];
+      this->q[3] = c[1];
+      this->q[6] = c[2];
       break;
       
     case 1:
-      this->a01 = c[0];
-      this->a11 = c[1];
-      this->a21 = c[2];
+      this->q[1] = c[0];
+      this->q[4] = c[1];
+      this->q[7] = c[2];
       break;
       
     case 2:
-      this->a02 = c[0];
-      this->a12 = c[1];
-      this->a22 = c[2];
+      this->q[2] = c[0];
+      this->q[5] = c[1];
+      this->q[8] = c[2];
       break;
 
     default:
@@ -707,9 +757,9 @@ inline  void Matrix3D::setColumn( const real8_t c[3], size_t i ) {
 // ---------------------------------------------------------------------------------------
 inline  void Matrix3D::setDiagonal( const real8_t d[3] ) {
   // -------------------------------------------------------------------------------------
-  this->a00 = d[0];
-  this->a11 = d[1];
-  this->a22 = d[2];
+  this->q[0] = d[0];
+  this->q[4] = d[1];
+  this->q[8] = d[2];
 }
 
 
@@ -733,9 +783,9 @@ inline  void Matrix3D::setDiagonal( const real8_t d[3] ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator+( const real8_t& s, const Matrix3D& m ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( s+m.a00, s+m.a01, s+m.a02,
-                   s+m.a10, s+m.a11, s+m.a12,
-                   s+m.a20, s+m.a21, s+m.a22 );
+  return Matrix3D( s+m.q[0], s+m.q[1], s+m.q[2],
+                   s+m.q[3], s+m.q[4], s+m.q[5],
+                   s+m.q[6], s+m.q[7], s+m.q[8] );
 }
 
 // =======================================================================================
@@ -749,9 +799,9 @@ inline  const Matrix3D operator+( const real8_t& s, const Matrix3D& m ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator-( const real8_t& s, const Matrix3D& m ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( s-m.a00, s-m.a01, s-m.a02,
-                   s-m.a10, s-m.a11, s-m.a12,
-                   s-m.a20, s-m.a21, s-m.a22 );
+  return Matrix3D( s-m.q[0], s-m.q[1], s-m.q[2],
+                   s-m.q[3], s-m.q[4], s-m.q[5],
+                   s-m.q[6], s-m.q[7], s-m.q[8] );
 }
 
 // =======================================================================================
@@ -765,9 +815,9 @@ inline  const Matrix3D operator-( const real8_t& s, const Matrix3D& m ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator*( const real8_t& s, const Matrix3D& m ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( s*m.a00, s*m.a01, s*m.a02,
-                   s*m.a10, s*m.a11, s*m.a12,
-                   s*m.a20, s*m.a21, s*m.a22 );
+  return Matrix3D( s*m.q[0], s*m.q[1], s*m.q[2],
+                   s*m.q[3], s*m.q[4], s*m.q[5],
+                   s*m.q[6], s*m.q[7], s*m.q[8] );
 }
 
 // =======================================================================================
@@ -781,9 +831,9 @@ inline  const Matrix3D operator*( const real8_t& s, const Matrix3D& m ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator/( const real8_t& s, const Matrix3D& m ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( s/m.a00, s/m.a01, s/m.a02,
-                   s/m.a10, s/m.a11, s/m.a12,
-                   s/m.a20, s/m.a21, s/m.a22 );
+  return Matrix3D( s/m.q[0], s/m.q[1], s/m.q[2],
+                   s/m.q[3], s/m.q[4], s/m.q[5],
+                   s/m.q[6], s/m.q[7], s/m.q[8] );
 }
 
 
@@ -798,9 +848,9 @@ inline  const Matrix3D operator/( const real8_t& s, const Matrix3D& m ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator+( const Matrix3D& m, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( m.a00+s, m.a01+s, m.a02+s,
-                   m.a10+s, m.a11+s, m.a12+s,
-                   m.a20+s, m.a21+s, m.a22+s );
+  return Matrix3D( m.q[0]+s, m.q[1]+s, m.q[2]+s,
+                   m.q[3]+s, m.q[4]+s, m.q[5]+s,
+                   m.q[6]+s, m.q[7]+s, m.q[8]+s );
 }
 
 
@@ -815,9 +865,9 @@ inline  const Matrix3D operator+( const Matrix3D& m, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator-( const Matrix3D& m, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( m.a00-s, m.a01-s, m.a02-s,
-                   m.a10-s, m.a11-s, m.a12-s,
-                   m.a20-s, m.a21-s, m.a22-s );
+  return Matrix3D( m.q[0]-s, m.q[1]-s, m.q[2]-s,
+                   m.q[3]-s, m.q[4]-s, m.q[5]-s,
+                   m.q[6]-s, m.q[7]-s, m.q[8]-s );
 }
 
 
@@ -832,9 +882,9 @@ inline  const Matrix3D operator-( const Matrix3D& m, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator*( const Matrix3D& m, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( m.a00*s, m.a01*s, m.a02*s,
-                   m.a10*s, m.a11*s, m.a12*s,
-                   m.a20*s, m.a21*s, m.a22*s );
+  return Matrix3D( m.q[0]*s, m.q[1]*s, m.q[2]*s,
+                   m.q[3]*s, m.q[4]*s, m.q[5]*s,
+                   m.q[6]*s, m.q[7]*s, m.q[8]*s );
 }
 
 
@@ -849,9 +899,9 @@ inline  const Matrix3D operator*( const Matrix3D& m, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator/( const Matrix3D& m, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( m.a00/s, m.a01/s, m.a02/s,
-                   m.a10/s, m.a11/s, m.a12/s,
-                   m.a20/s, m.a21/s, m.a22/s );
+  return Matrix3D( m.q[0]/s, m.q[1]/s, m.q[2]/s,
+                   m.q[3]/s, m.q[4]/s, m.q[5]/s,
+                   m.q[6]/s, m.q[7]/s, m.q[8]/s );
 }
 
 
@@ -868,9 +918,9 @@ inline  const Matrix3D operator/( const Matrix3D& m, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator+( const Matrix3D& A, const Matrix3D& B ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( A.a00+B.a00, A.a01+B.a01, A.a02+B.a02,
-                   A.a10+B.a10, A.a11+B.a11, A.a12+B.a12,
-                   A.a20+B.a20, A.a21+B.a21, A.a22+B.a22 );
+  return Matrix3D( A.q[0]+B.q[0], A.q[1]+B.q[1], A.q[2]+B.q[2],
+                   A.q[3]+B.q[3], A.q[4]+B.q[4], A.q[5]+B.q[5],
+                   A.q[6]+B.q[6], A.q[7]+B.q[7], A.q[8]+B.q[8] );
 }
 
 
@@ -885,9 +935,9 @@ inline  const Matrix3D operator+( const Matrix3D& A, const Matrix3D& B ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator-( const Matrix3D& A, const Matrix3D& B ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( A.a00-B.a00, A.a01-B.a01, A.a02-B.a02,
-                   A.a10-B.a10, A.a11-B.a11, A.a12-B.a12,
-                   A.a20-B.a20, A.a21-B.a21, A.a22-B.a22 );
+  return Matrix3D( A.q[0]-B.q[0], A.q[1]-B.q[1], A.q[2]-B.q[2],
+                   A.q[3]-B.q[3], A.q[4]-B.q[4], A.q[5]-B.q[5],
+                   A.q[6]-B.q[6], A.q[7]-B.q[7], A.q[8]-B.q[8] );
 }
 
 
@@ -902,9 +952,9 @@ inline  const Matrix3D operator-( const Matrix3D& A, const Matrix3D& B ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator*( const Matrix3D& A, const Matrix3D& B ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( A.a00*B.a00, A.a01*B.a01, A.a02*B.a02,
-                   A.a10*B.a10, A.a11*B.a11, A.a12*B.a12,
-                   A.a20*B.a20, A.a21*B.a21, A.a22*B.a22 );
+  return Matrix3D( A.q[0]*B.q[0], A.q[1]*B.q[1], A.q[2]*B.q[2],
+                   A.q[3]*B.q[3], A.q[4]*B.q[4], A.q[5]*B.q[5],
+                   A.q[6]*B.q[6], A.q[7]*B.q[7], A.q[8]*B.q[8] );
 }
 
 
@@ -919,9 +969,9 @@ inline  const Matrix3D operator*( const Matrix3D& A, const Matrix3D& B ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix3D operator/( const Matrix3D& A, const Matrix3D& B ) {
   // -------------------------------------------------------------------------------------
-  return Matrix3D( A.a00/B.a00, A.a01/B.a01, A.a02/B.a02,
-                   A.a10/B.a10, A.a11/B.a11, A.a12/B.a12,
-                   A.a20/B.a20, A.a21/B.a21, A.a22/B.a22 );
+  return Matrix3D( A.q[0]/B.q[0], A.q[1]/B.q[1], A.q[2]/B.q[2],
+                   A.q[3]/B.q[3], A.q[4]/B.q[4], A.q[5]/B.q[5],
+                   A.q[6]/B.q[6], A.q[7]/B.q[7], A.q[8]/B.q[8] );
 }
 
 

@@ -45,19 +45,22 @@ typedef enum { ROW_MAJOR, COLUMN_MAJOR, UPPER_TRIANGLE, LOWER_TRIANGLE } matrix2
 // =======================================================================================
 class Matrix2D {
   // -------------------------------------------------------------------------------------
- public:
-  real8_t  a00, a01;   ///< First  row
-  real8_t  a10, a11;   ///< Second row
+ protected:
+  void setRowPointer( void );
+  real8_t*  m[2];   ///< row pointer
 
-  constexpr Matrix2D ( void );
-  constexpr Matrix2D ( const real8_t q[2][2] );
-  constexpr Matrix2D ( const real8_t* q );
-  constexpr Matrix2D ( const real8_t q00, const real8_t q01,
+ public:
+  real8_t   q[4];   ///< matrix buffer
+
+   Matrix2D ( void );
+   Matrix2D ( const real8_t  _q[2][2] );
+   Matrix2D ( const real8_t* _q );
+   Matrix2D ( const real8_t q00, const real8_t q01,
                        const real8_t q10, const real8_t q11 );
   
-  Matrix2D  ( const real8_t* q, matrix2d_format_e order );
-  Matrix2D  ( const Matrix2D& m );
-  Matrix2D  ( const Matrix2D* m );
+  Matrix2D  ( const real8_t* _q, matrix2d_format_e order );
+  Matrix2D  ( const Matrix2D& _m );
+  Matrix2D  ( const Matrix2D* _m );
 
   ~Matrix2D ( void );
 
@@ -81,8 +84,8 @@ class Matrix2D {
   real8_t         det         ( void ) const;
   const Matrix2D  inverse     ( void );
   
-  real8_t&        at          ( const size_t r, const size_t c );
-  real8_t&        operator()  ( const size_t r, const size_t c );
+  real8_t*        at          ( const size_t r );
+  real8_t*        operator[]  ( const size_t r );
 
   void            swap        ( Matrix2D& M );
   void            swap_row    ( void );
@@ -147,13 +150,51 @@ std::string    toString  ( Matrix2D* M,
 
 
 // =======================================================================================
+/** @brief Set Row Pointers.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Matrix2D::setRowPointer( void ) {
+  // -------------------------------------------------------------------------------------
+  m[0] = (q+0);
+  m[1] = (q+2);
+}
+
+
+// =======================================================================================
+/** @brief Index operator.
+ *  @param i index.
+ *  @return pointer to the ith row in this matrix.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t* Matrix2D::at( const size_t i ) {
+  // -------------------------------------------------------------------------------------
+  return m[i];
+}
+
+
+// =======================================================================================
+/** @brief Index operator.
+ *  @param i index.
+ *  @return pointer to the ith row in this matrix.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t* Matrix2D::operator[]( const size_t i ) {
+  // -------------------------------------------------------------------------------------
+  return m[i];
+}
+
+
+// =======================================================================================
 /** @brief Constructor.
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Matrix2D::Matrix2D( void )
-:   a00(D_ZERO), a01(D_ZERO),
-    a10(D_ZERO), a11(D_ZERO) {
+inline  Matrix2D::Matrix2D( void ) :
+m{0,0},
+q{ D_ZERO, D_ZERO,
+     D_ZERO, D_ZERO }
+{
   // -------------------------------------------------------------------------------------
+  setRowPointer();
 }
 
 
@@ -165,11 +206,12 @@ inline  constexpr Matrix2D::Matrix2D( void )
  *  @param q11 element at index (1,1)
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Matrix2D::Matrix2D( const real8_t q00, const real8_t q01,
-                                      const real8_t q10, const real8_t q11 )
-:   a00(q00), a01(q01),
-    a10(q10), a11(q11) {
+inline  Matrix2D::Matrix2D( const real8_t q00, const real8_t q01,
+                                      const real8_t q10, const real8_t q11 ) :
+m{0,0}, q{ q00, q01, q10, q11 }
+{
   // -------------------------------------------------------------------------------------
+  setRowPointer();
 }
 
     
@@ -178,10 +220,13 @@ inline  constexpr Matrix2D::Matrix2D( const real8_t q00, const real8_t q01,
  *  @param q three by three static array.
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Matrix2D::Matrix2D( const real8_t q[2][2] )
-:   a00(q[0][0]), a01(q[0][1]),
-    a10(q[1][0]), a11(q[1][1]) {
+inline  Matrix2D::Matrix2D( const real8_t _q[2][2] ) :
+m{0,0},
+   q{ _q[0][0], _q[0][1],
+      _q[1][0], _q[1][1] }
+{
   // -------------------------------------------------------------------------------------
+  setRowPointer();
 }
 
 
@@ -193,10 +238,13 @@ inline  constexpr Matrix2D::Matrix2D( const real8_t q[2][2] )
  *  order: ROW_MAJOR, COLUMN_MAJOR, UPPER_TRIANGLE, LOWER_TRIANGLE
  */
 // ---------------------------------------------------------------------------------------
-inline  constexpr Matrix2D::Matrix2D( const real8_t* q )
-:   a00(q[0]), a01(q[1]),
-    a10(q[2]), a11(q[3]) {
+inline  Matrix2D::Matrix2D( const real8_t* _q ) :
+m{0,0},
+  q{ _q[0], _q[1],
+      _q[2], _q[3] }
+{
   // -------------------------------------------------------------------------------------
+  setRowPointer();
 }
 
 
@@ -231,8 +279,8 @@ inline Matrix2D Matrix2D::Ident( void ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D Matrix2D::T( void ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( this->a00, this->a10,
-                   this->a01, this->a11 );
+  return Matrix2D( this->q[0], this->q[2],
+                   this->q[1], this->q[3] );
 }
 
 
@@ -264,8 +312,8 @@ inline  std::string toString( Matrix2D* M, std::string sfmt,
 // ---------------------------------------------------------------------------------------
 inline  Matrix2D& Matrix2D::operator+= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->a00 += s;  this->a01 += s;
-  this->a10 += s;  this->a11 += s;
+  this->q[0] += s;  this->q[1] += s;
+  this->q[2] += s;  this->q[3] += s;
   return *this;
 }
 
@@ -280,8 +328,8 @@ inline  Matrix2D& Matrix2D::operator+= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix2D& Matrix2D::operator-= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->a00 -= s;  this->a01 -= s;
-  this->a10 -= s;  this->a11 -= s;
+  this->q[0] -= s;  this->q[1] -= s;
+  this->q[2] -= s;  this->q[3] -= s;
   return *this;
 }
 
@@ -296,8 +344,8 @@ inline  Matrix2D& Matrix2D::operator-= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix2D& Matrix2D::operator*= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->a00 *= s;  this->a01 *= s;
-  this->a10 *= s;  this->a11 *= s;
+  this->q[0] *= s;  this->q[1] *= s;
+  this->q[2] *= s;  this->q[3] *= s;
   return *this;
 }
 
@@ -312,8 +360,8 @@ inline  Matrix2D& Matrix2D::operator*= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix2D& Matrix2D::operator/= ( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  this->a00 /= s;  this->a01 /= s;
-  this->a10 /= s;  this->a11 /= s;
+  this->q[0] /= s;  this->q[1] /= s;
+  this->q[2] /= s;  this->q[3] /= s;
   return *this;
 }
 
@@ -333,8 +381,8 @@ inline  Matrix2D& Matrix2D::operator/= ( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix2D& Matrix2D::operator+= ( const Matrix2D& that ) {
   // -------------------------------------------------------------------------------------
-  this->a00 += that.a00;  this->a01 += that.a01;
-  this->a10 += that.a10;  this->a11 += that.a11;
+  this->q[0] += that.q[0];  this->q[1] += that.q[1];
+  this->q[2] += that.q[2];  this->q[3] += that.q[3];
   return *this;
 }
 
@@ -349,8 +397,8 @@ inline  Matrix2D& Matrix2D::operator+= ( const Matrix2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix2D& Matrix2D::operator-= ( const Matrix2D& that ) {
   // -------------------------------------------------------------------------------------
-  this->a00 -= that.a00;  this->a01 -= that.a01;
-  this->a10 -= that.a10;  this->a11 -= that.a11;
+  this->q[0] -= that.q[0];  this->q[1] -= that.q[1];
+  this->q[2] -= that.q[2];  this->q[3] -= that.q[3];
   return *this;
 }
 
@@ -365,8 +413,8 @@ inline  Matrix2D& Matrix2D::operator-= ( const Matrix2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix2D& Matrix2D::operator*= ( const Matrix2D& that ) {
   // -------------------------------------------------------------------------------------
-  this->a00 *= that.a00;  this->a01 *= that.a01;
-  this->a10 *= that.a10;  this->a11 *= that.a11;
+  this->q[0] *= that.q[0];  this->q[1] *= that.q[1];
+  this->q[2] *= that.q[2];  this->q[3] *= that.q[3];
   return *this;
 }
 
@@ -381,8 +429,8 @@ inline  Matrix2D& Matrix2D::operator*= ( const Matrix2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  Matrix2D& Matrix2D::operator/= ( const Matrix2D& that ) {
   // -------------------------------------------------------------------------------------
-  this->a00 /= that.a00;  this->a01 /= that.a01;
-  this->a10 /= that.a10;  this->a11 /= that.a11;
+  this->q[0] /= that.q[0];  this->q[1] /= that.q[1];
+  this->q[2] /= that.q[2];  this->q[3] /= that.q[3];
   return *this;
 }
 
@@ -395,7 +443,7 @@ inline  Matrix2D& Matrix2D::operator/= ( const Matrix2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  real8_t Matrix2D::det( void ) const {
   // -------------------------------------------------------------------------------------
-  return (a00 * a11) - (a01 * a10);
+  return (q[0] * q[3]) - (q[1] * q[2]);
 }
 
 
@@ -408,10 +456,10 @@ inline  real8_t Matrix2D::det( void ) const {
 // ---------------------------------------------------------------------------------------
 inline  void Matrix2D::swap( Matrix2D& that ) {
   // -------------------------------------------------------------------------------------
-  ::swap( this->a00, that.a00 );
-  ::swap( this->a01, that.a01 );
-  ::swap( this->a10, that.a10 );
-  ::swap( this->a11, that.a11 );
+  ::swap( this->q[0], that.q[0] );
+  ::swap( this->q[1], that.q[1] );
+  ::swap( this->q[2], that.q[2] );
+  ::swap( this->q[3], that.q[3] );
 }
 
 
@@ -423,8 +471,8 @@ inline  void Matrix2D::swap( Matrix2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  void Matrix2D::swap_row( void ) {
   // -------------------------------------------------------------------------------------
-  ::swap( a00, a10 );
-      ::swap( a01, a11 );
+  ::swap( q[0], q[2] );
+      ::swap( q[1], q[3] );
 }
 
 
@@ -436,8 +484,8 @@ inline  void Matrix2D::swap_row( void ) {
 // ---------------------------------------------------------------------------------------
 inline  void Matrix2D::swap_col( void ) {
   // -------------------------------------------------------------------------------------
-      ::swap( a00, a01 );
-      ::swap( a10, a11 );
+      ::swap( q[0], q[1] );
+      ::swap( q[2], q[3] );
 }
 
 
@@ -451,13 +499,13 @@ inline  void Matrix2D::getRow( real8_t r[2], size_t i ) {
   // -------------------------------------------------------------------------------------
   switch(i%2) {
     case 0:
-      r[0] = this->a00;
-      r[1] = this->a01;
+      r[0] = this->q[0];
+      r[1] = this->q[1];
       break;
     
     case 1:
-      r[0] = this->a10;
-      r[1] = this->a11;
+      r[0] = this->q[2];
+      r[1] = this->q[3];
       break;
     
     default:
@@ -477,13 +525,13 @@ inline  void Matrix2D::getColumn( real8_t c[2], size_t i ) {
   // -------------------------------------------------------------------------------------
   switch(i%2) {
     case 0:
-      c[0] = this->a00;
-      c[1] = this->a10;
+      c[0] = this->q[0];
+      c[1] = this->q[2];
       break;
     
     case 1:
-      c[0] = this->a01;
-      c[1] = this->a11;
+      c[0] = this->q[1];
+      c[1] = this->q[3];
       break;
     
     default:
@@ -500,8 +548,8 @@ inline  void Matrix2D::getColumn( real8_t c[2], size_t i ) {
 // ---------------------------------------------------------------------------------------
 inline  void Matrix2D::getDiagonal( real8_t d[2] ) {
   // -------------------------------------------------------------------------------------
-  d[0] = this->a00;
-  d[1] = this->a11;
+  d[0] = this->q[0];
+  d[1] = this->q[3];
 }
 
 
@@ -515,13 +563,13 @@ inline  void Matrix2D::setRow( const real8_t r[2], size_t i ) {
   // -------------------------------------------------------------------------------------
   switch(i%2) {
     case 0:
-      this->a00 = r[0];
-      this->a01 = r[1];
+      this->q[0] = r[0];
+      this->q[1] = r[1];
       break;
       
     case 1:
-      this->a10 = r[0];
-      this->a11 = r[1];
+      this->q[2] = r[0];
+      this->q[3] = r[1];
       break;
       
     default:
@@ -541,13 +589,13 @@ inline  void Matrix2D::setColumn( const real8_t c[2], size_t i ) {
   // -------------------------------------------------------------------------------------
   switch(i%3) {
     case 0:
-      this->a00 = c[0];
-      this->a10 = c[1];
+      this->q[0] = c[0];
+      this->q[2] = c[1];
       break;
       
     case 1:
-      this->a01 = c[0];
-      this->a11 = c[1];
+      this->q[1] = c[0];
+      this->q[3] = c[1];
       break;
       
     default:
@@ -564,8 +612,8 @@ inline  void Matrix2D::setColumn( const real8_t c[2], size_t i ) {
 // ---------------------------------------------------------------------------------------
 inline  void Matrix2D::setDiagonal( const real8_t d[2] ) {
   // -------------------------------------------------------------------------------------
-  this->a00 = d[0];
-  this->a11 = d[1];
+  this->q[0] = d[0];
+  this->q[3] = d[1];
 }
 
 
@@ -590,8 +638,8 @@ inline  void Matrix2D::setDiagonal( const real8_t d[2] ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator+( const real8_t& s, const Matrix2D& m ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( s+m.a00, s+m.a01,
-                   s+m.a10, s+m.a11 );
+  return Matrix2D( s+m.q[0], s+m.q[1],
+                   s+m.q[2], s+m.q[3] );
 }
 
 // =======================================================================================
@@ -605,8 +653,8 @@ inline  const Matrix2D operator+( const real8_t& s, const Matrix2D& m ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator-( const real8_t& s, const Matrix2D& m ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( s-m.a00, s-m.a01,
-                   s-m.a10, s-m.a11 );
+  return Matrix2D( s-m.q[0], s-m.q[1],
+                   s-m.q[2], s-m.q[3] );
 }
 
 // =======================================================================================
@@ -620,8 +668,8 @@ inline  const Matrix2D operator-( const real8_t& s, const Matrix2D& m ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator*( const real8_t& s, const Matrix2D& m ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( s*m.a00, s*m.a01,
-                   s*m.a10, s*m.a11 );
+  return Matrix2D( s*m.q[0], s*m.q[1],
+                   s*m.q[2], s*m.q[3] );
 }
 
 // =======================================================================================
@@ -635,8 +683,8 @@ inline  const Matrix2D operator*( const real8_t& s, const Matrix2D& m ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator/( const real8_t& s, const Matrix2D& m ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( s/m.a00, s/m.a01,
-                   s/m.a10, s/m.a11 );
+  return Matrix2D( s/m.q[0], s/m.q[1],
+                   s/m.q[2], s/m.q[3] );
 }
 
 
@@ -651,8 +699,8 @@ inline  const Matrix2D operator/( const real8_t& s, const Matrix2D& m ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator+( const Matrix2D& m, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( m.a00+s, m.a01+s,
-                   m.a10+s, m.a11+s );
+  return Matrix2D( m.q[0]+s, m.q[1]+s,
+                   m.q[2]+s, m.q[3]+s );
 }
 
 
@@ -667,8 +715,8 @@ inline  const Matrix2D operator+( const Matrix2D& m, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator-( const Matrix2D& m, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( m.a00-s, m.a01-s,
-                   m.a10-s, m.a11-s );
+  return Matrix2D( m.q[0]-s, m.q[1]-s,
+                   m.q[2]-s, m.q[3]-s );
 }
 
 
@@ -683,8 +731,8 @@ inline  const Matrix2D operator-( const Matrix2D& m, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator*( const Matrix2D& m, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( m.a00*s, m.a01*s,
-                   m.a10*s, m.a11*s );
+  return Matrix2D( m.q[0]*s, m.q[1]*s,
+                   m.q[2]*s, m.q[3]*s );
 }
 
 
@@ -699,8 +747,8 @@ inline  const Matrix2D operator*( const Matrix2D& m, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator/( const Matrix2D& m, const real8_t& s ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( m.a00/s, m.a01/s,
-                   m.a10/s, m.a11/s );
+  return Matrix2D( m.q[0]/s, m.q[1]/s,
+                   m.q[2]/s, m.q[3]/s );
 }
 
 
@@ -717,8 +765,8 @@ inline  const Matrix2D operator/( const Matrix2D& m, const real8_t& s ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator+( const Matrix2D& A, const Matrix2D& B ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( A.a00+B.a00, A.a01+B.a01,
-                   A.a10+B.a10, A.a11+B.a11 );
+  return Matrix2D( A.q[0]+B.q[0], A.q[1]+B.q[1],
+                   A.q[2]+B.q[2], A.q[3]+B.q[3] );
 }
 
 
@@ -733,8 +781,8 @@ inline  const Matrix2D operator+( const Matrix2D& A, const Matrix2D& B ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator-( const Matrix2D& A, const Matrix2D& B ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( A.a00-B.a00, A.a01-B.a01,
-                   A.a10-B.a10, A.a11-B.a11 );
+  return Matrix2D( A.q[0]-B.q[0], A.q[1]-B.q[1],
+                   A.q[2]-B.q[2], A.q[3]-B.q[3] );
 }
 
 
@@ -749,8 +797,8 @@ inline  const Matrix2D operator-( const Matrix2D& A, const Matrix2D& B ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator*( const Matrix2D& A, const Matrix2D& B ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( A.a00*B.a00, A.a01*B.a01,
-                   A.a10*B.a10, A.a11*B.a11 );
+  return Matrix2D( A.q[0]*B.q[0], A.q[1]*B.q[1],
+                   A.q[2]*B.q[2], A.q[3]*B.q[3] );
 }
 
 
@@ -765,8 +813,8 @@ inline  const Matrix2D operator*( const Matrix2D& A, const Matrix2D& B ) {
 // ---------------------------------------------------------------------------------------
 inline  const Matrix2D operator/( const Matrix2D& A, const Matrix2D& B ) {
   // -------------------------------------------------------------------------------------
-  return Matrix2D( A.a00/B.a00, A.a01/B.a01,
-                   A.a10/B.a10, A.a11/B.a11 );
+  return Matrix2D( A.q[0]/B.q[0], A.q[1]/B.q[1],
+                   A.q[2]/B.q[2], A.q[3]/B.q[3] );
 }
 
 

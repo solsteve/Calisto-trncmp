@@ -35,7 +35,7 @@
 
 #include <Matrix2D.hh>
 
-#define INIT_VAR(a) a00(a), a01(a), a10(a), a11(a)
+#define INIT_VAR(a) m{0,0}, q{a,a,a,a}
 
 
 // =======================================================================================
@@ -46,9 +46,10 @@
  *  order: ROW_MAJOR, COLUMN_MAJOR, UPPER_TRIANGLE, LOWER_TRIANGLE
  */
 // ---------------------------------------------------------------------------------------
-Matrix2D::Matrix2D( const real8_t* q, matrix2d_format_e order ) : INIT_VAR(D_ZERO) {
+Matrix2D::Matrix2D( const real8_t* _q, matrix2d_format_e order ) : INIT_VAR(D_ZERO) {
   // -------------------------------------------------------------------------------------
-  this->load( q, order );
+  setRowPointer();
+  this->load( _q, order );
 }
 
 
@@ -57,9 +58,10 @@ Matrix2D::Matrix2D( const real8_t* q, matrix2d_format_e order ) : INIT_VAR(D_ZER
  *  @param[in] m reference to source Matrix2D.
  */
 // ---------------------------------------------------------------------------------------
-Matrix2D::Matrix2D( const Matrix2D& m ) : INIT_VAR(D_ZERO) {
+Matrix2D::Matrix2D( const Matrix2D& _m ) : INIT_VAR(D_ZERO) {
   // -------------------------------------------------------------------------------------
-  this->copy(m);
+  setRowPointer();
+  this->copy(_m);
 }
 
 
@@ -68,9 +70,10 @@ Matrix2D::Matrix2D( const Matrix2D& m ) : INIT_VAR(D_ZERO) {
  *  @param[in] m pointer to source Matrix2D.
  */
 // ---------------------------------------------------------------------------------------
-Matrix2D::Matrix2D( const Matrix2D* m ) : INIT_VAR(D_ZERO) {
+Matrix2D::Matrix2D( const Matrix2D* _m ) : INIT_VAR(D_ZERO) {
   // -------------------------------------------------------------------------------------
-  this->copy(m);
+  setRowPointer();
+  this->copy(_m);
 }
 
 
@@ -91,8 +94,8 @@ Matrix2D::~Matrix2D( void ) {
 // ---------------------------------------------------------------------------------------
 void Matrix2D::set( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  a00 = s;    a01 = s;
-  a10 = s;    a11 = s;
+  q[0] = s;    q[1] = s;
+  q[2] = s;    q[3] = s;
 }
 
 
@@ -103,8 +106,8 @@ void Matrix2D::set( const real8_t s ) {
 // ---------------------------------------------------------------------------------------
 void Matrix2D::copy( const Matrix2D& that ) {
   // -------------------------------------------------------------------------------------
-  this->a00 = that.a00;    this->a01 = that.a01;
-  this->a10 = that.a10;    this->a11 = that.a11;
+  this->q[0] = that.q[0];    this->q[1] = that.q[1];
+  this->q[2] = that.q[2];    this->q[3] = that.q[3];
 }
 
 
@@ -126,8 +129,8 @@ void Matrix2D::copy( const Matrix2D* that ) {
 // ---------------------------------------------------------------------------------------
 void Matrix2D::fromArray( const real8_t A[2][2] ) {
   // -------------------------------------------------------------------------------------
-  a00 = A[0][0];    a01 = A[0][1];
-  a10 = A[1][0];    a11 = A[1][1];
+  q[0] = A[0][0];    q[1] = A[0][1];
+  q[2] = A[1][0];    q[3] = A[1][1];
 }
 
 
@@ -138,8 +141,8 @@ void Matrix2D::fromArray( const real8_t A[2][2] ) {
 // ---------------------------------------------------------------------------------------
 void Matrix2D::toArray( real8_t A[2][2] ) {
   // -------------------------------------------------------------------------------------
-  A[0][0] = a00;    A[0][1] = a01;
-  A[1][0] = a10;    A[1][1] = a11;
+  A[0][0] = q[0];    A[0][1] = q[1];
+  A[1][0] = q[2];    A[1][1] = q[3];
 }
 
 
@@ -154,29 +157,29 @@ void Matrix2D::toArray( real8_t A[2][2] ) {
 // ---------------------------------------------------------------------------------------
 real8_t* Matrix2D::load( const real8_t* src, matrix2d_format_e order ) {
   // -------------------------------------------------------------------------------------
-  real8_t* q = const_cast<real8_t*>(src);
+  real8_t* p = const_cast<real8_t*>(src);
   
   switch(order) {
     case ROW_MAJOR:
-      a00 = *q++;    a01 = *q++;
-      a10 = *q++;    a11 = *q++;
+      q[0] = *p++;    q[1] = *p++;
+      q[2] = *p++;    q[3] = *p++;
       break;
 
     case COLUMN_MAJOR:
-      a00 = *q++;    a10 = *q++;
-      a01 = *q++;    a11 = *q++;
+      q[0] = *p++;    q[2] = *p++;
+      q[1] = *p++;    q[3] = *p++;
       break;
 
     case UPPER_TRIANGLE:
-      a00 = *q++;    a01 = *q++;
-      /*      */     a11 = *q++;
-      a10 = a01;
+      q[0] = *p++;    q[1] = *p++;
+      /*        */    q[3] = *p++;
+      q[2] = q[1];
       break;
 
     case LOWER_TRIANGLE:
-      a00 = *q++;
-      a10 = *q++;    a11 = *q++;
-      a01 = a10;
+      q[0] = *p++;
+      q[2] = *p++;    q[3] = *p++;
+      q[1] = q[2];
       break;
 
     default:
@@ -184,7 +187,7 @@ real8_t* Matrix2D::load( const real8_t* src, matrix2d_format_e order ) {
       throw 1;
   }
   
-  return q;
+  return p;
 }
 
 
@@ -199,27 +202,27 @@ real8_t* Matrix2D::load( const real8_t* src, matrix2d_format_e order ) {
 // ---------------------------------------------------------------------------------------
 real8_t* Matrix2D::store( const real8_t* dst, matrix2d_format_e order ) {
   // -------------------------------------------------------------------------------------
-  real8_t* q = const_cast<real8_t*>(dst);
+  real8_t* p = const_cast<real8_t*>(dst);
   
   switch(order) {
     case ROW_MAJOR:
-      *q++ = a00;    *q++ = a01;
-      *q++ = a10;    *q++ = a11;
+      *p++ = q[0];    *p++ = q[1];
+      *p++ = q[2];    *p++ = q[3];
       break;
 
     case COLUMN_MAJOR:
-      *q++ = a00;    *q++ = a10;
-      *q++ = a01;    *q++ = a11;
+      *p++ = q[0];    *p++ = q[2];
+      *p++ = q[1];    *p++ = q[3];
       break;
 
     case UPPER_TRIANGLE:
-      *q++ = a00;    *q++ = a01;
-      /*      */     *q++ = a11;
+      *p++ = q[0];    *p++ = q[1];
+      /*       */     *p++ = q[3];
       break;
 
     case LOWER_TRIANGLE:
-      *q++ = a00;
-      *q++ = a10;    *q++ = a11;
+      *p++ = q[0];
+      *p++ = q[2];    *p++ = q[3];
       break;
 
     default:
@@ -227,7 +230,7 @@ real8_t* Matrix2D::store( const real8_t* dst, matrix2d_format_e order ) {
       throw 1;
   }
   
-  return q;
+  return p;
 }
 
 
@@ -245,71 +248,11 @@ real8_t* Matrix2D::store( const real8_t* dst, matrix2d_format_e order ) {
 std::string toString( Matrix2D& M, std::string sfmt, std::string cdel, std::string rdel ) {
   // -------------------------------------------------------------------------------------
   real8_t buffer[9];
-  real8_t *Q[3] = { (buffer+0), (buffer+3) };
+  real8_t *Q[2] = { (buffer+0), (buffer+3) };
   M.store( buffer, ROW_MAJOR );
   return toString( Q, 2, 2, sfmt, cdel, rdel );
 }
   
-
-// =======================================================================================
-/** @brief Index operator.
- *  @param r row    index.
- *  @param c column index.
- *  @return reference to the (r,c) position in this Matrix.
- */
-// ---------------------------------------------------------------------------------------
-real8_t& Matrix2D::at( const size_t r, const size_t c ) {
-  // -------------------------------------------------------------------------------------
-  char buf[64];
-
-  if ( r==0 ) {
-    if ( c==0 ) { return this->a00; }
-    if ( c==1 ) { return this->a01; }
-    snprintf( buf, 63, "column out of range: %lu expected (0 or 1)", c );
-    throw( new std::invalid_argument(buf) );
-  }
-  
-  if ( r==1 ) {
-    if ( c==0 ) { return this->a10; }
-    if ( c==1 ) { return this->a11; }
-    snprintf( buf, 63, "column out of range: %lu expected (0 or 1)", c );
-    throw( new std::invalid_argument(buf) );
-  }
-  
-  snprintf( buf, 63, "row out of range: %lu expected (0 or 1)", r );
-  throw( new std::invalid_argument(buf) );
-}
-
-
-// =======================================================================================
-/** @brief Index operator.
- *  @param r row    index.
- *  @param c column index.
- *  @return reference to the (r,c) position in this Matrix.
- */
-// ---------------------------------------------------------------------------------------
-real8_t& Matrix2D::operator()( const size_t r, const size_t c ) {
-  // -------------------------------------------------------------------------------------
-  char buf[64];
-
-  if ( r==0 ) {
-    if ( c==0 ) { return this->a00; }
-    if ( c==1 ) { return this->a01; }
-    snprintf( buf, 63, "column out of range: %lu expected (0 or 1)", c );
-    throw( new std::invalid_argument(buf) );
-  }
-  
-  if ( r==1 ) {
-    if ( c==0 ) { return this->a10; }
-    if ( c==1 ) { return this->a11; }
-    snprintf( buf, 63, "column out of range: %lu expected (0 or 1)", c );
-    throw( new std::invalid_argument(buf) );
-  }
-  
-  snprintf( buf, 63, "row out of range: %lu expected (0 or 1)", r );
-  throw( new std::invalid_argument(buf) );
-}
-
 
 // =======================================================================================
 /** @brief Dot Product.
@@ -323,10 +266,10 @@ real8_t& Matrix2D::operator()( const size_t r, const size_t c ) {
 const Matrix2D dot( const Matrix2D& A, const Matrix2D& B ) {
   // -------------------------------------------------------------------------------------
   
-  return Matrix2D( (A.a00*B.a00) + (A.a01*B.a10),
-                   (A.a00*B.a01) + (A.a01*B.a11),
-                   (A.a10*B.a00) + (A.a11*B.a10),
-                   (A.a10*B.a01) + (A.a11*B.a11) );
+  return Matrix2D( (A.q[0]*B.q[0]) + (A.q[1]*B.q[2]),
+                   (A.q[0]*B.q[1]) + (A.q[1]*B.q[3]),
+                   (A.q[2]*B.q[0]) + (A.q[3]*B.q[2]),
+                   (A.q[2]*B.q[1]) + (A.q[3]*B.q[3]) );
 }
 
 
@@ -342,8 +285,8 @@ const Matrix2D Matrix2D::inverse( void ) {
     throw( new std::domain_error( "Singular Matrix" ) );
   }
   
-  return Matrix2D(  a11 / D, -a01 / D,
-                   -a10 / D,  a00 / D );
+  return Matrix2D(  q[3] / D, -q[1] / D,
+                   -q[2] / D,  q[0] / D );
 }
 
 
@@ -355,8 +298,8 @@ const Matrix2D Matrix2D::inverse( void ) {
 real8_t sum( const Matrix2D& M ) {
   // -------------------------------------------------------------------------------------
   return
-      M.a00 + M.a01 +
-      M.a10 + M.a11;
+      M.q[0] + M.q[1] +
+      M.q[2] + M.q[3];
 }
 
 // =======================================================================================
@@ -367,8 +310,8 @@ real8_t sum( const Matrix2D& M ) {
 real8_t sumsq( const Matrix2D& M ) {
   // -------------------------------------------------------------------------------------
   return
-      (M.a00*M.a00) + (M.a01*M.a01) + 
-      (M.a10*M.a10) + (M.a11*M.a11);
+      (M.q[0]*M.q[0]) + (M.q[1]*M.q[1]) + 
+      (M.q[2]*M.q[2]) + (M.q[3]*M.q[3]);
 }
 
 
@@ -382,10 +325,10 @@ real8_t sumsq( const Matrix2D& M ) {
 // ---------------------------------------------------------------------------------------
 real8_t sumsq( const Matrix2D& A, const Matrix2D& B ) {
   // -------------------------------------------------------------------------------------
-  real8_t d0 = (A.a00 - B.a00);
-  real8_t d1 = (A.a01 - B.a01);
-  real8_t d2 = (A.a10 - B.a10);
-  real8_t d3 = (A.a11 - B.a11);
+  real8_t d0 = (A.q[0] - B.q[0]);
+  real8_t d1 = (A.q[1] - B.q[1]);
+  real8_t d2 = (A.q[2] - B.q[2]);
+  real8_t d3 = (A.q[3] - B.q[3]);
   return (d0*d0)+(d1*d1)+(d2*d2)+(d3*d3);
 }
 

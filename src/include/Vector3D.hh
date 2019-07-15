@@ -141,6 +141,30 @@ const Vector3D cross( const Vector3D* A, const Vector3D* B );
 
 
 // =======================================================================================
+/** @brief Index operator.
+ *  @param i index.
+ *  @return reference to the ith position in this vector.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t& Vector3D::at( const size_t i ) {
+  // -------------------------------------------------------------------------------------
+  return x[i];
+}
+
+
+// =======================================================================================
+/** @brief Index operator.
+ *  @param i index.
+ *  @return reference to the ith position in this vector.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t& Vector3D::operator[]( const size_t i ) {
+  // -------------------------------------------------------------------------------------
+  return x[i];
+}
+
+
+// =======================================================================================
 /** @brief Equals.
  *  @param[in] A pointer to first  Vector3D.
  *  @param[in] B pointer to second Vector3D.

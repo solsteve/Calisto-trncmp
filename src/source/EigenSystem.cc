@@ -56,30 +56,41 @@ extern "C" {
 // ---------------------------------------------------------------------------------------
 EigenSystem::EigenSystem( int32_t n, bool sym ) :
   is_sym(sym), N(n), A(0), LDA(n), WR(0), WI(0),
-  VL(0), LDVL(1), VR(0), LDVR(n),
+  VL(0), LDVL(n), VR(0), LDVR(1),
   WORK(0), LWORK(-1), INFO(0) {
   // -------------------------------------------------------------------------------------
+  char NVEC = 'N';
+  char YVEC = 'V';
+  char UPPR = 'U';
   A     = new real8_t[LDA*N];
   WR    = new real8_t[N];
   WI    = new real8_t[N];
-  VL    = new real8_t[N];
-  VR    = new real8_t[LDVL*N];
-  
-  char    Nchar='N';
-  char    Vchar='V';
-  real8_t dumA[1];
-  real8_t dumWR[1];
-  real8_t dumWI[1];
-  real8_t dumVL[1];
-  real8_t dumVR[1];
-  real8_t wkopt[1];
+  VL    = new real8_t[LDVL*N];
+  VR    = new real8_t[LDVR*N];
 
-  dgeev_( &Nchar, &Vchar, &N, dumA, &LDA, dumWR, dumWI,
-	  dumVL, &LDVL, dumVR, &LDVR,
-	  wkopt, &LWORK, &INFO );
+  vec_real = new real8_t*[N];
+  vec_imag = new real8_t*[N];
+
+  real8_t* br = new real8_t[N*N];
+  real8_t* bi = new real8_t[N*N];
+
+  for ( int32_t i=0; i<N; i++ ) {
+    vec_real[i] = (br + i*N);
+    vec_imag[i] = (bi + i*N);
+  } 
+  
+  real8_t wkopt;
+  LWORK = -1;
+  if ( sym ) {
+    dsyev_( &YVEC, &UPPR, &N, A, &LDA, WR, &wkopt, &LWORK, &INFO );
+  } else {
+    dgeev_( &YVEC, &NVEC, &N, A, &LDA, WR, WI,
+            VL, &LDVL, VR, &LDVR,
+            &wkopt, &LWORK, &INFO );
+  }
 
   if ( 0 == INFO ) {
-    LWORK = (int32_t)floor(wkopt[0]);
+    LWORK = (int32_t)floor(wkopt);
 
     WORK = new real8_t[LWORK];
     INFO = 0;
@@ -105,6 +116,28 @@ EigenSystem::~EigenSystem( void ) {
   if (static_cast<real8_t*>(0) != VL)   { delete[] VL;   }
   if (static_cast<real8_t*>(0) != VR)   { delete[] VR;   }
   if (static_cast<real8_t*>(0) != WORK) { delete[] WORK; }
+
+  if (static_cast<real8_t**>(0) != vec_real) {
+    real8_t* p = vec_real[0];
+    if (static_cast<real8_t*>(0) != p) {
+      delete[] p;
+    }
+    for ( int32_t i=0; i<N; i++ ) {
+      vec_real[i] = static_cast<real8_t*>(0);
+    }
+    delete[] vec_real;
+  }
+
+  if (static_cast<real8_t**>(0) != vec_imag) {
+    real8_t* p = vec_imag[0];
+    if (static_cast<real8_t*>(0) != p) {
+      delete[] p;
+    }
+    for ( int32_t i=0; i<N; i++ ) {
+      vec_imag[i] = static_cast<real8_t*>(0);
+    }
+    delete[] vec_imag;
+  }
 }
 
 
@@ -279,35 +312,94 @@ void EigenSystem::setLower( real8_t* data ) {
 // ---------------------------------------------------------------------------------------
 void EigenSystem::compute( void ) {
   // -------------------------------------------------------------------------------------
-  char    Nchar='N';
-  char    Vchar='V';
+  char NVEC = 'N';
+  char YVEC = 'V';
+  char UPPR = 'U';
   if ( is_sym ) {
-    MARK;
-    //logger->error( LOCATION, "Symetric eigenvalue not yet implemented." );
+    dsyev_( &YVEC, &UPPR, &N, A, &LDA, WR, WORK, &LWORK, &INFO );
+    if ( 0 == INFO ) {
+      for ( int32_t i=0; i<N; i++ ) {
+        for ( int32_t j=0; j<N; j++ ) {
+            vec_real[j][i] = A[i+j*LDA];
+            vec_imag[j][i] = D_ZERO;
+        }
+      }
+    } else {
+      if ( 0 < INFO ) {
+	logger->error( "DGEEV: failed to compute eigenvalues." );
+	throw 1;
+      } else {
+	logger->error( "DGEEV: %dth argument was illegal", -INFO );
+	throw 1;
+      }
+    }
   } else {
-    dgeev_( &Nchar, &Vchar, &N, A, &LDA, WR, WI,
-	    VL, &LDVL, VR, &LDVR, WORK, &LWORK, &INFO );
+    dgeev_( &YVEC, &NVEC, &N, A, &LDA, WR, WI,
+	    VL, &LDVL, VR, &N, WORK, &LWORK, &INFO );
+    if ( 0 == INFO ) {
+      int32_t i, j;
+      for ( i=0; i<N; i++ ) {
+        j = 0;
+        while ( j<N ) {
+          if ( isZero( WI[j] ) ) {
+            vec_real[j][i] = VL[i+j*LDVL];
+            vec_imag[j][i] = D_ZERO;
+            j += 1;
+          } else {
+            vec_real[j][i]   =  VL[i+j*LDVL];
+            vec_imag[j][i]   =  VL[i+(j+1)*LDVL];
+            vec_real[j+1][i] =  VL[i+j*LDVL];
+            vec_imag[j+1][i] = -VL[i+(j+1)*LDVL];
+            j += 2;
+          }
+        }
+      }
+    } else {
+      if ( 0 < INFO ) {
+	logger->error( "DGEEV: failed to compute eigenvalues." );
+	throw 1;
+      } else {
+	logger->error( "DGEEV: %dth argument was illegal", -INFO );
+	throw 1;
+      }
+    }
   }
 }
 
 
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
 void EigenSystem::display( std::ostream& os, std::string fmt ) {
+  // -------------------------------------------------------------------------------------
+  int32_t i, j;
   os << "Order: " << N << "\n";
-  real8_t *ptr = VR;
-  for ( int32_t i=0; i<N; i++ ) {
+  for ( i=0; i<N; i++ ) {
     os << "( ";
     os << c_fmt( fmt, WR[i] );
-    os << ", ";
-    os << c_fmt( fmt, WI[i] );
-    os << " ) [";
-    os << c_fmt( fmt, *ptr );
-    ptr++;
-    for ( int32_t j=1; j<N; j++ ) {
+    if ( isNotZero( WI[i] ) ) {
       os << ", ";
-      os << c_fmt( fmt, *ptr );
-      ptr++;
+      os << c_fmt( fmt, WI[i] );
     }
+    os << " ) [";
+
+    for ( j=0; j<N; j++ ) {
+      os << "(";
+      if ( isZero(vec_imag[i][j]) ) {
+	os << c_fmt( fmt, vec_real[i][j] );
+      } else {
+	os << c_fmt( fmt, vec_real[i][j] );
+	os << ", ";
+	os << c_fmt( fmt, vec_imag[i][j] );
+      }
+      os << "),";
+    }
+    
     os << " ]\n";
+  }
+  
+  for ( i=0; i<N*N; i++ ) {
+    os << c_fmt( fmt, VL[i] );
+    os << "\n";
   }
 }
 

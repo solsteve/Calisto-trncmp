@@ -79,9 +79,9 @@ bool eigen( Vector3D& eval, Vector3D& ev1, Vector3D& ev2, Vector3D& ev3, const M
 inline  const Vector3D getRow( const Matrix3D& M, size_t index ) {
   // -------------------------------------------------------------------------------------
   switch(index%3) {
-    case 0: return Vector3D( M.a00, M.a01, M.a02 );
-    case 1: return Vector3D( M.a10, M.a11, M.a12 );
-    case 2: return Vector3D( M.a20, M.a21, M.a22 );
+    case 0: return Vector3D( M.q[0], M.q[1], M.q[2] );
+    case 1: return Vector3D( M.q[3], M.q[4], M.q[5] );
+    case 2: return Vector3D( M.q[6], M.q[7], M.q[8] );
       
     default:
       std::cerr << "This Should not be possible\n";
@@ -100,9 +100,9 @@ inline  const Vector3D getRow( const Matrix3D& M, size_t index ) {
 inline  const Vector3D getColumn( const Matrix3D& M, size_t index ) {
   // -------------------------------------------------------------------------------------
   switch(index%3) {
-    case 0: return Vector3D( M.a00, M.a10, M.a20 );
-    case 1: return Vector3D( M.a01, M.a11, M.a21 );
-    case 2: return Vector3D( M.a02, M.a12, M.a22 );
+    case 0: return Vector3D( M.q[0], M.q[3], M.q[6] );
+    case 1: return Vector3D( M.q[1], M.q[4], M.q[7] );
+    case 2: return Vector3D( M.q[2], M.q[5], M.q[8] );
       
     default:
       std::cerr << "This Should not be possible\n";
@@ -119,7 +119,7 @@ inline  const Vector3D getColumn( const Matrix3D& M, size_t index ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector3D getDiagonal( const Matrix3D& M ) {
   // -------------------------------------------------------------------------------------
-return Vector3D( M.a00, M.a11, M.a22 );
+return Vector3D( M.q[0], M.q[4], M.q[8] );
 }
 
 
@@ -139,9 +139,9 @@ return Vector3D( M.a00, M.a11, M.a22 );
 inline  void setRow( Matrix3D& M, const Vector3D& V, size_t index ) {
   // -------------------------------------------------------------------------------------
   switch(index%3) {
-    case 0: M.a00 = V.x[0];    M.a01 = V.x[1];    M.a02 = V.x[2];    break;
-    case 1: M.a10 = V.x[0];    M.a11 = V.x[1];    M.a12 = V.x[2];    break;
-    case 2: M.a20 = V.x[0];    M.a21 = V.x[1];    M.a22 = V.x[2];    break;
+    case 0: M.q[0] = V.x[0];    M.q[1] = V.x[1];    M.q[2] = V.x[2];    break;
+    case 1: M.q[3] = V.x[0];    M.q[4] = V.x[1];    M.q[5] = V.x[2];    break;
+    case 2: M.q[6] = V.x[0];    M.q[7] = V.x[1];    M.q[8] = V.x[2];    break;
       
     default:
       std::cerr << "This Should not be possible\n";
@@ -162,9 +162,9 @@ inline  void setRow( Matrix3D& M, const Vector3D& V, size_t index ) {
 inline  void setColumn( Matrix3D& M, const Vector3D& V, size_t index ) {
   // -------------------------------------------------------------------------------------
   switch(index%3) {
-    case 0: M.a00 = V.x[0];    M.a10 = V.x[1];    M.a20 = V.x[2];    break;
-    case 1: M.a01 = V.x[0];    M.a11 = V.x[1];    M.a21 = V.x[2];    break;
-    case 2: M.a02 = V.x[0];    M.a12 = V.x[1];    M.a22 = V.x[2];    break;
+    case 0: M.q[0] = V.x[0];    M.q[3] = V.x[1];    M.q[6] = V.x[2];    break;
+    case 1: M.q[1] = V.x[0];    M.q[4] = V.x[1];    M.q[7] = V.x[2];    break;
+    case 2: M.q[2] = V.x[0];    M.q[5] = V.x[1];    M.q[8] = V.x[2];    break;
       
     default:
       std::cerr << "This Should not be possible\n";
@@ -183,7 +183,7 @@ inline  void setColumn( Matrix3D& M, const Vector3D& V, size_t index ) {
 // ---------------------------------------------------------------------------------------
 inline  void setDiagonal( Matrix3D& M, const Vector3D& V ) {
   // -------------------------------------------------------------------------------------
-  M.a00 = V.x[0];    M.a11 = V.x[1];    M.a22 = V.x[2];
+  M.q[0] = V.x[0];    M.q[4] = V.x[1];    M.q[8] = V.x[2];
 }
 
 
@@ -217,7 +217,7 @@ inline  const Matrix3D diagonal( const Vector3D& V ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector3D diagonal( const Matrix3D& M ) {
   // -------------------------------------------------------------------------------------
-  return Vector3D( M.a00, M.a11, M.a22 );
+  return Vector3D( M.q[0], M.q[4], M.q[8] );
 }
 
 
@@ -236,9 +236,9 @@ inline  const Vector3D diagonal( const Matrix3D& M ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector3D dot( const Vector3D& V, const Matrix3D& M ) {
   // -------------------------------------------------------------------------------------
-  return Vector3D( (V.x[0] * M.a00) + (V.x[1] * M.a10) + (V.x[2] * M.a20),
-                   (V.x[0] * M.a01) + (V.x[1] * M.a11) + (V.x[2] * M.a21),
-                   (V.x[0] * M.a02) + (V.x[1] * M.a12) + (V.x[2] * M.a22) );
+  return Vector3D( (V.x[0] * M.q[0]) + (V.x[1] * M.q[3]) + (V.x[2] * M.q[6]),
+                   (V.x[0] * M.q[1]) + (V.x[1] * M.q[4]) + (V.x[2] * M.q[7]),
+                   (V.x[0] * M.q[2]) + (V.x[1] * M.q[5]) + (V.x[2] * M.q[8]) );
 }
 
 // =======================================================================================
@@ -252,9 +252,9 @@ inline  const Vector3D dot( const Vector3D& V, const Matrix3D& M ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector3D dot( const Matrix3D& M, const Vector3D& V ) {
   // -------------------------------------------------------------------------------------
-  return Vector3D( (V.x[0] * M.a00) + (V.x[1] * M.a01) + (V.x[2] * M.a02),
-                   (V.x[0] * M.a10) + (V.x[1] * M.a11) + (V.x[2] * M.a12),
-                   (V.x[0] * M.a20) + (V.x[1] * M.a21) + (V.x[2] * M.a22) );
+  return Vector3D( (V.x[0] * M.q[0]) + (V.x[1] * M.q[1]) + (V.x[2] * M.q[2]),
+                   (V.x[0] * M.q[3]) + (V.x[1] * M.q[4]) + (V.x[2] * M.q[5]),
+                   (V.x[0] * M.q[6]) + (V.x[1] * M.q[7]) + (V.x[2] * M.q[8]) );
 }
 
 // =======================================================================================
@@ -268,9 +268,9 @@ inline  const Vector3D dot( const Matrix3D& M, const Vector3D& V ) {
 // ---------------------------------------------------------------------------------------
 inline  void dot( Vector3D& C, const Vector3D& V, const Matrix3D& M ) {
   // -------------------------------------------------------------------------------------
-  C.x[0] = (V.x[0] * M.a00) + (V.x[1] * M.a10) + (V.x[2] * M.a20);
-  C.x[1] = (V.x[0] * M.a01) + (V.x[1] * M.a11) + (V.x[2] * M.a21);
-  C.x[2] = (V.x[0] * M.a02) + (V.x[1] * M.a12) + (V.x[2] * M.a22);
+  C.x[0] = (V.x[0] * M.q[0]) + (V.x[1] * M.q[3]) + (V.x[2] * M.q[6]);
+  C.x[1] = (V.x[0] * M.q[1]) + (V.x[1] * M.q[4]) + (V.x[2] * M.q[7]);
+  C.x[2] = (V.x[0] * M.q[2]) + (V.x[1] * M.q[5]) + (V.x[2] * M.q[8]);
 }
 
 // =======================================================================================
@@ -284,9 +284,9 @@ inline  void dot( Vector3D& C, const Vector3D& V, const Matrix3D& M ) {
 // ---------------------------------------------------------------------------------------
 inline  void dot( Vector3D& C, const Matrix3D& M, const Vector3D& V ) {
   // -------------------------------------------------------------------------------------
-  C.x[0] = (V.x[0] * M.a00) + (V.x[1] * M.a01) + (V.x[2] * M.a02);
-  C.x[1] = (V.x[0] * M.a10) + (V.x[1] * M.a11) + (V.x[2] * M.a12);
-  C.x[2] = (V.x[0] * M.a20) + (V.x[1] * M.a21) + (V.x[2] * M.a22);
+  C.x[0] = (V.x[0] * M.q[0]) + (V.x[1] * M.q[1]) + (V.x[2] * M.q[2]);
+  C.x[1] = (V.x[0] * M.q[3]) + (V.x[1] * M.q[4]) + (V.x[2] * M.q[5]);
+  C.x[2] = (V.x[0] * M.q[6]) + (V.x[1] * M.q[7]) + (V.x[2] * M.q[8]);
 }
 
 
