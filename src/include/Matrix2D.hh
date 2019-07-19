@@ -146,9 +146,6 @@ std::string    toString  ( Matrix2D* M,
                            std::string cdel = DEFAULT_PRINT_COL_DELIM,
                            std::string rdel = DEFAULT_PRINT_ROW_DELIM );
 
-#endif
-
-
 // =======================================================================================
 /** @brief Set Row Pointers.
  */
@@ -832,6 +829,7 @@ inline  const Matrix2D dot( const Matrix2D* A, const Matrix2D* B ) {
   return dot( *A, *B );
 }
 
+#endif
 
 // =======================================================================================
 // **                                  M A T R I X 2 D                                  **

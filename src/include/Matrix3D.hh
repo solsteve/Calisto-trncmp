@@ -149,9 +149,6 @@ std::string    toString  ( Matrix3D* M,
                            std::string cdel = DEFAULT_PRINT_COL_DELIM,
                            std::string rdel = DEFAULT_PRINT_ROW_DELIM );
 
-#endif
-
-
 // =======================================================================================
 /** @brief Set Row Pointers.
  */
@@ -988,6 +985,9 @@ inline  const Matrix3D dot( const Matrix3D* A, const Matrix3D* B ) {
   // -------------------------------------------------------------------------------------
   return dot( *A, *B );
 }
+
+
+#endif
 
 
 // =======================================================================================

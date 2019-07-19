@@ -41,11 +41,11 @@
 #include <trncmp.hh>
 
 #ifndef DEFAULT_PRINT_FORMAT
-#define DEFAULT_PRINT_FORMAT "%g"         ///< Default element format
+#define DEFAULT_PRINT_FORMAT    "%g"      ///< Default element format
 #endif
 
 #ifndef DEFAULT_PRINT_DELIM
-#define DEFAULT_PRINT_DELIM  " "          ///< Default element separator
+#define DEFAULT_PRINT_DELIM      " "      ///< Default element separator
 #endif
 
 #ifndef DEFAULT_PRINT_COL_DELIM

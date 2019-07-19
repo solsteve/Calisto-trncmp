@@ -30,6 +30,14 @@
  *  @date   2019-Jul-12
  *
  *  Provides the methods for a BLAS and LAPACK Compatable Vector.
+ *
+ *  Given:
+ *     ne   = 5
+ *     incx = 3
+ *     xn   = 13    =   1 + (ne-1)*incx = 1 + (5-1)*3
+ *
+ *  The following Vector {0,1,2,3,4} would be stored in memory as:
+ *     0|.|.|1|.|.|2|.|.|3|.|.|4
  */
 // =======================================================================================
 

@@ -37,6 +37,7 @@ project( blas CXX )
 
 add_executable(${PROJECT_NAME} ../main.cc
   utest_vector
+  utest_matrix
   )
 
 target_link_libraries(${PROJECT_NAME} GTest::GTest GTest::Main callisto ${lapackblas_libraries})

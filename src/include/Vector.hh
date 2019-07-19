@@ -30,6 +30,16 @@
  *  @date   2019-Jul-12
  *
  *  Provides the interface for a BLAS and LAPACK Compatable Vector.
+ *
+ *  \verbatim
+ *  Given:
+ *     ne   = 5
+ *     incx = 3
+ *     xn   = 13    =   1 + (ne-1)*incx = 1 + (5-1)*3
+ *
+ *  The following Vector {0,1,2,3,4} would be stored in memory as:
+ *     0|.|.|1|.|.|2|.|.|3|.|.|4
+ *  \endverbatim
  */
 // =======================================================================================
 
@@ -44,7 +54,7 @@
 // =======================================================================================
 class Vector {
   // -------------------------------------------------------------------------------------
-protected:
+ protected:
   real8_t * x;     ///< pointer to vectors data vector.
   int32_t   xn;    ///< allocated buffer length.
   int32_t   ne;    ///< number of elements.
@@ -53,7 +63,7 @@ protected:
   void init    ( const int32_t n, const int32_t inc );
   void destroy ( void );
   
-public:
+ public:
   Vector  ( void );
   Vector  ( real8_t* a, int32_t n );
   Vector  ( const int32_t n, const int32_t inc=1 );
@@ -134,11 +144,11 @@ std::string toString( std::string lp, Vector& V, std::string rp,
 // ----- BLAS Level One Interface --------------------------------------------------------
 
 /*
-AXPY
-DOT
-NRM2
-SUM
-AMAX
+  AXPY
+  DOT
+  NRM2
+  SUM
+  AMAX
 */
 
 #define INIT_VEC(a) x(a), xn(a), ne(a), incx(a)
@@ -172,7 +182,7 @@ inline  Vector::Vector( void ) : INIT_VEC(0) {
 // =======================================================================================
 // ---------------------------------------------------------------------------------------
 inline  Vector::Vector( real8_t* a, int32_t n ) : INIT_VEC(0) {
-// -------------------------------------------------------------------------------------
+  // -------------------------------------------------------------------------------------
   init(n,1);
   load(a);
 }
