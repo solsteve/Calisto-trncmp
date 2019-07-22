@@ -25,7 +25,7 @@
 // ----- Modification History ------------------------------------------------------------
 //
 /** @brief  Test LAPACK/BLAS ROUTINES
- *  @file   StopWatch.hh
+ *  @file   ctest_lapack.hh
  *  @author Stephen W. Soliday
  *  @date   2014-01-27  Original release.
  *  @date   2019-Jun-14 CMake refactorization.
@@ -495,7 +495,6 @@ int main( void ) {
 }
 
 
-
-
-		      
-		     
+// =======================================================================================
+// **                              C T E S T _ L A P A C K                              **
+// ======================================================================== END FILE =====

@@ -75,7 +75,7 @@ namespace {
   
     { // ----- test: copy constructor --------------------------------------
       real8_t test[NN];
-      Vector V(data,NN);
+      Vector V(NN,data);
       Vector Z(V);
       Z.store( test );
       check( data, test, NN );
@@ -90,14 +90,14 @@ namespace {
     const int32_t NN = sizeof(data)/sizeof(data[0]);
   
     { // ----- test: copy --------------------------------------------------
-      Vector V(data,NN);
+      Vector V(NN,data);
       Vector Z;
       Z.copy(V);
       check( Z, data );
     }
 
     { // ----- test: copy --------------------------------------------------
-      Vector V(data,NN);
+      Vector V(NN,data);
       Vector Z;
       Z = V;
       check( Z, data );
@@ -112,13 +112,13 @@ namespace {
     const int32_t NN = sizeof(data)/sizeof(data[0]);
 
     { // ----- test: print --------------------------------------------------
-      Vector V(data,NN);
+      Vector V(NN,data);
       std::string str = toString( V, "%.2f", ";" );
       EXPECT_STREQ( "3.10;4.10;5.90", str.c_str() );
     }
 
     { // ----- test: print --------------------------------------------------
-      Vector V(data,NN);
+      Vector V(NN,data);
       std::string str = toString( "a=[", V, "];", "%.2f", "," );
       EXPECT_STREQ( "a=[3.10,4.10,5.90];", str.c_str() );
     }
@@ -133,8 +133,8 @@ namespace {
     const int32_t NN = sizeof(adat)/sizeof(adat[0]);
 
     { // ----- test: print --------------------------------------------------
-      Vector A(adat,NN);
-      Vector B(bdat,NN);
+      Vector A(NN,adat);
+      Vector B(NN,bdat);
 
       check(A,adat);
       check(B,bdat);
@@ -156,7 +156,7 @@ namespace {
     const int32_t NN = sizeof(adat)/sizeof(adat[0]);
 
     { // ----- test: print --------------------------------------------------
-      Vector A(adat,NN);
+      Vector A(NN,adat);
 
       check(A,adat);
 
@@ -166,7 +166,7 @@ namespace {
     }
 
     { // ----- test: print --------------------------------------------------
-      Vector A(bdat,NN);
+      Vector A(NN,bdat);
 
       check(A,bdat);
 
@@ -192,7 +192,7 @@ namespace {
     real8_t test4[] = { 6.2, 5.3, 0.7, 1.7, 6.3, -1.0, 12.5, 8.0 };
 
     {
-      Vector A( adat, NN );
+      Vector A( NN, adat );
       check( A, adat );
 
       A.add( 1.2 );
@@ -200,8 +200,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -210,9 +210,9 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
-      Vector C( cdat, 2 );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
+      Vector C( 2,  cdat );
       check( A, adat );
       check( B, bdat );
 
@@ -221,8 +221,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -231,8 +231,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -258,7 +258,7 @@ namespace {
     real8_t test4[] = { -0.8, -1.7, -6.3, -5.3, -0.7, -8.0, 5.5, 1.0 };
 
     {
-      Vector A( adat, NN );
+      Vector A( NN, adat );
       check( A, adat );
 
       A.sub( 1.2 );
@@ -266,8 +266,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -276,9 +276,9 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
-      Vector C( cdat, 2 );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
+      Vector C( 2,  cdat );
       check( A, adat );
       check( B, bdat );
 
@@ -287,8 +287,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -297,8 +297,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -324,7 +324,7 @@ namespace {
     real8_t test4[] = { 9.45, 6.30, -9.80, -6.30, 9.80, -15.75, 31.50, 15.75 };
 
     {
-      Vector A( adat, NN );
+      Vector A( NN, adat );
       check( A, adat );
 
       A.mul( 1.2 );
@@ -332,8 +332,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -342,9 +342,9 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
-      Vector C( cdat, 2 );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
+      Vector C( 2,  cdat );
       check( A, adat );
       check( B, bdat );
 
@@ -353,8 +353,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -363,8 +363,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -396,7 +396,7 @@ namespace {
 			 2.571428571428572e+00,  1.285714285714286e+00 };
 
     {
-      Vector A( adat, NN );
+      Vector A( NN, adat );
       check( A, adat );
 
       A.div( 1.2 );
@@ -404,8 +404,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -414,9 +414,9 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
-      Vector C( cdat, 2 );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
+      Vector C( 2,  cdat );
       check( A, adat );
       check( B, bdat );
 
@@ -425,8 +425,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -435,8 +435,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 
@@ -453,8 +453,8 @@ namespace {
     real8_t adat[] = { 3.1, -4.1, -5.9,  2.6, -5.3,  5.8, 9.7, -9.2 };
     real8_t bdat[] = { 2.7,  1.8, -2.8, -1.8,  2.8, -4.5, 9.0,  4.5 };
     const int32_t NN = sizeof(adat)/sizeof(adat[0]);
-    Vector A( adat, NN );
-    Vector B( bdat, NN );
+    Vector A( NN, adat );
+    Vector B( NN, bdat );
     EXPECT_NEAR( 17.79, A.dot( B ), 1.0e-14 );  
   }
 
@@ -467,7 +467,7 @@ namespace {
     // -------------------------------------------------------------------------------------
     real8_t adat[] = { 3.1, -4.1, -5.9,  2.6, -5.3,  5.8, 9.7, -9.2 };
     const int32_t NN = sizeof(adat)/sizeof(adat[0]);
-    Vector A( adat, NN );
+    Vector A( NN, adat );
 
     EXPECT_DOUBLE_EQ( 45.7,         A.norm1()  );
     EXPECT_DOUBLE_EQ( sqrt(308.45), A.norm()   );
@@ -481,8 +481,8 @@ namespace {
     real8_t adat[] = { 3.1, -4.1, -5.9,  2.6, -5.3,  5.8, 9.7, -9.2 };
     real8_t bdat[] = { 2.7,  1.8, -2.8, -1.8,  2.8, -4.5, 9.0,  4.5 };
     const int32_t NN = sizeof(adat)/sizeof(adat[0]);
-    Vector A( adat, NN );
-    Vector B( bdat, NN );
+    Vector A( NN, adat );
+    Vector B( NN, bdat );
 
     EXPECT_DOUBLE_EQ( -3.3,   A.sum()  );
     EXPECT_DOUBLE_EQ( 308.45, A.sumsq()   );
@@ -496,8 +496,8 @@ namespace {
     real8_t adat[] = { 3.1, -4.1, -5.9,  2.6, -5.3,  5.8, 9.7, -9.2 };
     real8_t bdat[] = { 2.7,  1.8, -2.8, -1.8,  2.8, -4.5, 9.0,  4.5 };
     const int32_t NN = sizeof(adat)/sizeof(adat[0]);
-    Vector A( adat, NN );
-    Vector B( bdat, NN );
+    Vector A( NN, adat );
+    Vector B( NN, bdat );
 
     EXPECT_DOUBLE_EQ( 46.6,         A.dist1(B)  );
     EXPECT_DOUBLE_EQ( sqrt(423.82), A.dist(B)   );
@@ -512,7 +512,7 @@ namespace {
     const int32_t NN = sizeof(adat)/sizeof(adat[0]);
 
     {
-      Vector A( adat, NN );
+      Vector A( NN, adat );
       check( A, adat );
 
       A.normalize();
@@ -521,8 +521,8 @@ namespace {
     }
 
     {
-      Vector A( adat, NN );
-      Vector B( bdat, NN );
+      Vector A( NN, adat );
+      Vector B( NN, bdat );
       check( A, adat );
       check( B, bdat );
 

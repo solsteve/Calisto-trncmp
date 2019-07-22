@@ -49,7 +49,7 @@ class Matrix3D {
   void setRowPointer( void );
   real8_t*  m[3];   ///< row pointer
 
-public:
+ public:
   real8_t   q[9];   ///< matrix buffer
 
   Matrix3D  ( void );
