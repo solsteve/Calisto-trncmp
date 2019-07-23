@@ -181,18 +181,33 @@ def TEST02():
 
 """ % (m,k,k,n,m,n) )
 
-def TEST03():
-    n = 5
+
+D_N = [ 'D_ZERO', 'D_ONE', 'D_TWO', 'D_THREE', 'D_FOUR', 'D_FIVE', 'D_SIX', 'D_SEVEN', 'D_EIGHT', 'D_NINE' ]
+
+    
+def TEST03(n):
     A  = table(n,n)
     B = la.inv(A)
     d = la.det(A)
+    print('\n{')
     print('   ',CForm('adat',  A,  '%.2f'))
     print('   ',CForm('bdat',  B,  '%25.18e'))
     print("""
-  Matrix  A = Matrix::row_major(%d,%d,adat);
-  Matrix  B = Matrix::row_major(%d,%d,bdat);
-  real8_t d = %25.18e
- """ % (n,n,n,n,d) )
+  Matrix  A1 = Matrix::row_major(%d,%d,adat);
+  Matrix  A2 = Matrix::row_major(%d,%d,adat);
+  Matrix  B  = Matrix::row_major(%d,%d,bdat);
+  real8_t d  = %25.18e;
+  Matrix C(2);
+  Matrix E(2);
+
+  real8_t D = C.inverse(A1);
+  EXPECT_TRUE( C.equals(B) );
+  EXPECT_NEAR( d, D, 1.0e-9 );
+  E.dot( A2, B );
+  EXPECT_NEAR( %s, E.sum(), 1.0e-9 );
+}
+
+ """ % (n,n,n,n,n,n,d,D_N[n]) )
 
     
 #/ =======================================================================================
@@ -204,4 +219,7 @@ def TEST03():
 #TEST('div',DIV)
 
 
-TEST03()
+TEST03(4)
+TEST03(5)
+TEST03(6)
+TEST03(7)

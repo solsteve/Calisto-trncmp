@@ -67,8 +67,6 @@ class Matrix {
   // -------------------------------------------------------------------------------------
  protected:
 
-  TLOGGER_HEADER(logger); ///< reference to logger instance
-
   real8_t* data; ///< Storage buffer
   int32_t  nrow; ///< Number or rows        (visible).
   int32_t  ncol; ///< Number of columns     (actual).
@@ -107,6 +105,9 @@ class Matrix {
   static  Matrix column_major   ( const int32_t nr, const int32_t nc, const real8_t* src );
 
   ~Matrix ( void );
+
+  void resize  ( const int32_t n )                    { resize(n,n,n); }
+  void resize  ( const int32_t nr, const int32_t nc ) { resize(nr,nc,nr); }
 
   void     set            ( const real8_t v=D_ZERO );
   bool     equals         ( const Matrix& M, const real8_t eps   = D_EPSILON );

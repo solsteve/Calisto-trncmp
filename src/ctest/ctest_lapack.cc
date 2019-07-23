@@ -37,6 +37,7 @@
 #include <blas_interface.hh>
 #include <array_print.hh>
 #include <StopWatch.hh>
+#include <Matrix.hh>
 
 // =======================================================================================
 void TEST01( void ) {
@@ -483,14 +484,59 @@ void TEST05( void ) {
   
   delete[] A;
 }
-  
+
+// =======================================================================================
+void TEST06( void ) {
+  // -------------------------------------------------------------------------------------
+  std::ifstream inf( "invdet.dat" );
+  if ( !inf ) {
+    std::cerr << "Can not open file for read\n";
+  } else {
+
+    int32_t n, n2, nsamp;
+    real8_t x, det;
+    inf >> nsamp;
+
+    for ( int32_t sam=0; sam<nsamp; sam++ ) {
+      inf >> n >> det;
+      n2 =n*n;
+      real8_t* adat = new real8_t[n2];
+      real8_t* bdat = new real8_t[n2];
+      for ( int32_t i=0; i<n2; i++ ) {
+	inf >> x;
+	adat[i] = x;
+      }
+      for ( int32_t i=0; i<n2; i++ ) {
+	inf >> x;
+	bdat[i] = x;
+      }
+      Matrix  A1 = Matrix::row_major(n,n,adat);
+      Matrix  A2 = Matrix::row_major(n,n,adat);
+      Matrix  B  = Matrix::row_major(n,n,bdat);
+      Matrix  C(2);
+      Matrix  E(2);
+      real8_t D  = C.inverse(A1);
+      E.dot( A2, B );
+      real8_t s = E.sum() / (real8_t)n;
+      real8_t k = C.sumsq(B);
+      fprintf( stdout,
+	       "%2d %13.6e %13.6e %.10f\n",
+	       n, s, k, Abs(det-D) );
+    }
+
+
+
+    inf.close();
+  }
+}
+ 
 // =======================================================================================
 int main( void ) {
   // -------------------------------------------------------------------------------------
   //TEST02();
   //TEST03();
   //TEST04();
-  TEST05();
+  TEST06();
   return 0;
 }
 

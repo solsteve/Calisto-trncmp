@@ -69,7 +69,6 @@ class Matrix2D {
   void            set         ( const real8_t s = D_ZERO );
   void            copy        ( const Matrix2D& that );
   void            copy        ( const Matrix2D* that );
-
   void            fromArray   ( const real8_t A[2][2] );
   void            toArray     ( real8_t A[2][2] );
 

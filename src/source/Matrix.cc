@@ -59,7 +59,15 @@
 
 #define INIT_VARS(a) data(a), nrow(a), ncol(a), lda(a), nbuf(0)
 
-TLOGGER_REFERENCE( Matrix, logger );
+TLOGGER_INSTANCE( logger );
+
+real8_t det2x2( const Matrix& M );
+real8_t det3x3( const Matrix& M );
+real8_t detNxN( const Matrix& M );
+
+real8_t inv2x2( Matrix& A, const Matrix& M );
+real8_t inv3x3( Matrix& A, const Matrix& M );
+real8_t invNxN( Matrix& A, const Matrix& M );
 
 
 // =======================================================================================
@@ -566,111 +574,6 @@ void Matrix::T( const Matrix& M ) {
 }
 
 
-// =======================================================================================
-/** @brief Determinant.
- *  @param[in] .
- *  @return .
- *
- *
- */
-// ---------------------------------------------------------------------------------------
-real8_t  Matrix::det( void ) {
-  // -------------------------------------------------------------------------------------
-  if ( nrow != ncol ) {
-    logger->error("Matrix is not square row=%d col=%d", nrow, ncol);
-    return D_ZERO;
-  }
-
-  // -------------------------------------------------------------------------------------
-  Matrix M(*this);
-  int32_t ipiv[nrow];
-  int32_t info = 0;
-           dgetrf_( M.M(), M.N(), M.A(), M.LDA(), ipiv, &info );
-
-  if ( info > 0 ) {
-    logger->warn("Matrix is singular");
-    std::cerr << "DGETRF: The matrix is singular because U("
-              << info << "," << info << ") = 0\n";
-    return D_ZERO;
-  }
-
-  // -------------------------------------------------------------------------------------
-
-  real8_t d = at(0,0);
-  for ( int32_t i=1; i<nrow; i++ ) {
-    d *= M.at(i,i);
-  }
-
-  return d;
-}
-
-
-// =======================================================================================
-/** @brief Inverse.
- *  @param[in] .
- *  @return .
- *
- *
- */
-// ---------------------------------------------------------------------------------------
-real8_t  Matrix::inverse( const Matrix& M ) {
-  // -------------------------------------------------------------------------------------
-  int32_t nr = M.nrow;
-  int32_t nc = M.ncol;
-  if ( nr != nc ) {
-    logger->error("Matrix is not square row=%d col=%d", nr, nc);
-    return D_ZERO;
-  }
-
-  // -------------------------------------------------------------------------------------
-
-  copy(M);
-  int32_t ipiv[nr];
-  int32_t info = 0;
-  dgetrf_( &nrow, &ncol, data, &lda, ipiv, &info );
-
-  if ( info > 0 ) {
-    logger->warn("Matrix is singular");
-    std::cerr << "DGETRF: The matrix is singular because U("
-              << info << "," << info << ") = 0\n";
-    return D_ZERO;
-  }
-
-  // -------------------------------------------------------------------------------------
-
-  real8_t d = at(0,0);
-  for ( int32_t i=1; i<nr; i++ ) {
-    d *= at(i,i);
-  }
-
-  // -------------------------------------------------------------------------------------
-  int32_t lwork = -1;
-  real8_t param = 0.0;
-
-  dgetri_( &nrow, data, &lda, ipiv, &param, &lwork, &info );
-  if ( 0 != info ) {
-    logger->error( "DGETRF: Query failed: %d", info );
-    return D_ZERO;
-  }
-
-  lwork = (int32_t)param;
-  real8_t work[lwork];
-  
-  // -------------------------------------------------------------------------------------
-
-  info = 0;
-  dgetri_( &nrow, data, &lda, ipiv, work, &lwork, &info );
-
-  if ( info > 0 ) {
-    logger->warn("Matrix is singular");
-    std::cerr << "DGETRF: The matrix is singular because U("
-              << info << "," << info << ") = 0\n";
-    return D_ZERO;
-  }
-
-  return d;
-}
-
 
 // =======================================================================================
 /** @brief Sum.
@@ -689,6 +592,8 @@ real8_t  Matrix::inverse( const Matrix& M ) {
   }
   return sum;
 }
+
+
 
 
 // =======================================================================================
@@ -1182,6 +1087,287 @@ void Matrix::div( const Matrix& lhs, const Matrix& rhs ) {
       at(r,c) = const_cast<Matrix&>(lhs).at(r,c) / const_cast<Matrix&>(rhs).at(r,c);
     }
   }
+}
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+// =======================================================================================
+/** @brief Determinant.
+ *  @param[in] CM reference to a Matrix;
+ *  @return determinant of the Matrix CM.
+ *
+ *  Calculate the determinant of a 2x2 Matrix directly.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t det2x2( const Matrix& CM ) {
+  // -------------------------------------------------------------------------------------
+  Matrix& M = const_cast<Matrix&>(CM);
+  
+  if ( 1 == *(M.LDA()) ) {
+    real8_t* q = M.A();
+    return (q[0] * q[3]) - (q[1] * q[2]);
+  }
+
+  return (M.at(0,0)*M.at(1,1)) - (M.at(0,1)*M.at(1,0));
+}
+
+// =======================================================================================
+/** @brief Determinant.
+ *  @param[in] CM reference to a Matrix;
+ *  @return determinant of the Matrix CM.
+ *
+ *  Calculate the determinant of a 2x2 Matrix directly.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t det3x3( const Matrix& CM ) {
+  // -------------------------------------------------------------------------------------
+  Matrix& M = const_cast<Matrix&>(CM);
+  
+  if ( 1 == *(M.LDA()) ) {
+    real8_t* q = M.A();
+    return 
+      q[0]*(q[4]*q[8] - q[5]*q[7]) +
+      q[1]*(q[5]*q[6] - q[3]*q[8]) +
+      q[2]*(q[3]*q[7] - q[4]*q[6]);
+  }
+
+  return
+    M.at(0,0) * (M.at(1,1)*M.at(2,2) - M.at(1,2)*M.at(2,1)) +
+    M.at(1,0) * (M.at(0,2)*M.at(2,1) - M.at(0,1)*M.at(2,2)) +
+    M.at(2,0) * (M.at(0,1)*M.at(1,2) - M.at(0,2)*M.at(1,1));
+}
+
+// =======================================================================================
+/** @brief Determinant.
+ *  @param[in] CM reference to a Matrix;
+ *  @return determinant of the Matrix CM.
+ *
+ *  Use LAPACK call to DGETRF to approximate the determinant of the NxN Matrix CM.
+ *  DGETRF performs the LU decomposition of the input Matrix. The determinant is the
+ *  product of the diagonal elements of the decomposed upper triangular Matrix.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t detNxN( const Matrix& CM ) {
+  // -------------------------------------------------------------------------------------
+  Matrix M(CM); // create a temporary copy of the matrix. This operation is destructive.
+  int32_t n    = size(M,0);
+  int32_t info = 0;
+  real8_t d    = D_ZERO;
+  int32_t ipiv[n];
+
+  dgetrf_( M.M(), M.N(), M.A(), M.LDA(), ipiv, &info );
+
+  if ( info > 0 ) {
+    logger->warn( "DGETRF: The matrix is singular because U(%d,%d)", info, info );
+  } else {
+    d = D_ONE;
+    for ( int32_t i=0; i<n; i++ ) {
+      d = ((ipiv[i] == (i+1)) ? d : -d) * M.at(i,i);
+    }
+  }
+
+  return d;
+}
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+real8_t inv2x2( Matrix& A, const Matrix& CM ) {
+  // -------------------------------------------------------------------------------------
+  Matrix&  M = const_cast<Matrix&>(CM);
+  real8_t  D = det2x2(CM);
+  real8_t* a = A.A();
+  
+  if ( 1 == *(M.LDA()) ) {
+    real8_t* q = M.A();
+    a[0] =  q[3]/D;         a[2] = -q[2]/D;
+    a[1] = -q[1]/D;         a[3] =  q[0]/D;
+  } else {
+    a[0] =  M.at(1,1)/D;    a[2] = -M.at(0,1)/D;
+    a[1] = -M.at(1,0)/D;    a[3] =  M.at(0,1)/D;
+  }
+  
+  return D;
+}
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+real8_t inv3x3( Matrix& A, const Matrix& CM ) {
+  // -------------------------------------------------------------------------------------
+  Matrix&  M = const_cast<Matrix&>(CM);
+  real8_t  D = det3x3(CM);
+  real8_t* a = A.A();
+
+  if ( 1 == *(M.LDA()) ) {
+    real8_t* q = M.A();
+    a[0] = (q[4]*q[8] - q[7]*q[5])/D;
+    a[1] = (q[7]*q[2] - q[1]*q[8])/D;
+    a[2] = (q[1]*q[5] - q[4]*q[2])/D;
+
+    a[3] = (q[6]*q[5] - q[3]*q[8])/D;
+    a[4] = (q[0]*q[8] - q[6]*q[2])/D;
+    a[5] = (q[3]*q[2] - q[0]*q[5])/D;
+
+    a[6] = (q[3]*q[7] - q[6]*q[4])/D;
+    a[7] = (q[6]*q[1] - q[0]*q[7])/D;
+    a[8] = (q[0]*q[4] - q[3]*q[1])/D;
+  } else {
+    a[0] = (M.at(1,1)*M.at(2,2) - M.at(1,2)*M.at(2,1))/D;
+    a[1] = (M.at(1,2)*M.at(2,0) - M.at(1,0)*M.at(2,2))/D;
+    a[2] = (M.at(1,0)*M.at(2,1) - M.at(1,1)*M.at(2,0))/D;
+
+    a[3] = (M.at(0,2)*M.at(2,1) - M.at(0,1)*M.at(2,2))/D;
+    a[4] = (M.at(0,0)*M.at(2,2) - M.at(0,2)*M.at(2,0))/D;
+    a[5] = (M.at(0,1)*M.at(2,0) - M.at(0,0)*M.at(2,1))/D;
+
+    a[6] = (M.at(0,1)*M.at(1,2) - M.at(0,2)*M.at(1,1))/D;
+    a[7] = (M.at(0,2)*M.at(1,0) - M.at(0,0)*M.at(1,2))/D;
+    a[8] = (M.at(0,0)*M.at(1,1) - M.at(0,1)*M.at(1,0))/D;
+  }
+
+  return D;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+real8_t invNxN( Matrix& A, const Matrix& CM ) {
+  // -------------------------------------------------------------------------------------
+  A.copy(CM);
+  int32_t n    = size(A,0);
+  int32_t info = 0;
+  int32_t ipiv[n+1];
+
+  dgetrf_( A.M(), A.N(), A.A(), A.LDA(), ipiv, &info );
+
+  if ( info > 0 ) {
+    logger->warn("DGETRF: The matrix is singular because U(%d,%d)", info, info );
+    return D_ZERO;
+  }
+
+  // -------------------------------------------------------------------------------------
+  
+  real8_t d = D_ONE;
+
+  for ( int32_t i=0; i<n; i++ ) {
+    d = ((ipiv[i] == (i+1)) ? d : -d) * A.at(i,i);
+  }
+  
+  // -------------------------------------------------------------------------------------
+
+  int32_t lwork = -1;
+  real8_t param = 0.0;
+
+  dgetri_( A.M(), A.A(), A.LDA(), ipiv, &param, &lwork, &info );
+  if ( 0 != info ) {
+    logger->error( "DGETRF: Query failed: %d", info );
+    return D_ZERO;
+  }
+
+  lwork = (int32_t)param;
+  real8_t work[lwork];
+  
+  // -------------------------------------------------------------------------------------
+
+  info = 0;
+  dgetri_( A.M(), A.A(), A.LDA(), ipiv, work, &lwork, &info );
+
+  if ( info > 0 ) {
+    logger->warn("DGETRF: The matrix is singular because U(%d,%d)", info, info );
+    return D_ZERO;
+  }
+
+  return d;
+}
+
+
+
+
+
+
+
+
+// =======================================================================================
+/** @brief Determinant.
+ *  @return determinant of this matrix.
+ *
+ *  @note Matrices of order 0,1,2, or 3 are returned directly.
+ *        Orders 4 and above are approximated using LAPACK call to DGETRF.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t  Matrix::det( void ) {
+  // -------------------------------------------------------------------------------------
+  int32_t n = nrow;
+  
+  if ( n != ncol ) {
+    logger->error("Matrix is not square row=%d col=%d", nrow, ncol);
+    return D_ZERO;
+  }
+
+  real8_t d = D_ZERO;
+  switch(n) {
+  case 0:                       break;
+  case 1:  d = *data;           break;
+  case 2:  d = det2x2( *this ); break;
+  case 3:  d = det3x3( *this ); break;
+  default: d = detNxN( *this ); break;
+  }
+  
+  return d;
+}
+
+
+// =======================================================================================
+/** @brief Inverse.
+ *  @param[in] M reference to a Matrix.
+ *  @return determinant of the matrix.
+ *
+ *  On exit this Matrix will be replaced by the inverse of Matrix M.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t  Matrix::inverse( const Matrix& M ) {
+  // -------------------------------------------------------------------------------------
+  int32_t n = nrow;
+  
+  if ( n != ncol ) {
+    logger->error("Matrix is not square row=%d col=%d", nrow, ncol);
+    return D_ZERO;
+  }
+
+  real8_t d = D_ZERO;
+  
+  switch(n) {
+  case 0:
+    break;
+  case 1:
+    d     = *data;
+    *data = D_ONE / d;
+    break;
+  case 2:
+    resize(2);
+    d = inv2x2( *this, M );
+    break;
+  case 3:
+    resize(3);
+    d = inv3x3( *this, M );
+    break;
+  default:
+    resize(n);
+    d = invNxN( *this, M );
+    break;
+  }
+  
+  return d;
 }
 
 
