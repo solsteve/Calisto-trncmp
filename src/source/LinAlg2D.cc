@@ -80,7 +80,7 @@ void covariance( Matrix2D& M, real8_t data[][2], size_t n ) {
   // -------------------------------------------------------------------------------------
 
   M.q[0] = xx / fnm1;    M.q[1] = xy / fnm1;
-  M.q[3] = xy / fnm1;    M.q[4] = yy / fnm1;
+  M.q[2] = xy / fnm1;    M.q[3] = yy / fnm1;
 }
 
 
@@ -128,7 +128,7 @@ void covariance( Matrix2D& M, Vector2D *data, size_t n ) {
   // -------------------------------------------------------------------------------------
 
   M.q[0] = xx / fnm1;    M.q[1] = xy / fnm1;
-  M.q[3] = xy / fnm1;    M.q[4] = yy / fnm1;
+  M.q[2] = xy / fnm1;    M.q[3] = yy / fnm1;
 }
 
 

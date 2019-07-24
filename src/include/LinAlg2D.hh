@@ -78,7 +78,7 @@ inline  const Vector2D getRow( const Matrix2D& M, size_t index ) {
   // -------------------------------------------------------------------------------------
   switch(index%2) {
     case 0: return Vector2D( M.q[0], M.q[1] );
-    case 1: return Vector2D( M.q[3], M.q[4] );
+    case 1: return Vector2D( M.q[2], M.q[3] );
       
     default:
       std::cerr << "This Should not be possible\n";
@@ -97,8 +97,8 @@ inline  const Vector2D getRow( const Matrix2D& M, size_t index ) {
 inline  const Vector2D getColumn( const Matrix2D& M, size_t index ) {
   // -------------------------------------------------------------------------------------
   switch(index%2) {
-    case 0: return Vector2D( M.q[0], M.q[3] );
-    case 1: return Vector2D( M.q[1], M.q[4] );
+    case 0: return Vector2D( M.q[0], M.q[2] );
+    case 1: return Vector2D( M.q[1], M.q[3] );
       
     default:
       std::cerr << "This Should not be possible\n";
@@ -115,7 +115,7 @@ inline  const Vector2D getColumn( const Matrix2D& M, size_t index ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D getDiagonal( const Matrix2D& M ) {
   // -------------------------------------------------------------------------------------
-return Vector2D( M.q[0], M.q[4] );
+return Vector2D( M.q[0], M.q[3] );
 }
 
 
@@ -136,7 +136,7 @@ inline  void setRow( Matrix2D& M, const Vector2D& V, size_t index ) {
   // -------------------------------------------------------------------------------------
   switch(index%2) {
     case 0: M.q[0] = V.x[0];    M.q[1] = V.x[1];    break;
-    case 1: M.q[3] = V.x[0];    M.q[4] = V.x[1];    break;
+    case 1: M.q[2] = V.x[0];    M.q[3] = V.x[1];    break;
       
     default:
       std::cerr << "This Should not be possible\n";
@@ -157,8 +157,8 @@ inline  void setRow( Matrix2D& M, const Vector2D& V, size_t index ) {
 inline  void setColumn( Matrix2D& M, const Vector2D& V, size_t index ) {
   // -------------------------------------------------------------------------------------
   switch(index%2) {
-    case 0: M.q[0] = V.x[0];    M.q[3] = V.x[1];    break;
-    case 1: M.q[1] = V.x[0];    M.q[4] = V.x[1];    break;
+    case 0: M.q[0] = V.x[0];    M.q[2] = V.x[1];    break;
+    case 1: M.q[1] = V.x[0];    M.q[3] = V.x[1];    break;
       
     default:
       std::cerr << "This Should not be possible\n";
@@ -177,7 +177,7 @@ inline  void setColumn( Matrix2D& M, const Vector2D& V, size_t index ) {
 // ---------------------------------------------------------------------------------------
 inline  void setDiagonal( Matrix2D& M, const Vector2D& V ) {
   // -------------------------------------------------------------------------------------
-  M.q[0] = V.x[0];    M.q[4] = V.x[1];
+  M.q[0] = V.x[0];    M.q[3] = V.x[1];
 }
 
 
@@ -210,7 +210,7 @@ inline  const Matrix2D diagonal( const Vector2D& V ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D diagonal( const Matrix2D& M ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( M.q[0], M.q[4] );
+  return Vector2D( M.q[0], M.q[3] );
 }
 
 
@@ -229,8 +229,8 @@ inline  const Vector2D diagonal( const Matrix2D& M ) {
 // ---------------------------------------------------------------------------------------
 inline  const Vector2D dot( const Vector2D& V, const Matrix2D& M ) {
   // -------------------------------------------------------------------------------------
-  return Vector2D( (V.x[0] * M.q[0]) + (V.x[1] * M.q[3]),
-                   (V.x[0] * M.q[1]) + (V.x[1] * M.q[4]) );
+  return Vector2D( (V.x[0] * M.q[0]) + (V.x[1] * M.q[2]),
+                   (V.x[0] * M.q[1]) + (V.x[1] * M.q[3]) );
 }
 
 // =======================================================================================
@@ -245,7 +245,7 @@ inline  const Vector2D dot( const Vector2D& V, const Matrix2D& M ) {
 inline  const Vector2D dot( const Matrix2D& M, const Vector2D& V ) {
   // -------------------------------------------------------------------------------------
   return Vector2D( (V.x[0] * M.q[0]) + (V.x[1] * M.q[1]),
-                   (V.x[0] * M.q[3]) + (V.x[1] * M.q[4]) );
+                   (V.x[0] * M.q[2]) + (V.x[1] * M.q[3]) );
 }
 
 // =======================================================================================
@@ -259,8 +259,8 @@ inline  const Vector2D dot( const Matrix2D& M, const Vector2D& V ) {
 // ---------------------------------------------------------------------------------------
 inline  void dot( Vector2D& C, const Vector2D& V, const Matrix2D& M ) {
   // -------------------------------------------------------------------------------------
-  C.x[0] = (V.x[0] * M.q[0]) + (V.x[1] * M.q[3]);
-  C.x[1] = (V.x[0] * M.q[1]) + (V.x[1] * M.q[4]);
+  C.x[0] = (V.x[0] * M.q[0]) + (V.x[1] * M.q[2]);
+  C.x[1] = (V.x[0] * M.q[1]) + (V.x[1] * M.q[3]);
 }
 
 // =======================================================================================
@@ -275,7 +275,7 @@ inline  void dot( Vector2D& C, const Vector2D& V, const Matrix2D& M ) {
 inline  void dot( Vector2D& C, const Matrix2D& M, const Vector2D& V ) {
   // -------------------------------------------------------------------------------------
   C.x[0] = (V.x[0] * M.q[0]) + (V.x[1] * M.q[1]);
-  C.x[1] = (V.x[0] * M.q[3]) + (V.x[1] * M.q[4]);
+  C.x[1] = (V.x[0] * M.q[2]) + (V.x[1] * M.q[3]);
 }
 
 

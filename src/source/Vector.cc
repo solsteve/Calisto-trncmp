@@ -31,13 +31,6 @@
  *
  *  Provides the methods for a BLAS and LAPACK Compatable Vector.
  *
- *  Given:
- *     ne   = 5
- *     incx = 3
- *     xn   = 13    =   1 + (ne-1)*incx = 1 + (5-1)*3
- *
- *  The following Vector {0,1,2,3,4} would be stored in memory as:
- *     0|.|.|1|.|.|2|.|.|3|.|.|4
  */
 // =======================================================================================
 
@@ -46,33 +39,50 @@
 #include <stdexcept>      // std::length_error
 
 
-// =======================================================================================
-// ---------------------------------------------------------------------------------------
-void Vector::resize( const int32_t n, const int32_t inc ) {
-  // -------------------------------------------------------------------------------------
-  if ( ( n != ne ) || ( inc != incx ) ) {
-    destroy();
-    ne   = n;
-    incx = inc;
-    xn   = 1 + ( ne-1 )*incx;
-    x    = new real8_t[xn];
-  }
-}
+const int32_t Vector::static_one = 1;
+
 
 // =======================================================================================
+/** @brief Resize.
+ *  @param[in] n desired number of elements.
+ *
+ *  Resize this Vector, if the current allocation will not suport the desired
+ *  number of elements.
+ */
+// ---------------------------------------------------------------------------------------
+void Vector::resize( const int32_t n ) {
+  // -------------------------------------------------------------------------------------
+  if ( n > nx ) {
+    destroy();
+    x  = new real8_t[n];
+    nx = n;
+  }
+  ne = n;
+}
+
+
+// =======================================================================================
+/** @brief Destroy.
+ *
+ *  Deallocate space for Vector.
+ */
 // ---------------------------------------------------------------------------------------
 void Vector::destroy ( void ) {
   // -------------------------------------------------------------------------------------
   if ( static_cast<real8_t*>(0) != x ) {
     delete[] x;
   }
-  xn   = 0;
-  ne   = 0;
-  incx = 0;
+  ne = 0;
+  nx = 0;
 }
 
 
 // =======================================================================================
+/** @brief Set.
+ *  @param[in] v value to set. (default: 0)
+ *
+ *  Set every element of this Vector to v.
+ */
 // ---------------------------------------------------------------------------------------
 void Vector::set( const real8_t v ) {
   // -------------------------------------------------------------------------------------
@@ -81,7 +91,18 @@ void Vector::set( const real8_t v ) {
   }
 }
 
+
 // =======================================================================================
+/** @brief Equals.
+ *  @param[in] that reference to a Vector for comparison.
+ *  @param[in] eps  tolerance.
+ *  @return true if every coresponding element of this Vector and that are less
+ *          than eps difference. (default: system epsilon)
+ *
+ *  Perform an element by element comparison bewteen the Vectors this and that.
+ *  If the absoulte value of the difference between any pair of elements is greater than
+ *  eps return a false.
+ */
 // ---------------------------------------------------------------------------------------
 bool Vector::equals( const Vector& that, const real8_t eps ) {
   // -------------------------------------------------------------------------------------
@@ -99,27 +120,64 @@ bool Vector::equals( const Vector& that, const real8_t eps ) {
 
 
 
+
+
 // =======================================================================================
+/** @brief Load.
+ *  @param[in] src pointer to a source data buffer.
+ *  @param[in] ins source increment value. (default: 1)
+ *  @return pointer to the next availble position in the src data buffer.
+ *
+ *  Copy the contents of the suorce buffer into this Vector.
+ */
 // ---------------------------------------------------------------------------------------
 real8_t* Vector::load( real8_t* src, const int32_t ins ) {
   // -------------------------------------------------------------------------------------
-  int32_t one = 1;
-  dcopy_(&ne, src, &ins, x, &incx );
-  return (src+ne);
+  if ( ne > 6 ) {
+    dcopy_(&ne, src, &ins, x, &static_one );
+  } else {
+    if ( 1 == ins ) {
+      for ( int32_t i=0; i<ne; i++ ) {
+	at(i) = *(src+i);
+      }
+    } else {
+      for ( int32_t i=0, j=0; i<ne; i++ ) {
+	at(i) = *(src+j);
+	j += ins;
+      }      
+    }
+  }
+  return (src+ne*ins);
 }
 
 
 // =======================================================================================
+/** @brief Store.
+ *  @param[out] dst pointer to a destination data buffer.
+ *  @param[in]  ins destination increment value. (default: 1)
+ *  @return pointer to the next availble position in the dst data buffer.
+ *
+ *  Store the elements of this Vector into a destiantion buffer.
+ */
 // ---------------------------------------------------------------------------------------
 real8_t* Vector::store( real8_t* dst, const int32_t ins ) {
   // -------------------------------------------------------------------------------------
   int32_t one = 1;
-  dcopy_(&ne, x, &incx, dst, &ins );
-  return (dst+ne);
+  dcopy_(&ne, x, &static_one, dst, &ins );
+  return (dst+ne*ins);
 }
 
 
 // =======================================================================================
+/** @brief To String.
+ *  @param[in] V    reference to a Vector.
+ *  @param[in] sfmt edit descriptor.   (default:  %g)
+ *  @param[in] sdel element separator. (default: ',')
+ *  @return string representing the Vector.
+ *
+ *  Format a string that represents the Vector. The format sfmt is identical to the 
+ *  edit descriptors used by printf.
+ */
 // ---------------------------------------------------------------------------------------
 std::string toString( Vector& V, std::string sfmt, std::string sdel ) {
   // -------------------------------------------------------------------------------------
@@ -140,7 +198,19 @@ std::string toString( Vector& V, std::string sfmt, std::string sdel ) {
   return tstr;
 }
 
+
 // =======================================================================================
+/** @brief To String.
+ *  @param[in] lp   left prefix.
+ *  @param[in] V    reference to a Vector.
+ *  @param[in] rp   right postfix.
+ *  @param[in] sfmt edit descriptor.   (default:  %g)
+ *  @param[in] sdel element separator. (default: ',')
+ *  @return string representing the Vector.
+ *
+ *  Format a string that represents the Vector. The format sfmt is identical to the 
+ *  edit descriptors used by printf. Surround the Vector with lp and rp.
+ */
 // ---------------------------------------------------------------------------------------
 std::string toString( std::string lp, Vector& V, std::string rp,
 		      std::string sfmt, std::string sdel ) {
@@ -167,9 +237,8 @@ std::string toString( std::string lp, Vector& V, std::string rp,
 // ---------------------------------------------------------------------------------------
 void Vector::add( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  for ( int32_t i=0, j=0; i<ne; i++ ) {
-    *(x+j) += s;
-    j += incx;
+  for ( int32_t i=0; i<ne; i++ ) {
+    at(i) += s;
   } 
 }
 
@@ -184,10 +253,8 @@ void Vector::add( const real8_t s ) {
 void Vector::add( const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) += *(v.x + k);
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) += v(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -204,13 +271,11 @@ void Vector::add( const Vector& v ) {
  *  element of this vector.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::add( const real8_t s, const Vector& v ) {
+void Vector::add( const real8_t s, const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) = s + *(v.x + k);
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = s + v(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -227,13 +292,11 @@ void Vector::add( const Vector& v ) {
  *  element of this vector.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::add( const Vector& v, const real8_t s ) {
+void Vector::add( const Vector& v, const real8_t s ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) = *(v.x + k) + s;
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = v(i) + s;
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -249,22 +312,19 @@ void Vector::add( const Vector& v ) {
  *  Set this vector to the element wise addition of Vectors a and b.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::add( const Vector& a, const Vector& b ) {
+void Vector::add( const Vector& a, const Vector& b ) {
   // -------------------------------------------------------------------------------------
   if ( a.ne == b.ne ) {
-    if ( this->ne != a.ne ) {
-      this->resize( a.ne, 1 );
-    }
-    for ( int32_t i=0, j=0, ka=0, kb=0; i<ne; i++ ) {
-      *(this->x + j) = *(a.x + ka) + *(b.x + kb);
-      j  += this->incx;
-      ka += a.incx;
-      kb += b.incx;
+    this->resize( a.ne );
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = a(i) + b(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
   }
 }
+
+
 
 
 
@@ -280,9 +340,8 @@ void Vector::add( const Vector& v ) {
 // ---------------------------------------------------------------------------------------
 void Vector::sub( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  for ( int32_t i=0, j=0; i<ne; i++ ) {
-    *(x+j) -= s;
-    j += incx;
+  for ( int32_t i=0; i<ne; i++ ) {
+    at(i) -= s;
   } 
 }
 
@@ -297,10 +356,8 @@ void Vector::sub( const real8_t s ) {
 void Vector::sub( const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) -= *(v.x + k);
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) -= v(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -317,13 +374,11 @@ void Vector::sub( const Vector& v ) {
  *  element of this vector.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::sub( const real8_t s, const Vector& v ) {
+void Vector::sub( const real8_t s, const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) = s - *(v.x + k);
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = s - v(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -340,13 +395,11 @@ void Vector::sub( const Vector& v ) {
  *  element of this vector.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::sub( const Vector& v, const real8_t s ) {
+void Vector::sub( const Vector& v, const real8_t s ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) = *(v.x + k) - s;
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = v(i) - s;
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -362,22 +415,19 @@ void Vector::sub( const Vector& v ) {
  *  Set this vector to the element wise subtraction of Vectors a and b.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::sub( const Vector& a, const Vector& b ) {
+void Vector::sub( const Vector& a, const Vector& b ) {
   // -------------------------------------------------------------------------------------
   if ( a.ne == b.ne ) {
-    if ( this->ne != a.ne ) {
-      this->resize( a.ne, 1 );
-    }
-    for ( int32_t i=0, j=0, ka=0, kb=0; i<ne; i++ ) {
-      *(this->x + j) = *(a.x + ka) - *(b.x + kb);
-      j  += this->incx;
-      ka += a.incx;
-      kb += b.incx;
+    this->resize( a.ne );
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = a(i) - b(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
   }
 }
+
+
 
 
 
@@ -393,9 +443,8 @@ void Vector::sub( const Vector& v ) {
 // ---------------------------------------------------------------------------------------
 void Vector::mul( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  for ( int32_t i=0, j=0; i<ne; i++ ) {
-    *(x+j) *= s;
-    j += incx;
+  for ( int32_t i=0; i<ne; i++ ) {
+    at(i) *= s;
   } 
 }
 
@@ -410,10 +459,8 @@ void Vector::mul( const real8_t s ) {
 void Vector::mul( const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) *= *(v.x + k);
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) *= v(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -430,13 +477,11 @@ void Vector::mul( const Vector& v ) {
  *  element of this vector.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::mul( const real8_t s, const Vector& v ) {
+void Vector::mul( const real8_t s, const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) = s * *(v.x + k);
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = s * v(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -453,13 +498,11 @@ void Vector::mul( const Vector& v ) {
  *  element of this vector.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::mul( const Vector& v, const real8_t s ) {
+void Vector::mul( const Vector& v, const real8_t s ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) = *(v.x + k) * s;
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = v(i) * s;
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -475,22 +518,19 @@ void Vector::mul( const Vector& v ) {
  *  Set this vector to the element wise multiplication of Vectors a and b.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::mul( const Vector& a, const Vector& b ) {
+void Vector::mul( const Vector& a, const Vector& b ) {
   // -------------------------------------------------------------------------------------
   if ( a.ne == b.ne ) {
-    if ( this->ne != a.ne ) {
-      this->resize( a.ne, 1 );
-    }
-    for ( int32_t i=0, j=0, ka=0, kb=0; i<ne; i++ ) {
-      *(this->x + j) = *(a.x + ka) * *(b.x + kb);
-      j  += this->incx;
-      ka += a.incx;
-      kb += b.incx;
+    this->resize( a.ne );
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = a(i) * b(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
   }
 }
+
+
 
 
 
@@ -506,9 +546,8 @@ void Vector::mul( const Vector& v ) {
 // ---------------------------------------------------------------------------------------
 void Vector::div( const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  for ( int32_t i=0, j=0; i<ne; i++ ) {
-    *(x+j) /= s;
-    j += incx;
+  for ( int32_t i=0; i<ne; i++ ) {
+    at(i) /= s;
   } 
 }
 
@@ -523,10 +562,8 @@ void Vector::div( const real8_t s ) {
 void Vector::div( const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) /= *(v.x + k);
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) /= v(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -543,13 +580,11 @@ void Vector::div( const Vector& v ) {
  *  element of this vector.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::div( const real8_t s, const Vector& v ) {
+void Vector::div( const real8_t s, const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) = s / *(v.x + k);
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = s / v(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -566,13 +601,11 @@ void Vector::div( const Vector& v ) {
  *  element of this vector.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::div( const Vector& v, const real8_t s ) {
+void Vector::div( const Vector& v, const real8_t s ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      *(x + j) = *(v.x + k) / s;
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = v(i) / s;
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -588,22 +621,19 @@ void Vector::div( const Vector& v ) {
  *  Set this vector to the element wise division of Vectors a and b.
  */
 // ---------------------------------------------------------------------------------------
-  void Vector::div( const Vector& a, const Vector& b ) {
+void Vector::div( const Vector& a, const Vector& b ) {
   // -------------------------------------------------------------------------------------
   if ( a.ne == b.ne ) {
-    if ( this->ne != a.ne ) {
-      this->resize( a.ne, 1 );
-    }
-    for ( int32_t i=0, j=0, ka=0, kb=0; i<ne; i++ ) {
-      *(this->x + j) = *(a.x + ka) / *(b.x + kb);
-      j  += this->incx;
-      ka += a.incx;
-      kb += b.incx;
+    this->resize( a.ne );
+    for ( int32_t i=0; i<ne; i++ ) {
+      at(i) = a(i) / b(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
   }
 }
+
+
 
 
 
@@ -622,16 +652,16 @@ real8_t Vector::dot( const Vector& v ) {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      sum += *(x + j) * *(v.x + k);
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      sum += ( at(i) * v(i) );
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
   }
   return sum;
 }
+
+
 
 
 
@@ -646,9 +676,8 @@ real8_t Vector::dot( const Vector& v ) {
 real8_t Vector::norm1( void ) const {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
-  for ( int32_t i=0, j=0; i<ne; i++ ) {
-    sum += Abs( *(x + j) );
-    j += incx;
+  for ( int32_t i=0; i<ne; i++ ) {
+    sum += Abs( at(i) );
   }
   return sum;
 }
@@ -662,13 +691,14 @@ real8_t Vector::norm1( void ) const {
 real8_t Vector::normsq( void ) const {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
-  for ( int32_t i=0, j=0; i<ne; i++ ) {
-    const real8_t t = *(x + j);
+  for ( int32_t i=0; i<ne; i++ ) {
+    const real8_t t = at(i);
     sum += (t*t);
-    j += incx;
   }
   return sum;
 }
+
+
 
 
 
@@ -683,9 +713,8 @@ real8_t Vector::normsq( void ) const {
 real8_t Vector::sum( void ) const {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
-  for ( int32_t i=0, j=0; i<ne; i++ ) {
-    sum += *(x + j);
-    j += incx;
+  for ( int32_t i=0; i<ne; i++ ) {
+    sum += at(i);
   }
   return sum;
 }
@@ -701,11 +730,9 @@ real8_t Vector::sumsq( const Vector& v ) const {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      const real8_t d = *(x + j) - *(v.x + k);
-          sum += (d*d);
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      const real8_t d = at(i) - v(i);
+      sum += (d*d);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -724,10 +751,8 @@ real8_t Vector::dist1( const Vector& v ) const {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
   if ( ne == v.ne ) {
-    for ( int32_t i=0, j=0, k=0; i<ne; i++ ) {
-      sum += Abs( *(x + j) - *(v.x + k) );
-      j += incx;
-      k += v.incx;
+    for ( int32_t i=0; i<ne; i++ ) {
+      sum += Abs( at(i) - v(i) );
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );

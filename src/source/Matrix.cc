@@ -31,25 +31,27 @@
  *
  *  Provides the methods for a BLAS and LAPACK Compatable Matrix.
  *
+/** @brief  BLAS & LAPACK Compatable Matrix.
+ *  @file   Matrix.hh
+ *  @author Stephen W. Soliday
+ *  @date   2019-Jul-15
+ *  Provides the interface for a BLAS and LAPACK Compatable Matrix.
+ *
  *  \verbatim
  *  Given:
  *     m   = 4
  *     n   = 3
- *     lda = 6
  *  
  *  The following Matrix
  *     1.1, 1.2, 1.3
  *     2.1, 2.2, 2.3
  *     3.1, 3.2, 3.3
  *     4.1, 4.2, 4.3
- *     xxx, xxx, xxx
- *     xxx, xxx, xxx
  *  would be stored in memory as:
- *     1.1 | 2.1 | 3.1 | 4.1 | xxx | xxx | 1.2 | 2.2 | 3.2 | 4.2 | xxx | xxx | ...
- *    ... 1.3 | 2.3 | 3.3 | 4.3 | xxx | xxx |
+ *     1.1 | 2.1 | 3.1 | 4.1 | 1.2 | 2.2 | 3.2 | 4.2 | 1.3 | 2.3 | 3.3 | 4.3
  *  \endverbatim
  *
- * This represents FORTRAN's column-major layout. This is for full compatability with
+ * This represents FORTRAN's column-major layout. This is for easy compatability with
  * LAPACK.
  */
 // =======================================================================================
@@ -57,7 +59,7 @@
 
 #include <Matrix.hh>
 
-#define INIT_VARS(a) data(a), nrow(a), ncol(a), lda(a), nbuf(0)
+#define INIT_VARS(a) data(a), nrow(a), ncol(a), nbuf(0)
 
 TLOGGER_INSTANCE( logger );
 
@@ -88,13 +90,17 @@ static std::string MAT_FORM( Matrix::matrix_format_e fmt ) {
 }
 
 
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
 void Matrix::debug( void ) {
-  fprintf( stdout, "[%d,%d | %d (%d)]", nrow, ncol, lda, nbuf );
+  // -------------------------------------------------------------------------------------
+  fprintf( stdout, "[%d,%d (%d)]", nrow, ncol, nbuf );
   for ( int32_t i=0; i<nbuf; i++ ) {
     fprintf( stdout, " %g", data[i] );
   }
   fprintf( stdout, "\n" );
 }
+
 
 // =======================================================================================
 /** @brief Destroy.
@@ -113,33 +119,52 @@ void Matrix::destroy( void ) {
   data = static_cast<real8_t*>(0);
   nrow = 0;
   ncol = 0;
-  lda  = 0;
+  nbuf = 0;
 }
+
+
+// =======================================================================================
+/** @brief Resize.
+ *  @param[in] n order of the square matrix.
+ *
+ *  Reallocate if necessary.
+ */
+// ---------------------------------------------------------------------------------------
+void Matrix::resize( const int32_t n ) {
+  // -------------------------------------------------------------------------------------
+  int32_t new_nbuf = n*n;
+  
+  if ( new_nbuf > nbuf ) {
+    destroy();
+    data = new real8_t[ new_nbuf ];
+    nbuf = new_nbuf;
+  }
+  nrow = n;
+  ncol = n;
+}
+
 
 // =======================================================================================
 /** @brief Resize.
  *  @param[in] nr number of rows.
  *  @param[in] nc number of columns.
- *  @param[in] ld leading dimension.
  *
  *  Reallocate if necessary.
  */
 // ---------------------------------------------------------------------------------------
-void Matrix::resize( const int32_t nr, const int32_t nc, const int32_t ld ) {
+void Matrix::resize( const int32_t nr, const int32_t nc ) {
   // -------------------------------------------------------------------------------------
-  int32_t new_nbuf = ld*nc;
+
+  int32_t new_nbuf = nr*nc;
   
   if ( new_nbuf > nbuf ) {
     destroy();
-    //logger->info( "x----- Matrix::resize allocate(%d)[%d,%d|%d] -----x", new_nbuf, nr, nc, ld );
     data = new real8_t[ new_nbuf ];
     nbuf = new_nbuf;
-  } //else{
-    //logger->info( "x----- Matrix::resize no allocate -----x" );
-  //}
+  }
+
   nrow = nr;
   ncol = nc;
-  lda  = ld;
 }
 
 
@@ -164,21 +189,14 @@ void Matrix::set( const real8_t v ) {
 // =======================================================================================
 /** @brief Copy.
  *  @param[in] M reference to a source Matrix.
- *  @param[in] clone allocate the same unused memory as the source. (Default: false)
  *
  *  Copy all of the elements of the source M. Resize if necessary this Matrix.
- *  Optionally include the sources empty space in this allocation.
- *  @note contents of the empty space is not copied.
  */
 // ---------------------------------------------------------------------------------------
-void Matrix::copy( const Matrix& M, const bool clone ) {
+void Matrix::copy( const Matrix& M ) {
   // -------------------------------------------------------------------------------------
   //logger->info( "v----- Matrix::copy -----v" );
-  if ( clone ) {
-    resize( M.nrow, M.ncol, M.lda );
-  } else {
-    resize( M.nrow, M.ncol, M.nrow );
-  }
+  resize( M.nrow, M.ncol );
 
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
@@ -197,13 +215,13 @@ void Matrix::copy( const Matrix& M, const bool clone ) {
 // ---------------------------------------------------------------------------------------
 bool Matrix::equals( const Matrix& M, const real8_t eps ) {
   // -------------------------------------------------------------------------------------
-  if ( nrow != M.nrow ) { fprintf(stdout,"%d != %d\n", nrow, M.nrow); return false; }
-  if ( ncol != M.ncol ) { fprintf(stdout,"%d != %d\n", ncol, M.ncol); return false; }
+  if ( nrow != M.nrow ) { fprintf(stdout,"Matrix::equals  %d != %d\n", nrow, M.nrow); return false; }
+  if ( ncol != M.ncol ) { fprintf(stdout,"Matrix::equals  %d != %d\n", ncol, M.ncol); return false; }
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       const real8_t dif = at(r,c) - const_cast<Matrix&>(M).at(r,c);
-      if ( dif < -eps ) { fprintf(stdout,"%g < %g\n", dif, -eps); return false;}
-      if ( dif >  eps ) { fprintf(stdout,"%g > %g\n", dif,  eps); return false;}
+      if ( dif < -eps ) { fprintf(stdout,"Matrix::equals  %g < %g\n", dif, -eps); return false;}
+      if ( dif >  eps ) { fprintf(stdout,"Matrix::equals  %g > %g\n", dif,  eps); return false;}
     }
   }
   return true;
@@ -238,7 +256,7 @@ Matrix::Matrix( void ) : INIT_VARS(0) {
 // ---------------------------------------------------------------------------------------
 Matrix::Matrix( const int32_t n, bool init ) : INIT_VARS(0) {
   // -------------------------------------------------------------------------------------
-  resize(n,n,n);
+  resize(n);
   if ( init ) {
     set( D_ZERO );
   }
@@ -256,27 +274,7 @@ Matrix::Matrix( const int32_t n, bool init ) : INIT_VARS(0) {
 // ---------------------------------------------------------------------------------------
 Matrix::Matrix( const int32_t nr, const int32_t nc, bool init ) : INIT_VARS(0) {
   // -------------------------------------------------------------------------------------
-  resize(nr,nc,nr);
-  if ( init ) {
-    set( D_ZERO );
-  }
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- *  @param[in] nr   number of rows.
- *  @param[in] nc   number of columns.
- *  @param[in] ld   leading dimension.
- *  @param[in] init if true all elements are initialized to zero. (default: true)
- *
- *  Construct an empty nr by nc Matrix, optionaly not initializing the elements.
- */
-// ---------------------------------------------------------------------------------------
-Matrix::Matrix( const int32_t nr, const int32_t nc,
-		const int32_t ld, bool init ) : INIT_VARS(0) {
-  // -------------------------------------------------------------------------------------
-  resize(nr,nc,ld);
+  resize(nr,nc);
   if ( init ) {
     set( D_ZERO );
   }
@@ -286,15 +284,14 @@ Matrix::Matrix( const int32_t nr, const int32_t nc,
 // =======================================================================================
 /** @brief Constructor.
  *  @param[in] M     reference to a source Matrix.
- *  @param[in] clone if true all free space will be reallocated (default: false)
  *
  *  Construct a copy of the source Matrix.
  */
 // ---------------------------------------------------------------------------------------
-Matrix::Matrix( const Matrix& M, const bool clone ) : INIT_VARS(0) {
+Matrix::Matrix( const Matrix& M ) : INIT_VARS(0) {
   // -------------------------------------------------------------------------------------
   //logger->info( "v----- Matrix::Matrix(M) -----v" );
-  copy( M, clone );
+  copy( M );
   //logger->info( "^----- Matrix::Matrix(M) -----^" );
 }
 
@@ -565,7 +562,7 @@ void Matrix::T( const Matrix& M ) {
   // -------------------------------------------------------------------------------------
   int32_t nr = const_cast<Matrix&>(M).size(1);
   int32_t nc = const_cast<Matrix&>(M).size(0);
-  resize( nr, nc, nr );
+  resize( nr, nc );
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = const_cast<Matrix&>(M).at(c,r);
@@ -657,20 +654,13 @@ void Matrix::dot( const Matrix& lhs, const Matrix& rhs ) {
   real8_t one  = D_ONE;
   real8_t zero = D_ZERO;
 
-  resize( m, n, m );
+  resize( m, n );
   
   dgemm_( "NO", "NO", &m, &n, &k,
           &one, const_cast<Matrix&>(lhs).A(), const_cast<Matrix&>(lhs).LDA(),
           const_cast<Matrix&>(rhs).A(), const_cast<Matrix&>(rhs).LDA(),
-          &zero, data, &lda );
+          &zero, data, &nrow );
 }
-
-
-
-
-
-
-
 
 
 
@@ -726,7 +716,7 @@ void Matrix::add( const Matrix& M ) {
 // ---------------------------------------------------------------------------------------
 void Matrix::add( const real8_t s, const Matrix& M ) {
   // -------------------------------------------------------------------------------------
-  resize(M.nrow,M.ncol,M.nrow);
+  resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = s + const_cast<Matrix&>(M).at(r,c);
@@ -746,7 +736,7 @@ void Matrix::add( const real8_t s, const Matrix& M ) {
 // ---------------------------------------------------------------------------------------
 void Matrix::add( const Matrix& M, const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  resize(M.nrow,M.ncol,M.nrow);
+  resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = const_cast<Matrix&>(M).at(r,c) + s;
@@ -768,7 +758,7 @@ void Matrix::add( const Matrix& lhs, const Matrix& rhs ) {
   // -------------------------------------------------------------------------------------
   if ( lhs.nrow != rhs.nrow ) { throw new std::length_error( "number of rows do not match" ); }
   if ( lhs.ncol != rhs.ncol ) { throw new std::length_error( "number of columns do not match" ); }
-  resize(lhs.nrow,lhs.ncol,lhs.nrow);
+  resize(lhs.nrow,lhs.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = const_cast<Matrix&>(lhs).at(r,c) + const_cast<Matrix&>(rhs).at(r,c);
@@ -830,7 +820,7 @@ void Matrix::sub( const Matrix& M ) {
 // ---------------------------------------------------------------------------------------
 void Matrix::sub( const real8_t s, const Matrix& M ) {
   // -------------------------------------------------------------------------------------
-  resize(M.nrow,M.ncol,M.nrow);
+  resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = s - const_cast<Matrix&>(M).at(r,c);
@@ -850,7 +840,7 @@ void Matrix::sub( const real8_t s, const Matrix& M ) {
 // ---------------------------------------------------------------------------------------
 void Matrix::sub( const Matrix& M, const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  resize(M.nrow,M.ncol,M.nrow);
+  resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = const_cast<Matrix&>(M).at(r,c) - s;
@@ -872,7 +862,7 @@ void Matrix::sub( const Matrix& lhs, const Matrix& rhs ) {
   // -------------------------------------------------------------------------------------
   if ( lhs.nrow != rhs.nrow ) { throw new std::length_error( "number of rows do not match" ); }
   if ( lhs.ncol != rhs.ncol ) { throw new std::length_error( "number of columns do not match" ); }
-  resize(lhs.nrow,lhs.ncol,lhs.nrow);
+  resize(lhs.nrow,lhs.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = const_cast<Matrix&>(lhs).at(r,c) - const_cast<Matrix&>(rhs).at(r,c);
@@ -934,7 +924,7 @@ void Matrix::mul( const Matrix& M ) {
 // ---------------------------------------------------------------------------------------
 void Matrix::mul( const real8_t s, const Matrix& M ) {
   // -------------------------------------------------------------------------------------
-  resize(M.nrow,M.ncol,M.nrow);
+  resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = s * const_cast<Matrix&>(M).at(r,c);
@@ -954,7 +944,7 @@ void Matrix::mul( const real8_t s, const Matrix& M ) {
 // ---------------------------------------------------------------------------------------
 void Matrix::mul( const Matrix& M, const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  resize(M.nrow,M.ncol,M.nrow);
+  resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = const_cast<Matrix&>(M).at(r,c) * s;
@@ -976,7 +966,7 @@ void Matrix::mul( const Matrix& lhs, const Matrix& rhs ) {
   // -------------------------------------------------------------------------------------
   if ( lhs.nrow != rhs.nrow ) { throw new std::length_error( "number of rows do not match" ); }
   if ( lhs.ncol != rhs.ncol ) { throw new std::length_error( "number of columns do not match" ); }
-  resize(lhs.nrow,lhs.ncol,lhs.nrow);
+  resize(lhs.nrow,lhs.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = const_cast<Matrix&>(lhs).at(r,c) * const_cast<Matrix&>(rhs).at(r,c);
@@ -1038,7 +1028,7 @@ void Matrix::div( const Matrix& M ) {
 // ---------------------------------------------------------------------------------------
 void Matrix::div( const real8_t s, const Matrix& M ) {
   // -------------------------------------------------------------------------------------
-  resize(M.nrow,M.ncol,M.nrow);
+  resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = s / const_cast<Matrix&>(M).at(r,c);
@@ -1058,7 +1048,7 @@ void Matrix::div( const real8_t s, const Matrix& M ) {
 // ---------------------------------------------------------------------------------------
 void Matrix::div( const Matrix& M, const real8_t s ) {
   // -------------------------------------------------------------------------------------
-  resize(M.nrow,M.ncol,M.nrow);
+  resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = const_cast<Matrix&>(M).at(r,c) / s;
@@ -1081,7 +1071,7 @@ void Matrix::div( const Matrix& lhs, const Matrix& rhs ) {
   // -------------------------------------------------------------------------------------
   if ( lhs.nrow != rhs.nrow ) { throw new std::length_error( "number of rows do not match" ); }
   if ( lhs.ncol != rhs.ncol ) { throw new std::length_error( "number of columns do not match" ); }
-  resize(lhs.nrow,lhs.ncol,lhs.nrow);
+  resize(lhs.nrow,lhs.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
       at(r,c) = const_cast<Matrix&>(lhs).at(r,c) / const_cast<Matrix&>(rhs).at(r,c);
@@ -1090,12 +1080,6 @@ void Matrix::div( const Matrix& lhs, const Matrix& rhs ) {
 }
 
 
-
-
-
-
-
-  
 
 
 
@@ -1114,12 +1098,8 @@ real8_t det2x2( const Matrix& CM ) {
   // -------------------------------------------------------------------------------------
   Matrix& M = const_cast<Matrix&>(CM);
   
-  if ( 1 == *(M.LDA()) ) {
     real8_t* q = M.A();
     return (q[0] * q[3]) - (q[1] * q[2]);
-  }
-
-  return (M.at(0,0)*M.at(1,1)) - (M.at(0,1)*M.at(1,0));
 }
 
 // =======================================================================================
@@ -1134,18 +1114,11 @@ real8_t det3x3( const Matrix& CM ) {
   // -------------------------------------------------------------------------------------
   Matrix& M = const_cast<Matrix&>(CM);
   
-  if ( 1 == *(M.LDA()) ) {
     real8_t* q = M.A();
     return 
       q[0]*(q[4]*q[8] - q[5]*q[7]) +
       q[1]*(q[5]*q[6] - q[3]*q[8]) +
       q[2]*(q[3]*q[7] - q[4]*q[6]);
-  }
-
-  return
-    M.at(0,0) * (M.at(1,1)*M.at(2,2) - M.at(1,2)*M.at(2,1)) +
-    M.at(1,0) * (M.at(0,2)*M.at(2,1) - M.at(0,1)*M.at(2,2)) +
-    M.at(2,0) * (M.at(0,1)*M.at(1,2) - M.at(0,2)*M.at(1,1));
 }
 
 // =======================================================================================
@@ -1188,14 +1161,9 @@ real8_t inv2x2( Matrix& A, const Matrix& CM ) {
   real8_t  D = det2x2(CM);
   real8_t* a = A.A();
   
-  if ( 1 == *(M.LDA()) ) {
     real8_t* q = M.A();
     a[0] =  q[3]/D;         a[2] = -q[2]/D;
     a[1] = -q[1]/D;         a[3] =  q[0]/D;
-  } else {
-    a[0] =  M.at(1,1)/D;    a[2] = -M.at(0,1)/D;
-    a[1] = -M.at(1,0)/D;    a[3] =  M.at(0,1)/D;
-  }
   
   return D;
 }
@@ -1208,7 +1176,6 @@ real8_t inv3x3( Matrix& A, const Matrix& CM ) {
   real8_t  D = det3x3(CM);
   real8_t* a = A.A();
 
-  if ( 1 == *(M.LDA()) ) {
     real8_t* q = M.A();
     a[0] = (q[4]*q[8] - q[7]*q[5])/D;
     a[1] = (q[7]*q[2] - q[1]*q[8])/D;
@@ -1221,19 +1188,6 @@ real8_t inv3x3( Matrix& A, const Matrix& CM ) {
     a[6] = (q[3]*q[7] - q[6]*q[4])/D;
     a[7] = (q[6]*q[1] - q[0]*q[7])/D;
     a[8] = (q[0]*q[4] - q[3]*q[1])/D;
-  } else {
-    a[0] = (M.at(1,1)*M.at(2,2) - M.at(1,2)*M.at(2,1))/D;
-    a[1] = (M.at(1,2)*M.at(2,0) - M.at(1,0)*M.at(2,2))/D;
-    a[2] = (M.at(1,0)*M.at(2,1) - M.at(1,1)*M.at(2,0))/D;
-
-    a[3] = (M.at(0,2)*M.at(2,1) - M.at(0,1)*M.at(2,2))/D;
-    a[4] = (M.at(0,0)*M.at(2,2) - M.at(0,2)*M.at(2,0))/D;
-    a[5] = (M.at(0,1)*M.at(2,0) - M.at(0,0)*M.at(2,1))/D;
-
-    a[6] = (M.at(0,1)*M.at(1,2) - M.at(0,2)*M.at(1,1))/D;
-    a[7] = (M.at(0,2)*M.at(1,0) - M.at(0,0)*M.at(1,2))/D;
-    a[8] = (M.at(0,0)*M.at(1,1) - M.at(0,1)*M.at(1,0))/D;
-  }
 
   return D;
 }
@@ -1337,10 +1291,11 @@ real8_t  Matrix::det( void ) {
 // ---------------------------------------------------------------------------------------
 real8_t  Matrix::inverse( const Matrix& M ) {
   // -------------------------------------------------------------------------------------
-  int32_t n = nrow;
+  int32_t n  = ::size(M,0);
+  int32_t nc = ::size(M,1);
   
-  if ( n != ncol ) {
-    logger->error("Matrix is not square row=%d col=%d", nrow, ncol);
+  if ( n != nc ) {
+    logger->error("Matrix is not square row=%d col=%d", n, nc);
     return D_ZERO;
   }
 

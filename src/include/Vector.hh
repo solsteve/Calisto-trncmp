@@ -30,16 +30,6 @@
  *  @date   2019-Jul-12
  *
  *  Provides the interface for a BLAS and LAPACK Compatable Vector.
- *
- *  \verbatim
- *  Given:
- *     ne   = 5
- *     incx = 3
- *     xn   = 13    =   1 + (ne-1)*incx = 1 + (5-1)*3
- *
- *  The following Vector {0,1,2,3,4} would be stored in memory as:
- *     0|.|.|1|.|.|2|.|.|3|.|.|4
- *  \endverbatim
  */
 // =======================================================================================
 
@@ -56,24 +46,23 @@ class Vector {
   // -------------------------------------------------------------------------------------
  protected:
   real8_t * x;     ///< pointer to vectors data vector.
-  int32_t   xn;    ///< allocated buffer length.
   int32_t   ne;    ///< number of elements.
-  int32_t   incx;  ///< internal memory increment.
+  int32_t   nx;    ///< max allocation
 
-  void destroy ( void );
-  void resize  ( const int32_t n, const int32_t inc );
+  static const int32_t static_one;
   
+  void destroy        ( void );
+              
 public:
-  Vector  ( void );
-  Vector  ( const int32_t n,                    const bool init=false );
-  Vector  ( const int32_t n, const int32_t inc, const bool init=false );
+  Vector              ( void );
+  Vector              ( const int32_t n,             const bool init=false );
+  Vector              ( const int32_t n, real8_t* a, const int32_t ins=1 );
   
-  Vector  ( const int32_t n,                    real8_t* a, const int32_t ins=1 );
-  Vector  ( const int32_t n, const int32_t inc, real8_t* a, const int32_t ins=1 );
-  
-  Vector  ( const Vector& src );
+  Vector              ( const Vector& src );
 
-  ~Vector ( void );
+  ~Vector             ( void );
+
+  void     resize     ( const int32_t n );
 
   void     set        ( const real8_t v=D_ZERO );
   bool     equals     ( const Vector& V, const real8_t eps = D_EPSILON );
@@ -82,11 +71,11 @@ public:
   real8_t* load       ( real8_t* src, const int32_t ins=1 );
   real8_t* store      ( real8_t* dst, const int32_t ins=1 );
 
-  real8_t& at         ( const int32_t i );
-  real8_t& operator() ( const int32_t i );
+  real8_t& at         ( const int32_t i ) const;
+  real8_t& operator() ( const int32_t i ) const;
   Vector&  operator=  ( const Vector& src );
 
-  int32_t  size       ( void );
+  int32_t  size       ( void ) const;
   void     swap       ( Vector& that );
 
   void     add        ( const real8_t s );
@@ -133,13 +122,13 @@ public:
   // ----- BLAS inteface methods ---------------------------------------------------------
 
   /** @brief Data Buffer. @return pointer to data buffer. */
-  const real8_t* X    ( void ) { return x; }
+  const real8_t* X    ( void ) const { return x; }
   
   /** @brief Number of Elements. @return pointer to number of elements. */
-  const int32_t* N    ( void ) { return &ne; }
+  const int32_t* N    ( void ) const { return &ne; }
 
   /** @brief Increment. @return pointer to the increment. */
-  const int32_t* INCX ( void ) { return &incx; }
+  const int32_t* INCX ( void ) const { return &static_one; }
   
 }; // end class Vector
 
@@ -165,7 +154,7 @@ std::string toString( std::string lp, Vector& V, std::string rp,
   AMAX
 */
 
-#define INIT_VEC(a) x(a), xn(a), ne(a), incx(a)
+#define INIT_VEC(a) x(a), ne(a), nx(a)
 
 
 // =======================================================================================
@@ -177,8 +166,11 @@ std::string toString( std::string lp, Vector& V, std::string rp,
 // ---------------------------------------------------------------------------------------
 inline  void Vector::copy( const Vector& src ) {
   // -------------------------------------------------------------------------------------
-  if ( ne != src.ne ) { resize( src.ne, 1 ); }
-  dcopy_(&(src.ne), src.x, &(src.incx), x, &incx );
+  resize( src.ne );
+  for ( int32_t i=0; i<ne; i++ ) {
+    at(i) = src(i);
+  }
+  //dcopy_(src.N(), src.X(), src.INCX(), x, &ne );
 }
 
 
@@ -190,9 +182,9 @@ inline  void Vector::copy( const Vector& src ) {
  *  Access the element at (idx).
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t& Vector::at( const int32_t idx ) {
+inline  real8_t& Vector::at( const int32_t idx ) const {
   // -------------------------------------------------------------------------------------
-  return *(x+(idx*incx));
+  return *(x+idx);
 }
 
 
@@ -204,9 +196,9 @@ inline  real8_t& Vector::at( const int32_t idx ) {
  *  Access the element at (idx).
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t& Vector::operator()( const int32_t idx ) {
+inline  real8_t& Vector::operator()( const int32_t idx ) const {
   // -------------------------------------------------------------------------------------
-  return *(x+(idx*incx));
+  return *(x+idx);
 }
 
 
@@ -230,7 +222,7 @@ inline  Vector&  Vector::operator=  ( const Vector& src ) {
  *  @return number of elements.
  */
 // ---------------------------------------------------------------------------------------
-inline  int32_t Vector::size( void ) {
+inline  int32_t Vector::size( void ) const {
   // -------------------------------------------------------------------------------------
   return ne;
 }
@@ -246,7 +238,12 @@ inline  int32_t Vector::size( void ) {
 inline  void Vector::swap( Vector& that ) {
   // -------------------------------------------------------------------------------------
   int32_t n = Min( this->ne, that.ne );
-  dswap_( &n, this->x, &(this->incx), that.x, &(that.incx) );
+  for ( int32_t i=0; i<n; i++ ) {
+    real8_t t = at(i);
+    at(i) = that(i);
+    that(i) = t;
+  }
+  //dswap_( &n, this->x, &(static_one), that.X(), that.INCX() );
 }
 
 
@@ -271,7 +268,7 @@ inline  Vector::Vector( void ) : INIT_VEC(0) {
 // ---------------------------------------------------------------------------------------
 inline  Vector::Vector( const int32_t n, const bool init ) : INIT_VEC(0) {
   // -------------------------------------------------------------------------------------
-  resize(n,1);
+  resize(n);
   if ( init ) {
     set(D_ZERO);
   }
@@ -280,42 +277,27 @@ inline  Vector::Vector( const int32_t n, const bool init ) : INIT_VEC(0) {
 
 // =======================================================================================
 /** @brief Constructor.
- *  @param[in] n  number of elements in this Vector.
- *  @param[in] it if true pre initialize the vector with zeros.
+ *  @param[in] n   number of elements in this Vector.
+ *  @param[in] a   pointer to source data.
+ *  @param[in] ins source increment value. (default: 1)
  *
- *  Construct a Vector of n length. Optionally initialize the elements.
+ *  Construct a Vector with the contents of a.
  */
-// ---------------------------------------------------------------------------------------
-inline  Vector::Vector( const int32_t n, const int32_t inc, const bool init ) : INIT_VEC(0) {
-  // -------------------------------------------------------------------------------------
-  resize(n,inc);
-  if ( init ) {
-    set(D_ZERO);
-  }
-}
-
-
-// =======================================================================================
 // ---------------------------------------------------------------------------------------
 inline  Vector::Vector( const int32_t n,
 			real8_t* a, const int32_t ins ) : INIT_VEC(0) {
   // -------------------------------------------------------------------------------------
-  resize(n,1);
+  resize(n);
   load(a,ins);
 }
 
 
 // =======================================================================================
-// ---------------------------------------------------------------------------------------
-inline  Vector::Vector( const int32_t n, const int32_t inc,
-			real8_t* a, const int32_t ins ) : INIT_VEC(0) {
-  // -------------------------------------------------------------------------------------
-  resize(n,inc);
-  load(a,ins);
-}
-
-
-// =======================================================================================
+/** @brief Constructor.
+ *  @param[in] src reference to a source Vector.
+ *
+ *  Copy constructor, instantiates this Vector as a copy of the source.
+ */
 // ---------------------------------------------------------------------------------------
 inline  Vector::Vector( const Vector& src ) : INIT_VEC(0) {
   // -------------------------------------------------------------------------------------
@@ -324,12 +306,13 @@ inline  Vector::Vector( const Vector& src ) : INIT_VEC(0) {
 
 
 // =======================================================================================
+/** @brief Destructor.
+ */
 // ---------------------------------------------------------------------------------------
 inline  Vector::~Vector( void ) {
   // -------------------------------------------------------------------------------------
   destroy();
 }
-
 
 
 // =======================================================================================
@@ -385,17 +368,12 @@ inline real8_t Vector::distsq( const Vector& v ) const {
 
 
 
-
-
-
-
-
-
-
-
 // =======================================================================================
+/** @brief Size.
+ *  @return the number of elements in this Vector.
+ */
 // ---------------------------------------------------------------------------------------
-inline  int32_t size( Vector& V ) {
+inline  int32_t size( const Vector& V ) {
   // -------------------------------------------------------------------------------------
   return V.size();
 }

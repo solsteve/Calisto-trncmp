@@ -118,8 +118,8 @@ bool check( Matrix2D& M, real8_t a[2][2] ) {
   real8_t sum =
       ((M.q[0]-a[0][0])*(M.q[0]-a[0][0])) +
       ((M.q[1]-a[0][1])*(M.q[1]-a[0][1])) +
-      ((M.q[3]-a[1][0])*(M.q[3]-a[1][0])) +
-      ((M.q[4]-a[1][1])*(M.q[4]-a[1][1]));
+      ((M.q[2]-a[1][0])*(M.q[2]-a[1][0])) +
+      ((M.q[3]-a[1][1])*(M.q[3]-a[1][1]));
 
   if ( sum < -D_EPSILON ) {
     fprintf( stdout, "%19.12e < %19.12e\n", sum, -D_EPSILON );

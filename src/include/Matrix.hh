@@ -34,21 +34,17 @@
  *  Given:
  *     m   = 4
  *     n   = 3
- *     lda = 6
  *  
  *  The following Matrix
  *     1.1, 1.2, 1.3
  *     2.1, 2.2, 2.3
  *     3.1, 3.2, 3.3
  *     4.1, 4.2, 4.3
- *     xxx, xxx, xxx
- *     xxx, xxx, xxx
  *  would be stored in memory as:
- *     1.1 | 2.1 | 3.1 | 4.1 | xxx | xxx | 1.2 | 2.2 | 3.2 | 4.2 | xxx | xxx | ...
- *    ... 1.3 | 2.3 | 3.3 | 4.3 | xxx | xxx |
+ *     1.1 | 2.1 | 3.1 | 4.1 | 1.2 | 2.2 | 3.2 | 4.2 | 1.3 | 2.3 | 3.3 | 4.3
  *  \endverbatim
  *
- * This represents FORTRAN's column-major layout. This is for full compatability with
+ * This represents FORTRAN's column-major layout. This is for easy compatability with
  * LAPACK.
  */
 // =======================================================================================
@@ -70,11 +66,9 @@ class Matrix {
   real8_t* data; ///< Storage buffer
   int32_t  nrow; ///< Number or rows        (visible).
   int32_t  ncol; ///< Number of columns     (actual).
-  int32_t  lda;  ///< Number of stored rows (actual).
   int32_t  nbuf; ///< Allocated space;
 
   void destroy ( void );
-  void resize  ( const int32_t nr, const int32_t nc, const int32_t ld );
 
   // -------------------------------------------------------------------------------------
  public:
@@ -85,10 +79,9 @@ class Matrix {
                 DIAGONAL, IDENTITY } matrix_format_e;
 
   Matrix  ( void );
-  Matrix  ( const int32_t n,                                      const bool init=false );
-  Matrix  ( const int32_t nr, const int32_t nc,                   const bool init=false );
-  Matrix  ( const int32_t nr, const int32_t nc, const int32_t ld, const bool init=false );
-  Matrix  ( const Matrix& M,  const bool clone=false );
+  Matrix  ( const int32_t n,                    const bool init=false );
+  Matrix  ( const int32_t nr, const int32_t nc, const bool init=false );
+  Matrix  ( const Matrix& M );
 
   static  Matrix zero           ( const int32_t n );
   static  Matrix identity       ( const int32_t n );
@@ -106,12 +99,12 @@ class Matrix {
 
   ~Matrix ( void );
 
-  void resize  ( const int32_t n )                    { resize(n,n,n); }
-  void resize  ( const int32_t nr, const int32_t nc ) { resize(nr,nc,nr); }
+  void     resize         ( const int32_t n );
+  void     resize         ( const int32_t nr, const int32_t nc );
 
   void     set            ( const real8_t v=D_ZERO );
   bool     equals         ( const Matrix& M, const real8_t eps   = D_EPSILON );
-  void     copy           ( const Matrix& M, const bool    clone = false );
+  void     copy           ( const Matrix& M );
 
   real8_t* load           ( const real8_t* src, matrix_format_e fmt = COLUMN_MAJOR );
   real8_t* store          ( const real8_t* dst, matrix_format_e fmt = COLUMN_MAJOR );
@@ -172,7 +165,7 @@ class Matrix {
   int32_t* N   (void) { return &ncol; };
 
   /** @brief Leading Dimension. @return pointer to the leading dimension. */
-  int32_t* LDA (void) { return &lda;  };
+  int32_t* LDA (void) { return &nrow;  };
 
 }; // end class Matrix
 
@@ -225,7 +218,7 @@ inline  Matrix& Matrix::operator= ( const Matrix& rhs ) {
 // ---------------------------------------------------------------------------------------
 inline  real8_t&  Matrix::at( const int32_t r, const int32_t c ) {
   // -------------------------------------------------------------------------------------
-  return *(data + r + c*lda);
+  return *(data + r + c*nrow);
 }
 
 
@@ -240,10 +233,13 @@ inline  real8_t&  Matrix::at( const int32_t r, const int32_t c ) {
 // ---------------------------------------------------------------------------------------
 inline  real8_t&  Matrix::operator() ( const int32_t r, const int32_t c ) {
   // -------------------------------------------------------------------------------------
-  return *(data + r + c*lda);
+  return *(data + r + c*nrow);
 }
 
 // =======================================================================================
+/** @brief Is Matrix Square.
+ *  @return true if this Matrix is square.
+ */
 // ---------------------------------------------------------------------------------------
 inline  bool Matrix::isSquare( void ) {
   // -------------------------------------------------------------------------------------

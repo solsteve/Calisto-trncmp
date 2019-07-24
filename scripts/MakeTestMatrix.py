@@ -208,8 +208,186 @@ def TEST03(n):
 }
 
  """ % (n,n,n,n,n,n,d,D_N[n]) )
+    
+# --------------------------------------------------------------------
+
+def TEST04(a,b):
+    V = table(1,a)
+    M = table(a,b)
+    A = np.dot(V,M)
+    print('   ',CForm('vdat',  V,  '%.2f'))
+    print('   ',CForm('mdat',  M,  '%.2f'))
+    print('   ',CForm('adat',  A,  '%.4f'))
+
+    print("""
+  Vector  V(%d,vdat);
+  Matrix  M = Matrix::row_major(%d,%d,mdat);
+  Vector  A;
+
+    dot( A, V, M );
+
+    checkAVe( adat, A, %d, 1.0e-14 );
+   
+ """ % (a,a,b,b) )
+   
+def TEST05(a,b):
+    M = table(a,b)
+    V = table(b,1)
+    A = np.dot(M,V)
+    print('   ',CForm('vdat',  V.T,  '%.2f'))
+    print('   ',CForm('mdat',  M,  '%.2f'))
+    print('   ',CForm('adat',  A.T,  '%.4f'))
+
+    print("""
+  Matrix  M = Matrix::row_major(%d,%d,mdat);
+  Vector  V(%d,vdat);
+  Vector  A;
+
+    dot( A, M, V );
+
+    checkAVe( adat, A, %d, 1.0e-14 );
+   
+ """ % (a,b,b,a) )
+   
+def TEST06(a,b):
+    V = table(1,a)
+    B = table(1,b)
+    M = table(a,b)
+    A = np.dot(V,M) + B
+    print('   ',CForm('vdat',  V,  '%.2f'))
+    print('   ',CForm('mdat',  M,  '%.2f'))
+    print('   ',CForm('adat',  A,  '%.4f'))
+    print('   ',CForm('bdat',  B,  '%.2f'))
+
+    print("""
+  Vector  V(%d,vdat);
+  Vector  B(%d,bdat);
+  Matrix  M = Matrix::row_major(%d,%d,mdat);
+  Vector  A;
+
+    dotAdd( A, V, M, B );
+
+    checkAVe( adat, A, %d, 1.0e-14 );
+   
+ """ % (a,b,a,b,b) )
+   
+def TEST07(a,b):
+    M = table(a,b)
+    V = table(b,1)
+    B = table(a,1)
+    A = np.dot(M,V) + B
+    print('   ',CForm('vdat',  V.T,  '%.2f'))
+    print('   ',CForm('mdat',  M,  '%.2f'))
+    print('   ',CForm('adat',  A.T,  '%.4f'))
+    print('   ',CForm('bdat',  B.T,  '%.2f'))
+
+    print("""
+  Matrix  M = Matrix::row_major(%d,%d,mdat);
+  Vector  V(%d,vdat);
+  Vector  B(%d,bdat);
+  Vector  A;
+
+    dot( A, M, V );
+
+    checkAVe( adat, A, %d, 1.0e-14 );
+   
+ """ % (a,b,b,a,a) )
+   
+def TEST08(a,b):
+    C = table(a,1)
+    R = table(1,b)
+    A = np.dot(C,R)
+    print('   ',CForm('cdat', C.T, '%.2f'))
+    print('   ',CForm('rdat', R,   '%.2f'))
+    print('   ',CForm('adat', A,   '%.4f'))
+
+    print("""
+   Vector  C(%d,rdat);
+   Vector  R(%d,cdat);
+   Matrix  A;
+
+   outer( A, C, R );
+
+   checkAMe( adat, A, %d, %d, 1.0e-14 );
+   
+ """ % (a,b,a,b,) )
+
+
+
+
 
     
+def TEST09(n):
+    V = table(1,n)
+    M = table(n,n)
+    s = np.dot(V,np.dot(M,V.T))
+    print( '   ', CForm('vdat', V,   '%.2f') )
+    print( '   ', CForm('mdat', M,   '%.2f') )
+    print( 'real8_t test = %25.18e\n' % (s,) )
+    print("""
+   Vector  V(%d,vdat);
+   Matrix  M = Matrix::row_major(%d,%d,mdat);
+   Matrix  A;
+
+    real8_t s = vMv( V, M );
+
+    EXPECT_NEAR( test, s, 1.0e-14 );
+   
+ """ % (n,n,n,) )
+
+
+
+
+
+    
+def TEST10(n):
+    R = table(1,n)
+    M = table(n,n)
+    C = table(n,1)
+    s = np.dot(R,np.dot(M,C))
+    print( '   ', CForm('rdat', R,   '%.2f') )
+    print( '   ', CForm('cdat', C.T, '%.2f') )
+    print( '   ', CForm('mdat', M,   '%.2f') )
+    print( 'real8_t test = %25.18e\n' % (s,) )
+    print("""
+   Vector  R(%d,rdat);
+   Vector  C(%d,cdat);
+   Matrix  M = Matrix::row_major(%d,%d,mdat);
+   Matrix  A;
+
+    real8_t s = vMv( R, M, C );
+
+    EXPECT_NEAR( test, s, 1.0e-14 );
+   
+ """ % (n,n,n,n,) )
+
+
+
+
+    
+def TEST11(n):
+    V = table(1,n)
+    M = table(1,n)
+    S = table(n,n)
+    s = np.dot((V-M),np.dot(S,(V-M).T))
+    print( '   ', CForm('vdat', V,   '%.2f') )
+    print( '   ', CForm('mdat', M,   '%.2f') )
+    print( '   ', CForm('sdat', S,   '%.2f') )
+    print( 'real8_t test = %25.18e\n' % (s,) )
+    print("""
+   Vector  V(%d,vdat);
+   Vector  mu(%d,mdat);
+   Matrix  S = Matrix::row_major(%d,%d,sdat);
+
+    real8_t s = vMv( V, mu, S );
+
+    EXPECT_NEAR( test, s, 1.0e-14 );
+   
+ """ % (n,n,n,n,) )
+
+
+
+
 #/ =======================================================================================
 
 
@@ -219,7 +397,4 @@ def TEST03(n):
 #TEST('div',DIV)
 
 
-TEST03(4)
-TEST03(5)
-TEST03(6)
-TEST03(7)
+TEST11(7)
