@@ -1,5 +1,5 @@
 #/ ====================================================================== BEGIN FILE =====
-#/ **                                  M A K E F I L E                                  **
+#/ **                              data - C M A K E L I S T                             **
 #/ =======================================================================================
 #/ **                                                                                   **
 #/ **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
@@ -26,75 +26,28 @@
 #/
 #/ @brief   Build environment.
 #/
-#/ @details Provides a wrapper for cmake.
+#/ @details Provides a common build environment.
 #/
 #/ @author  Stephen W. Soliday
-#/ @date    2019-Apr-18
+#/ @date    2019-Apr-28
 #/
 #/ =======================================================================================
 
-all: debug
-.PHONY: all
+project( data CXX )
 
-help:
-	@echo "The following are some of the valid targets for this Makefile:"
-	@echo "... all (the default if no target is provided)"
-	@echo "... debug"
-	@echo "... release"
-	@echo "... pages (builds doxygen documents)"
-	@echo "... clean"
-	@echo "... fullclean"
-	@echo "... distclean"
-	@echo ""
-.PHONY: help
+add_executable(${PROJECT_NAME} ../main.cc
+  utest_table
+  utest_stats
+  )
 
-DOCFLAG=OFF
+target_link_libraries(${PROJECT_NAME} GTest::GTest GTest::Main callisto ${lapackblas_libraries})
+add_test(All${PROJECT_NAME}InBase ${PROJECT_NAME})
+
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION test
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
 
 #/ =======================================================================================
-
-debug: DEBUG
-	make -C $<
-.PHONY: debug
-
-DEBUG:
-	mkdir -p $@/docs/media
-	cp ./docs/media/* $@/docs/media/
-	cd $@; cmake $(COMPILERS) -DCMAKE_BUILD_TYPE=$@ -DBUILD_DOCS=$(DOCFLAG) ..
-
-#/ ---------------------------------------------------------------------------------------
-
-release: RELEASE
-	make -C $<
-.PHONY: release
-
-RELEASE:
-	mkdir -p $@/docs/media
-	cp ./docs/media/* $@/docs/media/
-	cd $@; cmake $(COMPILERS) -DCMAKE_BUILD_TYPE=$@ -DBUILD_DOCS=$(DOCFLAG) ..
-
-#/ =======================================================================================
-
-pages:
-	DOCFLAG=ON make -e -C . release
-.PHONY: pages
-
-#/ =======================================================================================
-
-clean:
-	@echo "Done..." $@
-.PHONY: clean
-
-fullclean: clean
-	rm -rf RELEASE DEBUG
-	rm -rf docs/html docs/latex docs/man
-.PHONY: fullclean
-
-distclean: fullclean
-	find . -name "*~" | xargs rm -f
-	rm -rf scripts/__pycache__
-
-.PHONY: distclean
-
-#/ =======================================================================================
-#/ **                                  M A K E F I L E                                  **
+#/ **                              data - C M A K E L I S T                             **
 #/ =========================================================================== END FILE ==

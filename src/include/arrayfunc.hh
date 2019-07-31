@@ -266,32 +266,6 @@ size_t MaxLoc( const T* array, const size_t len ) {
 }
 
 
-// =======================================================================================
-/** @brief Copy.
- *  @param dst destination vector.
- *  @param src source vector
- *  @param n length of the vector
- *  @return true=success, false=failure
- *
- *  Copy vector of real8_t.
- *  This function throws a NullException if the pointer to the dst is NULL.
- *  This function throws a NullException if the pointer to the src is NULL.
- *  This function throws an InvalidException src length is zero.
- */
-// ---------------------------------------------------------------------------------------
-template < class T >
-void copy( T* dst, const T* src, const size_t n ) {
-  // -------------------------------------------------------------------------------------
-  if ((const T*)0 == dst) throw std::invalid_argument("destination pointer NULL");
-  if ((const T*)0 == src) throw std::invalid_argument("source pointer NULL");
-  if (0 == n)             throw std::invalid_argument("copying zero elements makes no sense");
-
-  for (size_t i=0; i<n; i++) {
-    dst[i] = src[i];
-  }
-}
-
-
 #endif
 
 

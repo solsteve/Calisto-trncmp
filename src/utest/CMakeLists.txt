@@ -44,6 +44,7 @@ add_subdirectory ( configdb )
 add_subdirectory ( matvec )
 add_subdirectory ( linalg )
 add_subdirectory ( blas )
+add_subdirectory ( data )
 
 #/ =======================================================================================
 #/ **                              UTest - C M A K E L I S T                            **

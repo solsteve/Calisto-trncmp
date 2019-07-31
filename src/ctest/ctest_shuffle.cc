@@ -1,12 +1,12 @@
 // ====================================================================== BEGIN FILE =====
-// **                                   E N T R O P Y                                   **
+// **                             C T E S T _ S H U F F L E                             **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 2010-2019, Stephen W. Soliday                                      **
-// **                           stephen.soliday@trncmp.org                              **
-// **                           http://research.trncmp.org                              **
+// **  Copyright (c) 2019, Stephen W. Soliday                                           **
+// **                      stephen.soliday@trncmp.org                                   **
+// **                      http://research.trncmp.org                                   **
 // **                                                                                   **
 // **  -------------------------------------------------------------------------------  **
 // **                                                                                   **
@@ -24,56 +24,27 @@
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief  Entropy Base Class.
- *  @file   Entropy.hh
+/** @brief Test the Entropy class.
+ *  @file   ctest_shuffle.cc
  *  @author Stephen W. Soliday
- *  @date   2010-01-01  Original release.
- *  @date   2019-Jun-14 CMake refactorization.
+ *  @date   2019-Jun-25
  *
- *  Provides the abstract interface for entropy generation.
+ *  This is a test of Randomness
  */
 // =======================================================================================
 
-
-#ifndef __HH_ENTROPY_TRNCMP
-#define __HH_ENTROPY_TRNCMP
-
-
 #include <trncmp.hh>
 
+void TEST01( void ) {
+  std::cout << "ILH!\n";
+}
+
+
+int main( void ) {
+  TEST01();
+  return 0;
+}
 
 // =======================================================================================
-// ---------------------------------------------------------------------------------------
-class Entropy {
-  // -------------------------------------------------------------------------------------
- protected:
-  Entropy(void);
-
-  void seed_map( u_int8_t* dst, size_t nd, void* vsrc, size_t ns );
-
- public:
-  virtual ~Entropy (void);
-
-  virtual void      seed_set  ( void* S, size_t n ) = 0;
-  virtual size_t    seed_size ( void )              = 0;
-  virtual void      seed_show ( std::ostream& os = std::cerr ) = 0;
-
-  virtual u_int8_t  U8        ( void )              = 0;  ///<  8-bit  unsigned integer
-  virtual u_int16_t U16       ( void )              = 0;  ///< 16-bit  unsigned integer
-  virtual u_int32_t U32       ( void )              = 0;  ///< 32-bit  unsigned integer
-  virtual u_int64_t U64       ( void )              = 0;  ///< 64-bit  unsigned integer
-  virtual real4_t   R32       ( void )              = 0;  ///< 32-bit  floating point
-  virtual real8_t   R64       ( void )              = 0;  ///< 64-bit  floating point
-
-  static Entropy*   DEFAULT   ( void );
-
-  void seed_set ( void );
-}; // end class Entropy
-
-
-#endif
-
-
-// =======================================================================================
-// **                                   E N T R O P Y                                   **
+// **                             C T E S T _ S H U F F L E                             **
 // ======================================================================== END FILE =====

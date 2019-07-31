@@ -72,7 +72,7 @@ std::string toString  ( T* A, size_t n,
                         std::string sfmt = DEFAULT_PRINT_FORMAT,
                         std::string sdel = DEFAULT_PRINT_DELIM ) {
   // -------------------------------------------------------------------------------------
-  if (static_cast<real8_t*>(0) == A) throw std::invalid_argument("array is NULL");
+  if (static_cast<T*>(0) == A) throw std::invalid_argument("array is NULL");
   if (0 == n) throw std::invalid_argument("zero length array");
 
   std::string df  = sdel + sfmt;
@@ -110,7 +110,7 @@ std::string toString  ( T** A, size_t nr, size_t nc,
                         std::string cdel = DEFAULT_PRINT_COL_DELIM,
                         std::string rdel = DEFAULT_PRINT_ROW_DELIM ) {
   // -------------------------------------------------------------------------------------
-  if (static_cast<real8_t**>(0) == A) throw std::invalid_argument("array is NULL");
+  if (static_cast<T**>(0) == A) throw std::invalid_argument("array is NULL");
   if (0 == nr) throw std::invalid_argument("zero row length array");
   if (0 == nc) throw std::invalid_argument("zero col length array");
 

@@ -215,11 +215,11 @@
 #  endif
 
 #  ifdef __FLT_MIN__
-#     define MIN_POS_FLOAT  ((real8_t)   __DBL_MIN__  )            ///< Minimum positive float
-#     define MIN_NEG_FLOAT  ((real8_t) -(__DBL_MIN__) )            ///< Minimum negative float
+#     define MIN_POS_FLOAT  ((real4_t)   __DBL_MIN__  )            ///< Minimum positive float
+#     define MIN_NEG_FLOAT  ((real4_t) -(__DBL_MIN__) )            ///< Minimum negative float
 #  else
-#     define MIN_POS_FLOAT  ((real8_t)  1.17549435082e-38F )       ///< Minimum positive float
-#     define MIN_NEG_FLOAT  ((real8_t) -1.17549435082e-38F )       ///< Minimum negative float
+#     define MIN_POS_FLOAT  ((real4_t)  1.17549435082e-38F )       ///< Minimum positive float
+#     define MIN_NEG_FLOAT  ((real4_t) -1.17549435082e-38F )       ///< Minimum negative float
 #  endif
 
 #  ifdef __DBL_EPSILON__
@@ -229,9 +229,9 @@
 #  endif
 
 #  ifdef __FLT_EPSILON__
-#     define F_EPSILON  ((real8_t)   __FLT_EPSILON__ )             ///< smallest float
+#     define F_EPSILON  ((real4_t)   __FLT_EPSILON__ )             ///< smallest float
 #  else
-#     define F_EPSILON  ((real8_t)   1.1920928955078125-7F )        ///< smallest float
+#     define F_EPSILON  ((real4_t)   1.1920928955078125-7F )        ///< smallest float
 #  endif
 
 // =======================================================================================

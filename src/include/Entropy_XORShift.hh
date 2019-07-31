@@ -51,6 +51,7 @@ class Entropy_XORShift : public Entropy {                              // Entrop
   Entropy_XORShift(void);
 
   u_int32_t* buffer; ///< State buffer
+  size_t     nbuf;
   
   u_int8_t*  SB;     ///< BYTE state array
   u_int16_t* SW;     ///< WORD state array
@@ -71,6 +72,8 @@ class Entropy_XORShift : public Entropy {                              // Entrop
   }; // end class Entropy_XORShift::Builder
 
   virtual ~Entropy_XORShift (void);
+
+  virtual void      seed_show ( std::ostream& os = std::cerr );
 
   virtual void      seed_set  ( void* S, size_t n );
   virtual size_t    seed_size ( void );

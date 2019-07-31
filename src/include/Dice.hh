@@ -94,13 +94,63 @@ public:
 
   size_t    seed_size   ( void ) { return ent_engine->seed_size(); }
 
+  void      seed_show   ( std::ostream& os = std::cerr ) { ent_engine->seed_show(os); }
+
   // ----- core random functions ---------------------------------------------------------
 
   bool      boolean   ( real8_t thres = D_HALF );
   real8_t   uniform   ( void );
   real8_t   normal    ( void );
   size_t    index     ( size_t maxValue );
+  size_t    index     ( size_t from, size_t to );
+
+  template<class T> void shuffle( T* a, size_t n );
 }; // end class Dice
+
+// =======================================================================================
+/** @brief Random Index.
+ *  @param from inclusive lower limit.
+ *  @param to   exclusive upper limit.
+ *  @return value to <= r < from with a uniform distribution.
+ *
+ *  Return an index (unsigned int) with a uniform random distribution.
+ */
+// ---------------------------------------------------------------------------------------
+inline  size_t Dice::index( size_t from, size_t to ) {
+  // -------------------------------------------------------------------------------------
+  return from + index( to - from );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+// =======================================================================================
+/** @brief Shuffle
+ *  @param[in,out] a pointer to an array of items.
+ *  @param[in]     n number of items.
+ *
+ *  Using the Knuth Shuffle, page
+ *  See also Persi Diaconis    (3/2) Log_2(N)
+ */
+// ---------------------------------------------------------------------------------------
+template<class T>
+void Dice::shuffle( T* a, size_t n ) {
+  // -------------------------------------------------------------------------------------
+  for ( size_t i=n-1; i>1; i-- ) {
+    size_t j = index( i );
+    T temp = a[i];
+    a[i] = a[j];
+    a[j] = temp;
+  }
+}
 
 
 #endif

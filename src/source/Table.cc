@@ -1,12 +1,12 @@
 // ====================================================================== BEGIN FILE =====
-// **                          E N T R O P Y _ X O R S H I F T                          **
+// **                                     T A B L E                                     **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 2019-, Stephen W. Soliday                                          **
-// **                       stephen.soliday@trncmp.org                                  **
-// **                       http://research.trncmp.org                                  **
+// **  Copyright (c) 1993-2019, Stephen W. Soliday                                      **
+// **                           stephen.soliday@trncmp.org                              **
+// **                           http://research.trncmp.org                              **
 // **                                                                                   **
 // **  -------------------------------------------------------------------------------  **
 // **                                                                                   **
@@ -24,26 +24,59 @@
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief  Entropy XORShift Class.
- *  @file   Entropy_XORShift.cc
+/** @brief  Table (2D Array)
+ *  @file   Table.cc
  *  @author Stephen W. Soliday
- *  @date   2019-Jun-18
+ *  @date   2019-Jul-26 CMake refactorization.
  *
- *  Provides the methods for an XOR Shift Pseudo Random Number Generator.
+ *  Provides the methods for a 2D Table
+ *  @see Statistics, Covariance, and PCA
  */
 // =======================================================================================
 
+#include <Table.hh>
+#include <FileTool.hh>
 
-#include <Entropy_XORShift.hh>
+#define INIT_VAR(a) data(a), nsamp(a), nvar(a), nalloc(a)
+
+TLOGGER_REFERENCE( Table, logger );
+
 
 // =======================================================================================
-/** @brief Build Instance.
- *  @return pointer to a new Entropy Engine.
+/** @brief Resize.
+ *  @param[in] ns number of samples   (row).
+ *  @param[in] nv number of variables (col).
+ *
+ *  Reallocate space if required.
  */
 // ---------------------------------------------------------------------------------------
-Entropy_XORShift* Entropy_XORShift::Builder::build( void ) {
+void Table::resize( const size_t ns, const size_t nv ) {
   // -------------------------------------------------------------------------------------
-  return new Entropy_XORShift();
+  size_t new_alloc = ns * nv;
+  if ( new_alloc > nalloc ) {
+    destroy();
+    data = new real8_t[ new_alloc ];
+    nalloc = new_alloc;
+  }
+  nsamp = ns;
+  nvar  = nv;      
+}
+
+
+// =======================================================================================
+/** @brief Destroy.
+ *
+ *  Deallocatedata buffer.
+ */
+// ---------------------------------------------------------------------------------------
+void Table::destroy( void ) {
+  // -------------------------------------------------------------------------------------
+  if ( static_cast<real8_t*>(0) != data ) {
+    delete[] data;
+  }
+  nsamp  = 0;
+  nvar   = 0;
+  nalloc = 0;
 }
 
 
@@ -51,45 +84,42 @@ Entropy_XORShift* Entropy_XORShift::Builder::build( void ) {
 /** @brief Constructor.
  */
 // ---------------------------------------------------------------------------------------
-Entropy_XORShift::Entropy_XORShift( void ) :
-  Entropy(), buffer(0), SB(0), SW(0), SD(0), SQ(0), nbuf(0) {
+Table::Table( void ) : INIT_VAR(0) {
   // -------------------------------------------------------------------------------------
-
-  size_t p8  = 0;
-  size_t p16 = p8  + 4*sizeof(u_int8_t);
-  size_t p32 = p16 + 4*sizeof(u_int16_t);
-  size_t p64 = p32 + 4*sizeof(u_int32_t);
-  size_t n   = p64 + 4*sizeof(u_int64_t);
-
-  if ( n == seed_size() ) {
-
-    p8  /= sizeof(u_int32_t);
-    p16 /= sizeof(u_int32_t);
-    p32 /= sizeof(u_int32_t);
-    p64 /= sizeof(u_int32_t);
-    n   /= sizeof(u_int32_t);
-
-    nbuf   = n;
-    buffer = new u_int32_t[nbuf];
-
-    SB = reinterpret_cast<u_int8_t*>(  (buffer+p8) );
-    SW = reinterpret_cast<u_int16_t*>( (buffer+p16) );
-    SD = reinterpret_cast<u_int32_t*>( (buffer+p32) );
-    SQ = reinterpret_cast<u_int64_t*>( (buffer+p64) );
-  } else {
-    std::cerr << "Seed init " << n << " is not equal to " << seed_size() << "\n";
-  }
 }
 
+
 // =======================================================================================
+/** @brief Constructor.
+ *  @param[in] ns number of samples   (row).
+ *  @param[in] nv number of variables (col).
+ */
 // ---------------------------------------------------------------------------------------
-void Entropy_XORShift::seed_show( std::ostream& os ) {
+Table::Table( const size_t ns, const size_t nv ) : INIT_VAR(0) {
   // -------------------------------------------------------------------------------------
-  os << c_fmt( "%d: {", nbuf );
-  for ( size_t i=0; i<nbuf; i++ ) {
-    os << c_fmt( " %08X", buffer[i] );
-  }
-  os << " }\n";
+  resize( ns, nv );
+}
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *  @param[in] tab reference to a source Table.
+ */
+// ---------------------------------------------------------------------------------------
+Table::Table( const Table& tab ) : INIT_VAR(0) {
+  // -------------------------------------------------------------------------------------
+  copy( tab );
+}
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *  @param[in] fspc file specification for the source of this Table.
+ */
+// ---------------------------------------------------------------------------------------
+Table::Table( const std::string fspc ) : INIT_VAR(0) {
+  // -------------------------------------------------------------------------------------
+  read_ascii( fspc );
 }
 
 
@@ -97,188 +127,134 @@ void Entropy_XORShift::seed_show( std::ostream& os ) {
 /** @brief Destructor.
  */
 // ---------------------------------------------------------------------------------------
-Entropy_XORShift::~Entropy_XORShift( void ) {
+Table::~Table( void ) {
   // -------------------------------------------------------------------------------------
-  SB = static_cast<u_int8_t*>(0);
-  SW = static_cast<u_int16_t*>(0);
-  SD = static_cast<u_int32_t*>(0);
-  SQ = static_cast<u_int64_t*>(0);
-  delete buffer;
-  buffer = static_cast<u_int32_t*>(0);
+  destroy();
 }
 
 
 // =======================================================================================
-/** @brief Set Seed.
- *  @param[in] S pointer to a source of seed material.
- *  @param[in] n number of bytes of seed matter.
+/** @brief Set.
+ *  @param[in] value value to with. (default: 0)
  *
- *  Set the underlying state of this generator from the seed matter.
+ *  Set every element of this table to the same value.
  */
 // ---------------------------------------------------------------------------------------
-void Entropy_XORShift::seed_set( void* S, size_t n ) {
+void Table::set( const real8_t value ) {
   // -------------------------------------------------------------------------------------
-  const size_t ns = seed_size();
-    
-  if ( n == ns ) {
-    copy( buffer, reinterpret_cast<u_int32_t*>(S), ns/sizeof(u_int32_t) );
-  } else {
-    seed_map( reinterpret_cast<u_int8_t*>(buffer), ns,
-              reinterpret_cast<void*>(S), n );
+  const size_t n = nsamp * nvar;
+  for ( size_t i=0; i<n; i++ ) {
+    data[i] = value;
   }
 }
 
 
 // =======================================================================================
-/** @brief
- */
-// ---------------------------------------------------------------------------------------
-size_t Entropy_XORShift::seed_size( void ) {
-  // -------------------------------------------------------------------------------------
-  return
-      (4*sizeof(u_int8_t))  +
-      (4*sizeof(u_int16_t)) +
-      (4*sizeof(u_int32_t)) +
-      (4*sizeof(u_int64_t));
-}
-
-
-// =======================================================================================
-/** @brief Get Integer.
- *  @return 8 bit unsigned integer.
+/** @brief Copy.
+ *  @param[in] tab reference to a source Table.
  *
- *  Return a uniformly distributed 8 bit unsigned integer.
+ *  Copy the contents of the source Table tab into this Table.
  */
 // ---------------------------------------------------------------------------------------
-u_int8_t Entropy_XORShift::U8( void ) {
+void Table::copy( const Table& tab ) {
   // -------------------------------------------------------------------------------------
-  const u_int8_t t = SB[0] ^ (u_int8_t)(SB[0] << 4);
-  SB[0] = SB[1];
-  SB[1] = SB[2];
-  SB[2] = SB[3];
-  SB[3] = SB[2] ^ t ^ (u_int8_t)( SB[2] >> 1 ) ^ (u_int8_t)( t << 1 );
-  return SB[3];
+  resize( tab.nsamp, tab.nvar );
+  const size_t n = nsamp * nvar;
+  for ( size_t i=0; i<n; i++ ) {
+    data[i] = tab.data[i];
+  }
 }
 
 
 // =======================================================================================
-/** @brief Get Integer.
- *  @return 16 bit unsigned integer.
+/** @brief Row Pointer.
+ *  @param[out] row  pointer to a buffer to copy the row.
+ *  @param[in]  sidx index to the sample.
  *
- *  Return a uniformly distributed 16 bit unsigned integer.
+ *  Copy the contents of the row at sample sidx into the supplied buffer row.
+ *  @note it is up to the programmer to make sure that row points to an allocation large
+ *        enough to copy the entire row.
  */
 // ---------------------------------------------------------------------------------------
-u_int16_t Entropy_XORShift::U16( void ) {
+void Table::row( real8_t* row, const size_t sidx ) {
   // -------------------------------------------------------------------------------------
-  uint16_t t = SW[0] ^ (u_int16_t)(SW[0]<<5); 
-  SW[0] = SW[1]; 
-  SW[1] = SW[2]; 
-  SW[2] = SW[3]; 
-  SW[3] = SW[3] ^ (u_int16_t)(SW[3]>>1) ^ (t ^ (u_int16_t)(t>>3));
-  return SW[3];
+  real8_t* src = (data + sidx);
+  real8_t* dst = row;
+  for ( size_t i=0; i<nvar; i++ ) {
+    *dst++ = *src; src += nsamp;
+  }
 }
 
 
 // =======================================================================================
-/** @brief Get Integer.
- *  @return 32 bit unsigned integer.
+/** @brief Read ASCII File.
+ *  @param[in] fspc file specification for the source of this Table.
+ *  @param[in] 
+ *  @return 
+ */
+// ---------------------------------------------------------------------------------------
+bool Table::read_ascii( const std::string fspc ) {
+  // -------------------------------------------------------------------------------------
+  int istat;
+  std::ifstream inf = FileTool::openRead( fspc, &istat );
+
+  if ( 0 != istat ) {
+    logger->error( "Cannot open %s for reading." );
+    return true;
+  }
+
+  size_t  ns, nv;
+  real8_t x;
+  inf >> ns;
+  inf >> nv;
+  resize( ns, nv );
+  for ( size_t s=0; s<ns; s++ ) {
+    for ( size_t v=0; v<nv; v++ ) {
+      inf >> x; at(s,v) = x;
+    }
+  }
+  
+  inf.close();
+  return false;
+}
+
+
+// =======================================================================================
+/** @brief Write ASCII FIle;
+ *  @param[in] fspc file specification for the destination of this Table.
+ *  @param[in] sfmt print format.
+ *  @return true if an error ocurred.
  *
- *  Return a uniformly distributed 32 bit unsigned integer.
+ *  Write the contents of this Table to a file fspc. The file will be gin with two
+ *  integers: number of samples and number of variables. Each subsequent line will
+ *  contain one sample of nvar variables. The format specified by the argument sfmt
+ *  is a string in the form of a printf edit descriptor.
  */
 // ---------------------------------------------------------------------------------------
-u_int32_t Entropy_XORShift::U32( void ) {
+bool Table::write_ascii( const std::string fspc, const std::string sfmt ) {
   // -------------------------------------------------------------------------------------
-  uint32_t t = SD[0] ^ (SD[0] << 11);   
-  SD[0] = SD[1];
-  SD[1] = SD[2];
-  SD[2] = SD[3];
-  SD[3] = SD[3] ^ (SD[3] >> 19) ^ (t ^ (t >> 8));
-  return SD[3];
+  int istat;
+  std::ofstream outf = FileTool::openWrite( fspc, &istat );
+
+  if ( 0 != istat ) {
+    logger->error( "Cannot open %s for writting." );
+    return true;
+  }
+
+  outf << nsamp << " " << nvar << "\n";
+  for ( size_t s=0; s<nsamp; s++ ) {
+    outf << c_fmt( sfmt.c_str(), at(s,0) );
+    for ( size_t v=1; v<nvar; v++ ) {
+      outf << " " << c_fmt( sfmt.c_str(), at(s,v) );
+    }
+    outf << "\n";
+  }
+  
+  outf.close();
+  return false;
 }
 
 
 // =======================================================================================
-static inline uint64_t rotl(const uint64_t x, int k) {
-  // -------------------------------------------------------------------------------------
-	return (x << k) | (x >> (64 - k));
-}
-
-// =======================================================================================
-/** @brief Get Integer.
- *  @return 64 bit unsigned integer.
- *
- *  Return a uniformly distributed 64 bit unsigned integer.  xoshiro256**
- */
-// ---------------------------------------------------------------------------------------
-u_int64_t Entropy_XORShift::U64( void ) {
-  // -------------------------------------------------------------------------------------
-  const uint64_t result_starstar = rotl(SQ[1] * 5, 7) * 9;
-  
-  const uint64_t t = SQ[1] << 17;
-  
-  SQ[2] ^= SQ[0];
-  SQ[3] ^= SQ[1];
-  SQ[1] ^= SQ[2];
-  SQ[0] ^= SQ[3];
-  
-  SQ[2] ^= t;
-  
-  SQ[3] = rotl(SQ[3], 45);
-
-  return result_starstar;
-}
-
-// const uint64_t result_starstar = rotl(SQ[1] * 5, 7) * 9;
-// const uint64_t t = SQ[1] << 11;
-// SQ[2] ^= SQ[0];
-// SQ[5] ^= SQ[1];
-// SQ[1] ^= SQ[2];
-// SQ[7] ^= SQ[3];
-// SQ[3] ^= SQ[4];
-// SQ[4] ^= SQ[5];
-// SQ[0] ^= SQ[6];
-// SQ[6] ^= SQ[7];
-// SQ[6] ^= t;
-// SQ[7] = rotl(SQ[7], 21);
-// return result_starstar;
-
-
-// =======================================================================================
-/** @brief Get Real.
- *  @return 32 bit real.
- *
- *  Return a uniformly distributed 32 bit real.
- */
-// ---------------------------------------------------------------------------------------
-real4_t Entropy_XORShift::R32( void ) {
-  // -------------------------------------------------------------------------------------
-  const union {
-    u_int32_t I;
-    real4_t   F;
-  } M = { .I = 0x3F800000U | (U32() >> 9) };
-  
-  return M.F - 1.0e0f;  
-}
-
-
-// =======================================================================================
-/** @brief Get Real.
- *  @return 64 bit real.
- *
- *  Return a uniformly distributed 64 bit real.
- */
-// ---------------------------------------------------------------------------------------
-real8_t Entropy_XORShift::R64( void ) {
-  // -------------------------------------------------------------------------------------
-  const union {
-    u_int64_t I;
-    real8_t   D;
-  } M = { .I = 0x3FF0000000000000UL | (U64() >> 12) };
-  
-  return M.D - 1.0e0;
-}
-
-
-// =======================================================================================
-// **                          E N T R O P Y _ X O R S H I F T                          **
+// **                                     T A B L E                                     **
 // ======================================================================== END FILE =====
