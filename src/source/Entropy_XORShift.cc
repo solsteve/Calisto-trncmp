@@ -52,7 +52,7 @@ Entropy_XORShift* Entropy_XORShift::Builder::build( void ) {
  */
 // ---------------------------------------------------------------------------------------
 Entropy_XORShift::Entropy_XORShift( void ) :
-  Entropy(), buffer(0), SB(0), SW(0), SD(0), SQ(0), nbuf(0) {
+  Entropy(), buffer(0), nbuf(0), SB(0), SW(0), SD(0), SQ(0) {
   // -------------------------------------------------------------------------------------
 
   size_t p8  = 0;

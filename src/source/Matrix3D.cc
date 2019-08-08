@@ -118,6 +118,23 @@ void Matrix3D::copy( const Matrix3D& that ) {
 
 
 // =======================================================================================
+/** @brief Equals.
+ *  @param[in] that reference to another Matrix3D.
+ *  @return true if Matrices are element by element equal.
+ */
+// ---------------------------------------------------------------------------------------
+bool Matrix3D::equals( const Matrix3D& that, const real8_t eps ) const {
+  // -------------------------------------------------------------------------------------
+  for ( size_t i=0; i<9; i++ ) {
+    const real8_t dif = this->q[i] - that.q[i];
+    if ( dif < -eps ) { return false; }
+    if ( dif >  eps ) { return false; }
+  }
+  return true;
+}
+
+
+// =======================================================================================
 /** @brief Copy.
  *  @param[in] v pointer to a source Vector3D.
  */
@@ -216,9 +233,9 @@ real8_t* Matrix3D::load( const real8_t* src, matrix3d_format_e order ) {
  *  destination array and return the fourth position.
  */
 // ---------------------------------------------------------------------------------------
-real8_t* Matrix3D::store( const real8_t* dst, matrix3d_format_e order ) {
+real8_t* Matrix3D::store( real8_t* dst, matrix3d_format_e order ) {
   // -------------------------------------------------------------------------------------
-  real8_t* p = const_cast<real8_t*>(dst);
+  real8_t* p = dst;
   
   switch(order) {
     case ROW_MAJOR:

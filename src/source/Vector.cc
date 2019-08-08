@@ -104,11 +104,11 @@ void Vector::set( const real8_t v ) {
  *  eps return a false.
  */
 // ---------------------------------------------------------------------------------------
-bool Vector::equals( const Vector& that, const real8_t eps ) {
+bool Vector::equals( const Vector& that, const real8_t eps ) const {
   // -------------------------------------------------------------------------------------
-  if ( this->size() != const_cast< Vector&>(that).size() ) {return false;}
+  if ( this->size() != that.size() ) {return false;}
   for ( int32_t i=0; i<ne; i++ ) {
-    const real8_t dif = this->at(i) - const_cast< Vector&>(that).at(i);
+    const real8_t dif = get(i) - that.get(i);
     if ( dif < -eps ) {return false;}
     if ( dif >  eps ) {return false;}
   }
@@ -162,7 +162,6 @@ real8_t* Vector::load( real8_t* src, const int32_t ins ) {
 // ---------------------------------------------------------------------------------------
 real8_t* Vector::store( real8_t* dst, const int32_t ins ) {
   // -------------------------------------------------------------------------------------
-  int32_t one = 1;
   dcopy_(&ne, x, &static_one, dst, &ins );
   return (dst+ne*ins);
 }
@@ -186,12 +185,12 @@ std::string toString( Vector& V, std::string sfmt, std::string sdel ) {
   const char* del = df.c_str();
 
   char buffer[64];
-  snprintf( buffer, 64, fmt, V(0) );
+  snprintf( buffer, 64, fmt, V.get(0) );
   std::string tstr = buffer;
 
   int32_t i, n = size(V);
   for ( i=1; i<n; i++ ) {
-    snprintf( buffer, 64, del, V(i) );
+    snprintf( buffer, 64, del, V.get(i) );
     tstr.append( buffer );
   }
 
@@ -254,7 +253,7 @@ void Vector::add( const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) += v(i);
+      at(i) += v.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -275,7 +274,7 @@ void Vector::add( const real8_t s, const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = s + v(i);
+      at(i) = s + v.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -296,7 +295,7 @@ void Vector::add( const Vector& v, const real8_t s ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = v(i) + s;
+      at(i) = v.get(i) + s;
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -317,7 +316,7 @@ void Vector::add( const Vector& a, const Vector& b ) {
   if ( a.ne == b.ne ) {
     this->resize( a.ne );
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = a(i) + b(i);
+      at(i) = a.get(i) + b.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -357,7 +356,7 @@ void Vector::sub( const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) -= v(i);
+      at(i) -= v.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -378,7 +377,7 @@ void Vector::sub( const real8_t s, const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = s - v(i);
+      at(i) = s - v.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -399,7 +398,7 @@ void Vector::sub( const Vector& v, const real8_t s ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = v(i) - s;
+      at(i) = v.get(i) - s;
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -420,7 +419,7 @@ void Vector::sub( const Vector& a, const Vector& b ) {
   if ( a.ne == b.ne ) {
     this->resize( a.ne );
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = a(i) - b(i);
+      at(i) = a.get(i) - b.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -460,7 +459,7 @@ void Vector::mul( const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) *= v(i);
+      at(i) *= v.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -481,7 +480,7 @@ void Vector::mul( const real8_t s, const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = s * v(i);
+      at(i) = s * v.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -502,7 +501,7 @@ void Vector::mul( const Vector& v, const real8_t s ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = v(i) * s;
+      at(i) = v.get(i) * s;
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -523,7 +522,7 @@ void Vector::mul( const Vector& a, const Vector& b ) {
   if ( a.ne == b.ne ) {
     this->resize( a.ne );
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = a(i) * b(i);
+      at(i) = a.get(i) * b.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -563,7 +562,7 @@ void Vector::div( const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) /= v(i);
+      at(i) /= v.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -584,7 +583,7 @@ void Vector::div( const real8_t s, const Vector& v ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = s / v(i);
+      at(i) = s / v.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -605,7 +604,7 @@ void Vector::div( const Vector& v, const real8_t s ) {
   // -------------------------------------------------------------------------------------
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = v(i) / s;
+      at(i) = v.get(i) / s;
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -626,7 +625,7 @@ void Vector::div( const Vector& a, const Vector& b ) {
   if ( a.ne == b.ne ) {
     this->resize( a.ne );
     for ( int32_t i=0; i<ne; i++ ) {
-      at(i) = a(i) / b(i);
+      at(i) = a.get(i) / b.get(i);
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -653,7 +652,7 @@ real8_t Vector::dot( const Vector& v ) {
   real8_t sum = D_ZERO;
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      sum += ( at(i) * v(i) );
+      sum += ( get(i) * v.get(i) );
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );
@@ -677,7 +676,7 @@ real8_t Vector::norm1( void ) const {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
   for ( int32_t i=0; i<ne; i++ ) {
-    sum += Abs( at(i) );
+    sum += Abs( get(i) );
   }
   return sum;
 }
@@ -692,7 +691,7 @@ real8_t Vector::normsq( void ) const {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
   for ( int32_t i=0; i<ne; i++ ) {
-    const real8_t t = at(i);
+    const real8_t t = get(i);
     sum += (t*t);
   }
   return sum;
@@ -714,7 +713,7 @@ real8_t Vector::sum( void ) const {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
   for ( int32_t i=0; i<ne; i++ ) {
-    sum += at(i);
+    sum += get(i);
   }
   return sum;
 }
@@ -731,7 +730,7 @@ real8_t Vector::sumsq( const Vector& v ) const {
   real8_t sum = D_ZERO;
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      const real8_t d = at(i) - v(i);
+      const real8_t d = get(i) - v.get(i);
       sum += (d*d);
     }
   } else {
@@ -752,7 +751,7 @@ real8_t Vector::dist1( const Vector& v ) const {
   real8_t sum = D_ZERO;
   if ( ne == v.ne ) {
     for ( int32_t i=0; i<ne; i++ ) {
-      sum += Abs( at(i) - v(i) );
+      sum += Abs( get(i) - v.get(i) );
     }
   } else {
     throw new std::length_error( "two vectors are not equal in size" );

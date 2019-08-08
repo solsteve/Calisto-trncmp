@@ -990,7 +990,7 @@ namespace {
     EXPECT_NEAR( D_EIGHT, E.sum(), 1.0e-9 );
   }
 
-  
+    
 } // end namespace
 
 

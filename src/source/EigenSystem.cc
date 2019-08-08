@@ -57,7 +57,7 @@ extern "C" {
 EigenSystem::EigenSystem( int32_t n, bool sym ) :
   is_sym(sym), N(n), A(0), LDA(n), WR(0), WI(0),
   VL(0), LDVL(n), VR(0), LDVR(1),
-  WORK(0), LWORK(-1), INFO(0) {
+  WORK(0), LWORK(-1), INFO(0), vec_real(0), vec_imag(0) {
   // -------------------------------------------------------------------------------------
   char NVEC = 'N';
   char YVEC = 'V';
@@ -285,7 +285,7 @@ void EigenSystem::set( real8_t *data ) {
  *  Source data is arranged as an upper triangle in column major order.
  */
 // ---------------------------------------------------------------------------------------
-void EigenSystem::setUpper( real8_t* data ) {
+void EigenSystem::setUpper( real8_t* ) {
   // -------------------------------------------------------------------------------------
   logger->error( LOCATION, "Set from Upper not yet available" );
 }
@@ -298,7 +298,7 @@ void EigenSystem::setUpper( real8_t* data ) {
  *  Source data is arranged as a lower triangle in column major order.
  */
 // ---------------------------------------------------------------------------------------
-void EigenSystem::setLower( real8_t* data ) {
+void EigenSystem::setLower( real8_t* ) {
   // -------------------------------------------------------------------------------------
   logger->error( LOCATION, "Set from Lower not yet available" );  
 }

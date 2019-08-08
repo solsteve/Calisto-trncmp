@@ -35,6 +35,7 @@
 // =======================================================================================
 
 #include <Statistics.hh>
+#include <LinAlg.hh>
 #include <array_print.hh>
 
 
@@ -132,7 +133,7 @@ Statistics::single::single( void ) :
     t_var(D_ZERO),  t_std(D_ZERO),   t_adev(D_ZERO),  t_skew(D_ZERO),
     t_kurt(D_ZERO) {
   // -------------------------------------------------------------------------------------
-                                     }
+}
   
 // =======================================================================================
 /** @brief Destructor.
@@ -166,6 +167,10 @@ void Statistics::single::clear( void ) {
 
 
 // =====================================================================================
+/** @brief Report
+ *  @param[in] os   reference to an output stream.
+ *  @param[in] sfmt edit sescriptor for fields.
+ */
 // -------------------------------------------------------------------------------------
 void Statistics::single::report( std::ostream& os, const std::string sfmt ) {
   // -----------------------------------------------------------------------------------
@@ -198,10 +203,9 @@ void Statistics::single::report( std::ostream& os, const std::string sfmt ) {
  *  @return true if error occures.
  *
  *  Compile the statistics data structure for a single dimensional data set.
- *  This static function calls the protected constructor for single
  */
 // ---------------------------------------------------------------------------------------
-bool Statistics::single::compile( const real8_t* data, const size_t num_samples ) {
+bool Statistics::single::compile( const real8_t* data, const int32_t num_samples ) {
   // -------------------------------------------------------------------------------------
   t_level1 = false;
   
@@ -212,7 +216,7 @@ bool Statistics::single::compile( const real8_t* data, const size_t num_samples 
   t_maxidx = num_samples+1;
   t_count  = num_samples;
 
-  for (size_t i=0; i<num_samples; i++) {
+  for (int32_t i=0; i<num_samples; i++) {
     real8_t x = data[i];
     t_mean += x;
     if ( x < t_minv ) {
@@ -230,7 +234,7 @@ bool Statistics::single::compile( const real8_t* data, const size_t num_samples 
 
   t_var = D_ZERO;
 
-  for (size_t i=0; i<num_samples; i++) {
+  for (int32_t i=0; i<num_samples; i++) {
     real8_t x = (data[i] - t_mean);
     t_var += (x*x);
   }
@@ -260,10 +264,9 @@ bool Statistics::single::compile( const real8_t* data, const size_t num_samples 
  *  @return true if error occures.
  *
  *  Compile the extra statistics data structure for a single dimensional data set.
- *  This static function calls the protected constructor for single
  */
 // ---------------------------------------------------------------------------------------
-bool Statistics::single::extra( const real8_t* data, const size_t num_samples ) {
+bool Statistics::single::extra( const real8_t* data, const int32_t num_samples ) {
   // -------------------------------------------------------------------------------------
   t_level2 = false;
 
@@ -287,7 +290,7 @@ bool Statistics::single::extra( const real8_t* data, const size_t num_samples ) 
   t_kurt = D_ZERO;
 
   if (isNotZero(t_std)) {
-    for (size_t i=0; i<num_samples; i++) {
+    for (int32_t i=0; i<num_samples; i++) {
       real8_t sd = data[i] - t_mean;
       real8_t x  = sd / t_std;
       real8_t x3 = x*x*x;
@@ -320,302 +323,42 @@ bool Statistics::single::extra( const real8_t* data, const size_t num_samples ) 
 
 
 // =======================================================================================
-  /** @brief Constructor.
-   *  @param[in] n number of columns in the sample set (dimensions)
-   *
-   *  Allocate space for the statistics of a multi dimensional sample set.
-   */
+/** @brief Constructor.
+ *  @param[in] n number of columns in the sample set (dimensions)
+ *
+ *  Allocate space for the statistics of a multi dimensional sample set.
+ */
 // ---------------------------------------------------------------------------------------
-Statistics::multi::multi( size_t n ) :
-    t_nvar(0), t_level1(false), t_level2a(false), t_level2b(false), S(0) {
+Statistics::multi::multi( int32_t n ) :
+    t_nvar(0), t_level1(false), t_level2a(false), t_level2b(false), S(0),
+    covariance(0), correlation(0), inv_cov(0) {
   // -------------------------------------------------------------------------------------
   t_nvar = n;
   S = new single*[ t_nvar ];
-  for ( size_t i=0; i<t_nvar; i++ ) {
+  for ( int32_t i=0; i<t_nvar; i++ ) {
     S[i] = new single();
   }
-  
+
   clear();
 }
 
 
 // =======================================================================================
-  /** @brief Destructor.
-   */
+/** @brief Destructor.
+ */
 // ---------------------------------------------------------------------------------------
 Statistics::multi::~multi( void ) {
   // -------------------------------------------------------------------------------------
-  for ( size_t i=0; i<t_nvar; i++ ) {
+  for ( int32_t i=0; i<t_nvar; i++ ) {
     delete S[i];
     S[i] = static_cast<single*>(0);
   }
   delete[] S;
+
+  if ( static_cast<Matrix*>(0) != covariance )  { delete covariance;  }
+  if ( static_cast<Matrix*>(0) != correlation ) { delete correlation; }
+  if ( static_cast<Matrix*>(0) != inv_cov )     { delete  inv_cov;    }
 }
-
-
-
-
-
-
-
-
-
-  // =====================================================================================
-  /** @brief Fill Array with Minimum Value.
-   *  @param[out] t pointer to receiving arrray.
-   *  @param[in]  n number of requested values (may not be greater than t_nvar)
-   */
-  // -------------------------------------------------------------------------------------
-  size_t Statistics::multi::minv( real8_t* t, const size_t n ) {
-    // -----------------------------------------------------------------------------------
-    size_t nv = t_nvar;
-    if ( 0 < n ) {
-      if ( n < nv ) {
-	nv = n;
-      } else {
-	logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
-	return 0;
-      }
-    }
-    for ( size_t i=0; i<nv; i++ ) {
-      t[i] = S[i]->minv();
-    }
-    return nv;
-  }
-
-
-  // =====================================================================================
-  /** @brief Fill Array with Maximum Value.
-   *  @param[out] t pointer to receiving arrray.
-   *  @param[in]  n number of requested values (may not be greater than t_nvar)
-   */
-  // -------------------------------------------------------------------------------------
-  size_t Statistics::multi::maxv( real8_t* t, const size_t n ) {
-    // -----------------------------------------------------------------------------------
-    size_t nv = t_nvar;
-    if ( 0 < n ) {
-      if ( n < nv ) {
-	nv = n;
-      } else {
-	logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
-	return 0;
-      }
-    }
-    for ( size_t i=0; i<nv; i++ ) {
-      t[i] = S[i]->maxv();
-    }
-    return nv;
-  }
-
-
-  // =====================================================================================
-  /** @brief Fill Array with Minimum Index.
-   *  @param[out] t pointer to receiving arrray.
-   *  @param[in]  n number of requested values (may not be greater than t_nvar)
-   */
-  // -------------------------------------------------------------------------------------
-  size_t Statistics::multi::minidx( size_t* t, const size_t n ) {
-    // -----------------------------------------------------------------------------------
-    size_t nv = t_nvar;
-    if ( 0 < n ) {
-      if ( n < nv ) {
-	nv = n;
-      } else {
-	logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
-	return 0;
-      }
-    }
-    for ( size_t i=0; i<nv; i++ ) {
-      t[i] = S[i]->minidx();
-    }
-    return nv;
-  }
-
-
-  // =====================================================================================
-  /** @brief Fill Array with Maximum Index.
-   *  @param[out] t pointer to receiving arrray.
-   *  @param[in]  n number of requested values (may not be greater than t_nvar)
-   */
-  // -------------------------------------------------------------------------------------
-  size_t Statistics::multi::maxidx( size_t* t, const size_t n ) {
-    // -----------------------------------------------------------------------------------
-    size_t nv = t_nvar;
-    if ( 0 < n ) {
-      if ( n < nv ) {
-	nv = n;
-      } else {
-	logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
-	return 0;
-      }
-    }
-    for ( size_t i=0; i<nv; i++ ) {
-      t[i] = S[i]->maxidx();
-    }
-    return nv;
-  }
-
-
-  // =====================================================================================
-  /** @brief Fill Array with Mean.
-   *  @param[out] t pointer to receiving arrray.
-   *  @param[in]  n number of requested values (may not be greater than t_nvar)
-   */
-  // -------------------------------------------------------------------------------------
-  size_t Statistics::multi::mean( real8_t* t, const size_t n ) {
-    // -----------------------------------------------------------------------------------
-    size_t nv = t_nvar;
-    if ( 0 < n ) {
-      if ( n < nv ) {
-	nv = n;
-      } else {
-	logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
-	return 0;
-      }
-    }
-    for ( size_t i=0; i<nv; i++ ) {
-      t[i] = S[i]->mean();
-    }
-    return nv;
-  }
-
-
-  // =====================================================================================
-  /** @brief Fill Array with Variance.
-   *  @param[out] t pointer to receiving arrray.
-   *  @param[in]  n number of requested values (may not be greater than t_nvar)
-   */
-  // -------------------------------------------------------------------------------------
-  size_t Statistics::multi::var( real8_t* t, const size_t n ) {
-    // -----------------------------------------------------------------------------------
-    size_t nv = t_nvar;
-    if ( 0 < n ) {
-      if ( n < nv ) {
-	nv = n;
-      } else {
-	logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
-	return 0;
-      }
-    }
-    for ( size_t i=0; i<nv; i++ ) {
-      t[i] = S[i]->var();
-    }
-    return nv;
-  }
-
-
-  // =====================================================================================
-  /** @brief Fill Array with Standard Deviation.
-   *  @param[out] t pointer to receiving arrray.
-   *  @param[in]  n number of requested values (may not be greater than t_nvar)
-   */
-  // -------------------------------------------------------------------------------------
-  size_t Statistics::multi::std( real8_t* t, const size_t n ) {
-    // -----------------------------------------------------------------------------------
-    size_t nv = t_nvar;
-    if ( 0 < n ) {
-      if ( n < nv ) {
-	nv = n;
-      } else {
-	logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
-	return 0;
-      }
-    }
-    for ( size_t i=0; i<nv; i++ ) {
-      t[i] = S[i]->std();
-    }
-    return nv;
-  }
-
-
-  // =====================================================================================
-  /** @brief Fill Array with Absolute Deveation.
-   *  @param[out] t pointer to receiving arrray.
-   *  @param[in]  n number of requested values (may not be greater than t_nvar)
-   */
-  // -------------------------------------------------------------------------------------
-  size_t Statistics::multi::adev( real8_t* t, const size_t n ) {
-    // -----------------------------------------------------------------------------------
-    size_t nv = t_nvar;
-    if ( 0 < n ) {
-      if ( n < nv ) {
-	nv = n;
-      } else {
-	logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
-	return 0;
-      }
-    }
-    for ( size_t i=0; i<nv; i++ ) {
-      t[i] = S[i]->adev();
-    }
-    return nv;
-  }
-
-
-  // =====================================================================================
-  /** @brief Fill Array with Skewness.
-   *  @param[out] t pointer to receiving arrray.
-   *  @param[in]  n number of requested values (may not be greater than t_nvar)
-   */
-  // -------------------------------------------------------------------------------------
-  size_t Statistics::multi::skew( real8_t* t, const size_t n ) {
-    // -----------------------------------------------------------------------------------
-    size_t nv = t_nvar;
-    if ( 0 < n ) {
-      if ( n < nv ) {
-	nv = n;
-      } else {
-	logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
-	return 0;
-      }
-    }
-    for ( size_t i=0; i<nv; i++ ) {
-      t[i] = S[i]->skew();
-    }
-    return nv;
-  }
-
-
-  // =====================================================================================
-  /** @brief Fill Array with Kurtosis.
-   *  @param[out] t pointer to receiving arrray.
-   *  @param[in]  n number of requested values (may not be greater than t_nvar)
-   */
-  // -------------------------------------------------------------------------------------
-  size_t Statistics::multi::kurt( real8_t* t, const size_t n ) {
-    // -----------------------------------------------------------------------------------
-    size_t nv = t_nvar;
-    if ( 0 < n ) {
-      if ( n < nv ) {
-	nv = n;
-      } else {
-	logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
-	return 0;
-      }
-    }
-    for ( size_t i=0; i<nv; i++ ) {
-      t[i] = S[i]->kurt();
-    }
-    return nv;
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -626,12 +369,252 @@ Statistics::multi::~multi( void ) {
 
 
 // =====================================================================================
+/** @brief Fill Array with Minimum Value.
+ *  @param[out] t pointer to receiving arrray.
+ *  @param[in]  n number of requested values (may not be greater than t_nvar)
+ */
+// -------------------------------------------------------------------------------------
+int32_t Statistics::multi::minv( real8_t* t, const int32_t n ) {
+  // -----------------------------------------------------------------------------------
+  int32_t nv = t_nvar;
+  if ( 0 < n ) {
+    if ( n < nv ) {
+      nv = n;
+    } else {
+      logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
+      return 0;
+    }
+  }
+  for ( int32_t i=0; i<nv; i++ ) {
+    t[i] = S[i]->minv();
+  }
+  return nv;
+}
+
+
+// =====================================================================================
+/** @brief Fill Array with Maximum Value.
+ *  @param[out] t pointer to receiving arrray.
+ *  @param[in]  n number of requested values (may not be greater than t_nvar)
+ */
+// -------------------------------------------------------------------------------------
+int32_t Statistics::multi::maxv( real8_t* t, const int32_t n ) {
+  // -----------------------------------------------------------------------------------
+  int32_t nv = t_nvar;
+  if ( 0 < n ) {
+    if ( n < nv ) {
+      nv = n;
+    } else {
+      logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
+      return 0;
+    }
+  }
+  for ( int32_t i=0; i<nv; i++ ) {
+    t[i] = S[i]->maxv();
+  }
+  return nv;
+}
+
+
+// =====================================================================================
+/** @brief Fill Array with Minimum Index.
+ *  @param[out] t pointer to receiving arrray.
+ *  @param[in]  n number of requested values (may not be greater than t_nvar)
+ */
+// -------------------------------------------------------------------------------------
+int32_t Statistics::multi::minidx( int32_t* t, const int32_t n ) {
+  // -----------------------------------------------------------------------------------
+  int32_t nv = t_nvar;
+  if ( 0 < n ) {
+    if ( n < nv ) {
+      nv = n;
+    } else {
+      logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
+      return 0;
+    }
+  }
+  for ( int32_t i=0; i<nv; i++ ) {
+    t[i] = S[i]->minidx();
+  }
+  return nv;
+}
+
+
+// =====================================================================================
+/** @brief Fill Array with Maximum Index.
+ *  @param[out] t pointer to receiving arrray.
+ *  @param[in]  n number of requested values (may not be greater than t_nvar)
+ */
+// -------------------------------------------------------------------------------------
+int32_t Statistics::multi::maxidx( int32_t* t, const int32_t n ) {
+  // -----------------------------------------------------------------------------------
+  int32_t nv = t_nvar;
+  if ( 0 < n ) {
+    if ( n < nv ) {
+      nv = n;
+    } else {
+      logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
+      return 0;
+    }
+  }
+  for ( int32_t i=0; i<nv; i++ ) {
+    t[i] = S[i]->maxidx();
+  }
+  return nv;
+}
+
+
+// =====================================================================================
+/** @brief Fill Array with Mean.
+ *  @param[out] t pointer to receiving arrray.
+ *  @param[in]  n number of requested values (may not be greater than t_nvar)
+ */
+// -------------------------------------------------------------------------------------
+int32_t Statistics::multi::mean( real8_t* t, const int32_t n ) {
+  // -----------------------------------------------------------------------------------
+  int32_t nv = t_nvar;
+  if ( 0 < n ) {
+    if ( n < nv ) {
+      nv = n;
+    } else {
+      logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
+      return 0;
+    }
+  }
+  for ( int32_t i=0; i<nv; i++ ) {
+    t[i] = S[i]->mean();
+  }
+  return nv;
+}
+
+
+// =====================================================================================
+/** @brief Fill Array with Variance.
+ *  @param[out] t pointer to receiving arrray.
+ *  @param[in]  n number of requested values (may not be greater than t_nvar)
+ */
+// -------------------------------------------------------------------------------------
+int32_t Statistics::multi::var( real8_t* t, const int32_t n ) {
+  // -----------------------------------------------------------------------------------
+  int32_t nv = t_nvar;
+  if ( 0 < n ) {
+    if ( n < nv ) {
+      nv = n;
+    } else {
+      logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
+      return 0;
+    }
+  }
+  for ( int32_t i=0; i<nv; i++ ) {
+    t[i] = S[i]->var();
+  }
+  return nv;
+}
+
+
+// =====================================================================================
+/** @brief Fill Array with Standard Deviation.
+ *  @param[out] t pointer to receiving arrray.
+ *  @param[in]  n number of requested values (may not be greater than t_nvar)
+ */
+// -------------------------------------------------------------------------------------
+int32_t Statistics::multi::std( real8_t* t, const int32_t n ) {
+  // -----------------------------------------------------------------------------------
+  int32_t nv = t_nvar;
+  if ( 0 < n ) {
+    if ( n < nv ) {
+      nv = n;
+    } else {
+      logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
+      return 0;
+    }
+  }
+  for ( int32_t i=0; i<nv; i++ ) {
+    t[i] = S[i]->std();
+  }
+  return nv;
+}
+
+
+// =====================================================================================
+/** @brief Fill Array with Absolute Deveation.
+ *  @param[out] t pointer to receiving arrray.
+ *  @param[in]  n number of requested values (may not be greater than t_nvar)
+ */
+// -------------------------------------------------------------------------------------
+int32_t Statistics::multi::adev( real8_t* t, const int32_t n ) {
+  // -----------------------------------------------------------------------------------
+  int32_t nv = t_nvar;
+  if ( 0 < n ) {
+    if ( n < nv ) {
+      nv = n;
+    } else {
+      logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
+      return 0;
+    }
+  }
+  for ( int32_t i=0; i<nv; i++ ) {
+    t[i] = S[i]->adev();
+  }
+  return nv;
+}
+
+
+// =====================================================================================
+/** @brief Fill Array with Skewness.
+ *  @param[out] t pointer to receiving arrray.
+ *  @param[in]  n number of requested values (may not be greater than t_nvar)
+ */
+// -------------------------------------------------------------------------------------
+int32_t Statistics::multi::skew( real8_t* t, const int32_t n ) {
+  // -----------------------------------------------------------------------------------
+  int32_t nv = t_nvar;
+  if ( 0 < n ) {
+    if ( n < nv ) {
+      nv = n;
+    } else {
+      logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
+      return 0;
+    }
+  }
+  for ( int32_t i=0; i<nv; i++ ) {
+    t[i] = S[i]->skew();
+  }
+  return nv;
+}
+
+
+// =====================================================================================
+/** @brief Fill Array with Kurtosis.
+ *  @param[out] t pointer to receiving arrray.
+ *  @param[in]  n number of requested values (may not be greater than t_nvar)
+ */
+// -------------------------------------------------------------------------------------
+int32_t Statistics::multi::kurt( real8_t* t, const int32_t n ) {
+  // -----------------------------------------------------------------------------------
+  int32_t nv = t_nvar;
+  if ( 0 < n ) {
+    if ( n < nv ) {
+      nv = n;
+    } else {
+      logger->error( "N=%d can not be greater than the number of variables %d", n, t_nvar );
+      return 0;
+    }
+  }
+  for ( int32_t i=0; i<nv; i++ ) {
+    t[i] = S[i]->kurt();
+  }
+  return nv;
+}
+
+
+// =====================================================================================
 /** @brief Zero out settings.
  */
 // -------------------------------------------------------------------------------------
 void Statistics::multi::clear( void ) {
   // -----------------------------------------------------------------------------------
-  for ( size_t i=0; i<t_nvar; i++ ) {
+  for ( int32_t i=0; i<t_nvar; i++ ) {
     S[i]->clear();
   }
 
@@ -642,12 +625,16 @@ void Statistics::multi::clear( void ) {
 
 
 // =====================================================================================
+/** @brief Report
+ *  @param[in] os   reference to an output stream.
+ *  @param[in] sfmt edit sescriptor for fields.
+ */
 // -------------------------------------------------------------------------------------
 void Statistics::multi::report( std::ostream& os, const std::string sfmt ) {
   // -----------------------------------------------------------------------------------
   if ( t_level1 ) {
     real8_t rTemp[ t_nvar ];
-    size_t  iTemp[ t_nvar ];
+    int32_t  iTemp[ t_nvar ];
       
     os << "Number of samples   = " << count() << "\n"
        << "Number of variables = " << t_nvar   << "\n";
@@ -666,61 +653,152 @@ void Statistics::multi::report( std::ostream& os, const std::string sfmt ) {
       adev( rTemp ); os << "Abs Dev   = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
       skew( rTemp ); os << "Skew      = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
       kurt( rTemp ); os << "Kurtosis  = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
+
+      if ( t_level2b ) {
+	os << "Covariance:\n"
+           << toString( *covariance, sfmt, " ", "\n" ) << "\n";
+	os << "Correlation:\n"
+           << toString( *correlation, sfmt, " ", "\n" ) << "\n";
+      }
     }
     os << "\n";
   }
 }
 
-  // =====================================================================================
-  // -------------------------------------------------------------------------------------
-  bool Statistics::multi::compile( Table& table ) {
-    // -----------------------------------------------------------------------------------
-    t_level1 = false;
+// =====================================================================================
+/** @brief Compile.
+ *  @param[in] table input data.
+ *  @retrun true if an error occured.
+ *
+ *  Compile the basic statistics, to include, min/max mean and variance.
+ */
+// -------------------------------------------------------------------------------------
+bool Statistics::multi::compile( Table& table ) {
+  // -----------------------------------------------------------------------------------
+  t_level1 = false;
 
-    size_t num_samples = table.size(0);
+  int32_t num_samples = table.size(0);
     
-    for ( size_t i=0; i<t_nvar; i++ ) {
-      real8_t* buffer = table.col(i);
-      if ( S[i]->compile( buffer, num_samples ) ) {
-	logger->error( LOCATION, "Variable %d failed to compile level 1 stats", i+1 );
-	return true;
-      }
+  for ( int32_t i=0; i<t_nvar; i++ ) {
+    real8_t* buffer = table.col(i);
+    if ( S[i]->compile( buffer, num_samples ) ) {
+      logger->error( LOCATION, "Variable %d failed to compile level 1 stats", i+1 );
+      return true;
     }
-
-    t_level1 = true;
-    return false;
   }
 
+  t_level1 = true;
+  return false;
+}
 
-  // =====================================================================================
-  // -------------------------------------------------------------------------------------
-  bool Statistics::multi::extra( Table& table ) {
-    // -----------------------------------------------------------------------------------
-    t_level2a = false;
 
-    if ( ! t_level1 ) {
-      logger->warn( LOCATION, "running EXTRA requires that COMPILE was first called" );
-      logger->warn( LOCATION, "   I will attempt to do it for you," );
-      if ( compile( table ) ) {
-	logger->error( LOCATION, "   Sorry I failed, you need to fix it your self." );
-	return true;
-      }
-      logger->warn( LOCATION, "   Okay that worked, now I will call EXTRA" );
+// =====================================================================================
+/** @brief Compile extras.
+ *  @param[in] table input data.
+ *  @retrun true if an error occured.
+ *
+ *  Compile the extra statistics, to include, standard deviation, skew and kurt.
+ */
+// -------------------------------------------------------------------------------------
+bool Statistics::multi::extra( Table& table ) {
+  // -----------------------------------------------------------------------------------
+  t_level2a = false;
+
+  if ( ! t_level1 ) {
+    logger->warn( LOCATION, "running EXTRA requires that COMPILE was first called" );
+    logger->warn( LOCATION, "   I will attempt to do it for you," );
+    if ( compile( table ) ) {
+      logger->error( LOCATION, "   Sorry I failed, you need to fix it your self." );
+      return true;
     }
-
-    size_t num_samples = table.size(0);
-    
-    for ( size_t i=0; i<t_nvar; i++ ) {
-      real8_t* buffer = table.col(i);
-      if ( S[i]->extra( buffer, num_samples ) ) {
-	logger->error( LOCATION, "Variable %d failed to compile level 2 stats", i+1 );
-	return true;
-      }
-    }
-
-    t_level2a = true;
-    return false;
+    logger->warn( LOCATION, "   Okay that worked, now I will call EXTRA" );
   }
+
+  int32_t num_samples = table.size(0);
+    
+  for ( int32_t i=0; i<t_nvar; i++ ) {
+    real8_t* buffer = table.col(i);
+    if ( S[i]->extra( buffer, num_samples ) ) {
+      logger->error( LOCATION, "Variable %d failed to compile level 2 stats", i+1 );
+      return true;
+    }
+  }
+
+  t_level2a = true;
+  return false;
+}
+
+
+
+
+
+
+// =====================================================================================
+// -------------------------------------------------------------------------------------
+bool Statistics::multi::correlate ( Table& table ) {
+  // -----------------------------------------------------------------------------------
+  t_level2b = false;
+
+  if ( ! t_level1 ) {
+    logger->warn( LOCATION, "this requires that you call compile first" );
+    if ( this->compile( table ) ) {
+      logger->warn( LOCATION, "   I tried to do it for you, but it failed" );
+      return true;
+    }
+    logger->warn( LOCATION, "   I did it for you" );
+  }
+
+  real8_t temp_mu[ size( table, 1 ) ];
+  mean( temp_mu );
+
+  // ----- calculate the covariance matrix ---------------------------------------------
+  if ( static_cast<Matrix*>(0) == covariance ) {
+    covariance = new Matrix(t_nvar);
+  }
+
+  ::covariance( *covariance, table, temp_mu );
+
+  // ----- calculate the correlation matrix --------------------------------------------
+  if ( static_cast<Matrix*>(0) == correlation ) {
+    correlation = new Matrix(t_nvar);
+  }
+
+  ::correlate( *correlation, *covariance );
+
+  return (t_level2b = true);
+}
+
+
+// =====================================================================================
+// -------------------------------------------------------------------------------------
+bool Statistics::multi::invert_covariance( void ) {
+  // -----------------------------------------------------------------------------------
+  if ( ! t_level2b ) {
+    logger->warn( LOCATION, "this requires that you call correlate first" );
+    logger->warn( LOCATION, "   I can not do it for you" );
+    return true;
+  }
+
+  if ( static_cast<Matrix*>(0) == inv_cov ) { inv_cov = new Matrix(t_nvar); }
+  
+  real8_t rv = inv_cov->inverse( *covariance );
+
+  if ( isZero(rv) ) {
+    if ( static_cast<Matrix*>(0) != inv_cov ) {
+      delete inv_cov;
+      inv_cov = static_cast<Matrix*>(0);
+      return true;
+    }
+  }
+  
+  return false;
+}
+
+
+
+
+
+
 
 
 
@@ -739,12 +817,12 @@ void Statistics::multi::report( std::ostream& os, const std::string sfmt ) {
  *  Create the histogram bins and thier labled centers.
  */
 // ---------------------------------------------------------------------------------------
-void Statistics::histogram::init( const real8_t* centers, const size_t n ) {
+void Statistics::histogram::init( const real8_t* centers, const int32_t n ) {
   // -------------------------------------------------------------------------------------
   nbin      = n;
-  hbin      = new size_t[n];
+  hbin      = new int32_t[n];
   hctr      = new real8_t[n];
-  for ( size_t i=0; i<n; i++ ) {
+  for ( int32_t i=0; i<n; i++ ) {
     hctr[i] = centers[i];
   }
   nsamp     = 0;
@@ -759,11 +837,11 @@ void Statistics::histogram::init( const real8_t* centers, const size_t n ) {
  *  Create the histogram bins and thier labled centers.
  */
 // ---------------------------------------------------------------------------------------
-Statistics::histogram::histogram( const size_t n ) : INIT_HVAR(0) {
+Statistics::histogram::histogram( const int32_t n ) : INIT_HVAR(0) {
   // -------------------------------------------------------------------------------------
   real8_t* temp = new real8_t[n];
 
-  for (size_t i=0; i<n; i++) {
+  for (int32_t i=0; i<n; i++) {
     temp[i] = static_cast<real8_t>(i);
   }
 
@@ -782,14 +860,14 @@ Statistics::histogram::histogram( const size_t n ) : INIT_HVAR(0) {
  */
 // ---------------------------------------------------------------------------------------
 Statistics::histogram::histogram( const real8_t lower, const real8_t upper,
-				  const size_t n ) : INIT_HVAR(0) {
+				  const int32_t n ) : INIT_HVAR(0) {
   // -------------------------------------------------------------------------------------
   real8_t* temp = new real8_t[n];
 
   real8_t diff = Abs(upper - lower) / (real8_t)(n-1);
 
   temp[0] = Min( lower, upper );
-  for (size_t i=1; i<n; i++) {
+  for (int32_t i=1; i<n; i++) {
     temp[i] = temp[i-1] + diff;
   }
 
@@ -807,7 +885,7 @@ Statistics::histogram::histogram( const real8_t lower, const real8_t upper,
  *  Create the histogram bins and thier labled centers.
  */
 // ---------------------------------------------------------------------------------------
-Statistics::histogram::histogram( const real8_t* centers, const size_t n ) : INIT_HVAR(0) {
+Statistics::histogram::histogram( const real8_t* centers, const int32_t n ) : INIT_HVAR(0) {
   // -------------------------------------------------------------------------------------
   init( centers, n );
 }
@@ -820,7 +898,7 @@ Statistics::histogram::histogram( const real8_t* centers, const size_t n ) : INI
 Statistics::histogram::~histogram( void ) {
   // -------------------------------------------------------------------------------------
   nbin      = 0;
-  delete[] hbin;  hbin = static_cast<size_t*>(0);
+  delete[] hbin;  hbin = static_cast<int32_t*>(0);
   delete[] hctr;  hctr = static_cast<real8_t*>(0);
   nsamp     = 0;
 }
@@ -834,7 +912,7 @@ Statistics::histogram::~histogram( void ) {
 // ---------------------------------------------------------------------------------------
 void Statistics::histogram::reset( void ) {
   // -------------------------------------------------------------------------------------
-  for ( size_t i=0; i<nbin; i++ ) {
+  for ( int32_t i=0; i<nbin; i++ ) {
     hbin[i] = 0;
   }
   nsamp     = 0;
@@ -846,11 +924,11 @@ void Statistics::histogram::reset( void ) {
  *  @return index of the bin with the maximum samples.
  */
 // ---------------------------------------------------------------------------------------
-size_t  Statistics::histogram::max( void ) const {
+int32_t  Statistics::histogram::max( void ) const {
   // -------------------------------------------------------------------------------------
-  size_t idx = 0;
-  size_t mxc = 0;
-  for ( size_t i=0; i<nbin; i++ ) {
+  int32_t idx = 0;
+  int32_t mxc = 0;
+  for ( int32_t i=0; i<nbin; i++ ) {
     if ( hbin[i] > mxc ) {
       mxc = hbin[i];
       idx = i;
@@ -865,7 +943,7 @@ size_t  Statistics::histogram::max( void ) const {
  *  @param[in] x sample. 
  */
 // ---------------------------------------------------------------------------------------
-void Statistics::histogram::add( const size_t idx ) {
+void Statistics::histogram::add( const int32_t idx ) {
   // -------------------------------------------------------------------------------------
   if ( idx < nbin ) {
     hbin[idx] += 1;
@@ -882,9 +960,9 @@ void Statistics::histogram::add( const size_t idx ) {
  *  Add an array of values to this histogram.
  */
 // ---------------------------------------------------------------------------------------
-void Statistics::histogram::add( const real8_t* A, const size_t n ) {
+void Statistics::histogram::add( const real8_t* A, const int32_t n ) {
   // -------------------------------------------------------------------------------------
-  for ( size_t i=0; i<n; i++ ) {
+  for ( int32_t i=0; i<n; i++ ) {
     add( A[i] );
   }
 }
@@ -911,11 +989,11 @@ inline real8_t dist2( const real8_t a, const real8_t b ) {
  *  Locate the bin that this value belongs to.
  */
 // ---------------------------------------------------------------------------------------
-size_t Statistics::histogram::map( const real8_t x ) const {
+int32_t Statistics::histogram::map( const real8_t x ) const {
   // -------------------------------------------------------------------------------------
-  size_t  idx   = 0;
+  int32_t  idx   = 0;
   real8_t min_d = dist2( x, hctr[idx] );
-  for ( size_t i=1; i<nbin; i++ ) {
+  for ( int32_t i=1; i<nbin; i++ ) {
     real8_t test = dist2( x, hctr[i] );
     if ( test < min_d ) {
       min_d = test;

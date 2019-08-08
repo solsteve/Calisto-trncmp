@@ -86,7 +86,7 @@ bool fileExists( const std::string path ) {
 
 // =======================================================================================
 // ---------------------------------------------------------------------------------------
-std::string findFile( const std::string root, const std::string path ) {
+std::string findFile( const std::string, const std::string ) {
   // -------------------------------------------------------------------------------------
   return std::string( "Not Yet" );
   /*

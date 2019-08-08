@@ -97,35 +97,41 @@ class Matrix {
   static  Matrix row_major      ( const int32_t nr, const int32_t nc, const real8_t* src );
   static  Matrix column_major   ( const int32_t nr, const int32_t nc, const real8_t* src );
 
+  static  Matrix ROT  ( const real8_t radian );
+  static  Matrix ROT1 ( const real8_t radian );
+  static  Matrix ROT2 ( const real8_t radian );
+  static  Matrix ROT3 ( const real8_t radian );
+
   ~Matrix ( void );
 
   void     resize         ( const int32_t n );
   void     resize         ( const int32_t nr, const int32_t nc );
 
   void     set            ( const real8_t v=D_ZERO );
-  bool     equals         ( const Matrix& M, const real8_t eps   = D_EPSILON );
+  bool     equals         ( const Matrix& M, const real8_t eps = D_EPSILON ) const;
   void     copy           ( const Matrix& M );
 
   real8_t* load           ( const real8_t* src, matrix_format_e fmt = COLUMN_MAJOR );
-  real8_t* store          ( const real8_t* dst, matrix_format_e fmt = COLUMN_MAJOR );
+  real8_t* store          (       real8_t* dst, matrix_format_e fmt = COLUMN_MAJOR );
 
+  real8_t  get            ( const int32_t r, const int32_t c ) const;
   real8_t& at             ( const int32_t r, const int32_t c );
   real8_t& operator()     ( const int32_t r, const int32_t c );
   Matrix&  operator=      ( const Matrix& rhs );
 
-  int32_t  size           ( const int dim=0 );
-  bool     isSquare       ( void );
+  int32_t  size           ( const int dim=0 ) const;
+  bool     isSquare       ( void ) const;
 
   void     T              ( const Matrix& M );
-  real8_t  det            ( void );
+  real8_t  det            ( void ) const;
   real8_t  inverse        ( const Matrix& M );
 
-  real8_t  sum            ( void );
-  real8_t  sumsq          ( void );
-  real8_t  sumsq          ( const Matrix& that );
+  real8_t  sum            ( void ) const;
+  real8_t  sumsq          ( void ) const;
+  real8_t  sumsq          ( const Matrix& that ) const;
   
   void     dot            ( const Matrix& lhs, const Matrix& rhs );
-  
+
   // ----- inplace element operations -------------------------------------
 
   void     add            ( const real8_t s );
@@ -216,6 +222,21 @@ inline  Matrix& Matrix::operator= ( const Matrix& rhs ) {
  *  Access the element at (r,c).
  */
 // ---------------------------------------------------------------------------------------
+inline  real8_t  Matrix::get( const int32_t r, const int32_t c ) const {
+  // -------------------------------------------------------------------------------------
+  return *(data + r + c*nrow);
+}
+
+
+// =======================================================================================
+/** @brief Access.
+ *  @param[in] r row    index.
+ *  @param[in] c column index.
+ *  @return reference to the element at (r,c).
+ *
+ *  Access the element at (r,c).
+ */
+// ---------------------------------------------------------------------------------------
 inline  real8_t&  Matrix::at( const int32_t r, const int32_t c ) {
   // -------------------------------------------------------------------------------------
   return *(data + r + c*nrow);
@@ -241,7 +262,7 @@ inline  real8_t&  Matrix::operator() ( const int32_t r, const int32_t c ) {
  *  @return true if this Matrix is square.
  */
 // ---------------------------------------------------------------------------------------
-inline  bool Matrix::isSquare( void ) {
+inline  bool Matrix::isSquare( void ) const {
   // -------------------------------------------------------------------------------------
   return ( nrow==ncol);
 }
@@ -252,7 +273,7 @@ inline  bool Matrix::isSquare( void ) {
  *  @return number of rows dim=0, or number of columns dim=1
  */
 // ---------------------------------------------------------------------------------------
-inline  int32_t Matrix::size( const int dim ) {
+inline  int32_t Matrix::size( const int dim ) const {
   // -------------------------------------------------------------------------------------
   return ((0 == (dim%2)) ? (nrow) : (ncol));
 }
@@ -267,7 +288,7 @@ inline  int32_t Matrix::size( const int dim ) {
 // ---------------------------------------------------------------------------------------
 inline  int32_t size( const Matrix& M, const int dim ) {
   // -------------------------------------------------------------------------------------
-  return const_cast<Matrix&>(M).size(dim);
+  return M.size(dim);
 }
 
 
@@ -546,6 +567,61 @@ inline  Matrix Matrix::row_major( const int32_t nr, const int32_t nc, const real
   // -------------------------------------------------------------------------------------
   Matrix temp(nr, nc, false );
   temp.load( src, ROW_MAJOR );
+  return temp;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  Matrix Matrix::ROT( const real8_t radian ) {
+  // -------------------------------------------------------------------------------------
+  real8_t S, C;
+  sincos( radian, &S, &C );
+  Matrix temp(2, false );
+  temp(0,0) = C;  temp(0,1) = -S;
+  temp(1,0) = S;  temp(1,1) =  C;
+  return temp;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  Matrix Matrix::ROT1( const real8_t radian ) {
+  // -------------------------------------------------------------------------------------
+  real8_t S, C;
+  sincos( radian, &S, &C );
+  Matrix temp(3, false );
+  temp(0,0) = D_ONE;   temp(0,1) = D_ZERO;  temp(0,2) =  D_ZERO;
+  temp(1,0) = D_ZERO;  temp(1,1) = C;       temp(1,2) = -S;
+  temp(2,0) = D_ZERO;  temp(2,1) = S;       temp(2,2) =  C;
+  return temp;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  Matrix Matrix::ROT2( const real8_t radian ) {
+  // -------------------------------------------------------------------------------------
+  real8_t S, C;
+  sincos( radian, &S, &C );
+  Matrix temp(3, false );
+  temp(0,0) =  C;       temp(0,1) = D_ZERO;  temp(0,2) = S;
+  temp(1,0) =  D_ZERO;  temp(1,1) = D_ONE;   temp(1,2) = D_ZERO;
+  temp(2,0) = -S;       temp(2,1) = D_ZERO;  temp(2,2) = C;
+  return temp;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  Matrix Matrix::ROT3( const real8_t radian ) {
+  // -------------------------------------------------------------------------------------
+  real8_t S, C;
+  sincos( radian, &S, &C );
+  Matrix temp(3, false );
+  temp(0,0) = C;       temp(0,1) = -S;       temp(0,2) = D_ZERO;
+  temp(1,0) = S;       temp(1,1) =  C;       temp(1,2) = D_ZERO;
+  temp(2,0) = D_ZERO;  temp(2,1) =  D_ZERO;  temp(2,2) = D_ONE;
   return temp;
 }
 

@@ -42,43 +42,47 @@
 // =======================================================================================
 class Table {
   // -------------------------------------------------------------------------------------
-protected:
+ protected:
   real8_t* data;    ///< pointer to the table data
-  size_t   nsamp;   ///< number of samples
-  size_t   nvar;    ///< number of variables
-  size_t   nalloc;  /// < max allocation (@see: Resize)
+  int32_t   nsamp;   ///< number of samples
+  int32_t   nvar;    ///< number of variables
+  int32_t   nalloc;  /// < max allocation (@see: Resize)
 
   TLOGGER_HEADER( logger );
 
   void destroy( void );
   
   // -------------------------------------------------------------------------------------
-public:
+ public:
   Table   ( void );
-  Table   ( const size_t ns, const size_t nv );
+  Table   ( const int32_t ns, const int32_t nv );
   Table   ( const Table& tab );
   Table   ( const std::string fspc );
   ~Table  ( void );
 
-  void     resize       ( const size_t ns, const size_t nv );
+  void     resize       ( const int32_t ns, const int32_t nv );
   void     set          ( const real8_t value = D_ZERO );
   void     copy         ( const Table& tab );
 
-  size_t   size         ( const int dim=0 ) const;
+  int32_t  size         ( const int dim=0 ) const;
 
-  real8_t& at           ( const size_t sidx, const size_t vidx );
-  real8_t& operator()   ( const size_t sidx, const size_t vidx );
+  real8_t& at           ( const int32_t sidx, const int32_t vidx );
+  real8_t  get          ( const int32_t sidx, const int32_t vidx ) const;
+  real8_t& operator()   ( const int32_t sidx, const int32_t vidx );
   Table&   operator=    ( const Table& tab );
 
-  void     row          ( real8_t* row, const size_t sidx );
-  real8_t* col          ( const size_t vidx );
+  void     row          ( real8_t* row, const int32_t sidx );
+  real8_t* col          ( const int32_t vidx );
 
   bool     read_ascii   ( const std::string fspc );
   bool     write_ascii  ( const std::string fspc, const std::string sfmt="%23.16e" );
   
+  int      sum          ( real8_t* s, const int32_t n, const int axis=0 ) const;
+  int      mean         ( real8_t* s, const int32_t n, const int axis=0 ) const;
+  
 }; // end class Table
 
-size_t size( const Table& tab, const int dim=0 );
+int32_t size( const Table& tab, const int dim=0 );
 
 // =======================================================================================
 /** @brief Access.
@@ -87,7 +91,7 @@ size_t size( const Table& tab, const int dim=0 );
  *  @return reference to the element varaible v in sample s.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t& Table::at( const size_t sidx, const size_t vidx ) {
+inline  real8_t Table::get( const int32_t sidx, const int32_t vidx ) const {
   // -------------------------------------------------------------------------------------
   return data[sidx + vidx*nsamp];
 }
@@ -100,7 +104,20 @@ inline  real8_t& Table::at( const size_t sidx, const size_t vidx ) {
  *  @return reference to the element varaible v in sample s.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t& Table::operator()( const size_t sidx, const size_t vidx ) {
+inline  real8_t& Table::at( const int32_t sidx, const int32_t vidx ) {
+  // -------------------------------------------------------------------------------------
+  return data[sidx + vidx*nsamp];
+}
+
+
+// =======================================================================================
+/** @brief Access.
+ *  @param[in] sidx index for the sample (row)
+ *  @param[in] vidx index of variable    (col)
+ *  @return reference to the element varaible v in sample s.
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t& Table::operator()( const int32_t sidx, const int32_t vidx ) {
   // -------------------------------------------------------------------------------------
   return data[sidx + vidx*nsamp];
 }
@@ -112,7 +129,7 @@ inline  real8_t& Table::operator()( const size_t sidx, const size_t vidx ) {
  *  @return number of samples if dim==0, otherwise, number of variables.
  */
 // ---------------------------------------------------------------------------------------
-inline  size_t Table::size( const int dim ) const {
+inline  int32_t Table::size( const int dim ) const {
   // -------------------------------------------------------------------------------------
   return ( (0==dim) ? (nsamp) : (nvar) );
 }
@@ -124,7 +141,7 @@ inline  size_t Table::size( const int dim ) const {
  *  @return pointer to the start of the column.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t* Table::col( const size_t vidx ) {
+inline  real8_t* Table::col( const int32_t vidx ) {
   // -------------------------------------------------------------------------------------
   return (data + vidx*nsamp);
 }
@@ -150,7 +167,7 @@ inline  Table& Table::operator=( const Table& tab ) {
  *  @return number of samples if dim==0, otherwise, number of variables.
  */
 // ---------------------------------------------------------------------------------------
-inline  size_t size( const Table& tab, const int dim ) {
+inline  int32_t size( const Table& tab, const int dim ) {
   // -------------------------------------------------------------------------------------
   return tab.size( dim );
 }

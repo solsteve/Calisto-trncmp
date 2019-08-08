@@ -40,6 +40,7 @@
 
 namespace {
 
+  
   static u_int32_t SEED_MATTER[] = { 0x29341EA3, 0x9257677C, 0xCC98B1D1, 0x7C5EB68C,
 				     0x13ED5BC5, 0x3C91F88F, 0xE1A42570, 0x24CA88CD,
 				     0xAE36E97A, 0x59BADCBB, 0x4B9ED120, 0x952318E6,
@@ -48,9 +49,9 @@ namespace {
 				     0x3B0590CF, 0xE20ACC41, 0x10A25D9B, 0xD59349FF,
 				     0x10BEE39E, 0x33CE2526, 0xD8029C5B, 0xFC6D3D65,
 				     0xD08E3996, 0x6FCFC48D, 0x2FD4F96B, 0x1AAEC36F };
-
-  static size_t SEED_MATTER_LEN = sizeof(SEED_MATTER)/sizeof(SEED_MATTER[0]);
-
+  /*
+  static int32_t SEED_MATTER_LEN = sizeof(SEED_MATTER)/sizeof(SEED_MATTER[0]);
+  */
 
 // =======================================================================================
 real8_t normal_MC( Dice* dd ) {
@@ -71,7 +72,7 @@ TEST(test_statistics_histogram, construction ) {
   // Test: init, constrctor(x3), size
   // -------------------------------------------------------------------------------------
   real8_t ctrs[] = { 1.0, 3.0, 5.0, 7.0, 9.0 };
-  size_t ns = sizeof(ctrs) / sizeof( ctrs[0] );
+  int32_t ns = sizeof(ctrs) / sizeof( ctrs[0] );
 
   Statistics::histogram H1(ns);
   Statistics::histogram H2(1.0, 9.0, ns);
@@ -81,15 +82,15 @@ TEST(test_statistics_histogram, construction ) {
   EXPECT_EQ( ns, H2.size() );
   EXPECT_EQ( ns, H3.size() );
     
-  for ( size_t i=0; i<ns; i++ ) {
+  for ( int32_t i=0; i<ns; i++ ) {
     EXPECT_DOUBLE_EQ( static_cast<real8_t>(i), H1.center(i) );
   }
     
-  for ( size_t i=0; i<ns; i++ ) {
+  for ( int32_t i=0; i<ns; i++ ) {
     EXPECT_DOUBLE_EQ( ctrs[i], H2.center(i) );
   }
     
-  for ( size_t i=0; i<ns; i++ ) {
+  for ( int32_t i=0; i<ns; i++ ) {
     EXPECT_DOUBLE_EQ( ctrs[i], H3.center(i) );
   }
     
@@ -101,10 +102,10 @@ TEST(test_statistics_histogram, add ) {
   // Test: add(x3), map, bin, count, max
   // -------------------------------------------------------------------------------------
   real8_t data[] = { 7.0, 5.8, 6.1, 8.9, 2.1, 3.9, 4.3, 0.8, 1.1, 4.5, 5.2, 7.9, 1.3 };
-  size_t ns = sizeof(data) / sizeof( data[0] );
+  int32_t ns = sizeof(data) / sizeof( data[0] );
 
-  size_t count[] = { 3, 2, 4, 3, 1 };
-  size_t nc = sizeof(count) / sizeof( count[0] );
+  int32_t count[] = { 3, 2, 4, 3, 1 };
+  int32_t nc = sizeof(count) / sizeof( count[0] );
     
   Statistics::histogram H(1.0, 9.0, nc);
 
@@ -114,7 +115,7 @@ TEST(test_statistics_histogram, add ) {
   EXPECT_EQ( ns, H.count() );
   EXPECT_EQ( 2,  H.max() );
 
-  for ( size_t i=0; i<nc; i++ ) {
+  for ( int32_t i=0; i<nc; i++ ) {
     EXPECT_EQ( count[i], H.bin(i) );
   }
     
@@ -130,14 +131,14 @@ TEST(test_statistics_single, monte_carlo ) {
   Dice* dd = Dice::getInstance();
   dd->seed_set( reinterpret_cast<void*>(SEED_MATTER), dd->seed_size() );
 
-  size_t   nsamp  = 1000000;
+  int32_t   nsamp  = 1000000;
   real8_t* buffer = new real8_t[nsamp];
 
   Statistics::running R;
 
   real8_t minv = D_ZERO;
   real8_t maxv = D_ZERO;
-  for ( size_t i=0; i<nsamp; i++ ) {
+  for ( int32_t i=0; i<nsamp; i++ ) {
     real8_t x = TEST_MEAN + TEST_SIGMA*normal_MC( dd );
     buffer[i] = x;
     R.update(x);
@@ -170,14 +171,14 @@ TEST(test_statistics_single, normal_Dice ) {
   Dice* dd = Dice::getInstance();
   dd->seed_set( reinterpret_cast<void*>(SEED_MATTER), dd->seed_size() );
 
-  size_t   nsamp  = 1000000;
+  int32_t   nsamp  = 1000000;
   real8_t* buffer = new real8_t[nsamp];
 
   Statistics::running R;
 
   real8_t minv = D_ZERO;
   real8_t maxv = D_ZERO;
-  for ( size_t i=0; i<nsamp; i++ ) {
+  for ( int32_t i=0; i<nsamp; i++ ) {
     real8_t x = TEST_MEAN + TEST_SIGMA*dd->normal();
     buffer[i] = x;
     R.update(x);
@@ -214,20 +215,20 @@ TEST(test_statistics_multiple, normal_Dice ) {
 
   real8_t MEAN[] = { 3.0, 7.0, -2.0, 1.0 };
   real8_t STDV[] = { 0.2, 1.5,  2.0, 3.0 };
-  size_t  nvar = sizeof(MEAN)/sizeof(MEAN[0]);
+  int32_t  nvar = sizeof(MEAN)/sizeof(MEAN[0]);
   
-  size_t  nsamp  = 1000000;
+  int32_t  nsamp  = 1000000;
   Table   data( nsamp, nvar );
 
   real8_t minv[nvar];
   real8_t maxv[nvar];
-  for ( size_t j=0; j<nvar; j++ ) {
+  for ( int32_t j=0; j<nvar; j++ ) {
     minv[j] =  1.0e10;
     maxv[j] = -1.0e10;
   }
   
-  for ( size_t i=0; i<nsamp; i++ ) {
-    for ( size_t j=0; j<nvar; j++ ) {
+  for ( int32_t i=0; i<nsamp; i++ ) {
+    for ( int32_t j=0; j<nvar; j++ ) {
       real8_t x = MEAN[j] + STDV[j]*dd->normal();
       data(i,j) = x;
       if ( x < minv[j] ) { minv[j] = x; }
@@ -243,7 +244,7 @@ TEST(test_statistics_multiple, normal_Dice ) {
   fprintf( stdout, "\nSampled %d normally distributed vectors of %d variables\n", M.count(), M.nvar() );
   fprintf( stdout, "   Attribute  Expected   Single\n" );
   fprintf( stdout, "   ---------  ---------  ----------\n" );
-  for ( size_t j=0; j<nvar; j++ ) {
+  for ( int32_t j=0; j<nvar; j++ ) {
     fprintf( stdout, "   Min value  %9.6f  %9.6f\n", minv[j], M.minv(j) );
     fprintf( stdout, "   Mean       %9.6f  %9.6f\n", MEAN[j], M.mean(j) );
     fprintf( stdout, "   Max value  %9.6f  %9.6f\n", maxv[j], M.maxv(j) );

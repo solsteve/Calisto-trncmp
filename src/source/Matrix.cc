@@ -25,13 +25,6 @@
 // ----- Modification History ------------------------------------------------------------
 //
 /** @brief  BLAS & LAPACK Compatable Matrix.
- *  @file   Matrix.cc
- *  @author Stephen W. Soliday
- *  @date   2019-Jul-15
- *
- *  Provides the methods for a BLAS and LAPACK Compatable Matrix.
- *
-/** @brief  BLAS & LAPACK Compatable Matrix.
  *  @file   Matrix.hh
  *  @author Stephen W. Soliday
  *  @date   2019-Jul-15
@@ -70,24 +63,6 @@ real8_t detNxN( const Matrix& M );
 real8_t inv2x2( Matrix& A, const Matrix& M );
 real8_t inv3x3( Matrix& A, const Matrix& M );
 real8_t invNxN( Matrix& A, const Matrix& M );
-
-
-// =======================================================================================
-// ---------------------------------------------------------------------------------------
-static std::string MAT_FORM( Matrix::matrix_format_e fmt ) {
-  // -------------------------------------------------------------------------------------
-  switch( fmt ) {
-  case Matrix::ROW_MAJOR:       return "ROW_MAJOR";
-  case Matrix::COLUMN_MAJOR:    return "COLUMN_MAJOR";
-  case Matrix::UPPER_TRIANGLE:  return "UPPER_TRIANGLE";
-  case Matrix::LOWER_TRIANGLE:  return "LOWER_TRIANGLE";
-  case Matrix::DIAGONAL:        return "DIAGONAL";
-  case Matrix::IDENTITY:        return "IDENTITY";
-  default:
-    break;
-  }
-  return "UNKNOWN";
-}
 
 
 // =======================================================================================
@@ -200,7 +175,7 @@ void Matrix::copy( const Matrix& M ) {
 
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      this->at(r,c) = const_cast<Matrix&>(M).at(r,c);
+      this->at(r,c) = M.get(r,c);
     }
   }
   //logger->info( "^----- Matrix::copy -----^" );
@@ -213,15 +188,30 @@ void Matrix::copy( const Matrix& M ) {
  *  @return true if Matrices are element by element equal.
  */
 // ---------------------------------------------------------------------------------------
-bool Matrix::equals( const Matrix& M, const real8_t eps ) {
+bool Matrix::equals( const Matrix& M, const real8_t eps ) const {
   // -------------------------------------------------------------------------------------
-  if ( nrow != M.nrow ) { fprintf(stdout,"Matrix::equals  %d != %d\n", nrow, M.nrow); return false; }
-  if ( ncol != M.ncol ) { fprintf(stdout,"Matrix::equals  %d != %d\n", ncol, M.ncol); return false; }
+  if ( nrow != M.nrow ) {
+    //fprintf(stdout,"Matrix::equals  %d != %d\n", nrow, M.nrow);
+    return false;
+  }
+  
+  if ( ncol != M.ncol ) {
+    fprintf(stdout,"Matrix::equals  %d != %d\n", ncol, M.ncol);
+    return false;
+  }
+  
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      const real8_t dif = at(r,c) - const_cast<Matrix&>(M).at(r,c);
-      if ( dif < -eps ) { fprintf(stdout,"Matrix::equals  %g < %g\n", dif, -eps); return false;}
-      if ( dif >  eps ) { fprintf(stdout,"Matrix::equals  %g > %g\n", dif,  eps); return false;}
+      const real8_t dif = get(r,c) - M.get(r,c);
+      if ( dif < -eps ) {
+	//fprintf(stdout,"Matrix::equals  %g < %g\n", dif, -eps);
+	return false;
+      }
+      
+      if ( dif >  eps ) {
+	//fprintf(stdout,"Matrix::equals  %g > %g\n", dif,  eps);
+	return false;
+      }
     }
   }
   return true;
@@ -333,75 +323,75 @@ real8_t* Matrix::load( const real8_t* src, matrix_format_e order ) {
   real8_t* p = const_cast<real8_t*>(src);
   
   switch(order) {
-  case COLUMN_MAJOR: { // ----------------------------------------------------------------
-    for ( int32_t c=0; c<ncol; c++ ) {
-      for ( int32_t r=0; r<nrow; r++ ) {
-	this->at(r,c) = *p++;
-      }
-    }
-  } break;
-
-  case ROW_MAJOR: { // -------------------------------------------------------------------
-    for ( int32_t r=0; r<nrow; r++ ) {
+    case COLUMN_MAJOR: { // ----------------------------------------------------------------
       for ( int32_t c=0; c<ncol; c++ ) {
-	this->at(r,c) = *p++;
+        for ( int32_t r=0; r<nrow; r++ ) {
+          this->at(r,c) = *p++;
+        }
       }
-    }
-  } break;
+    } break;
 
-  case DIAGONAL: { // --------------------------------------------------------------------
-    for ( int32_t r=0; r<nrow; r++ ) {
-      for ( int32_t c=0; c<ncol; c++ ) {
-	if ( r == c ) {
-	  this->at(r,c) = *p++;
-	} else {
-	  this->at(r,c) = D_ZERO;
-	}
-      }
-    }
-  } break;
-
-  case UPPER_TRIANGLE: { // --------------------------------------------------------------
-    if ( isSquare() ) {
+    case ROW_MAJOR: { // -------------------------------------------------------------------
       for ( int32_t r=0; r<nrow; r++ ) {
-	for ( int32_t c=r; c<ncol; c++ ) {
-	  real8_t x = *p++;
-	  this->at(r,c) = x;
-	  if ( r != c ) {
-	    this->at(c,r) = x;
-	  }
-	}
+        for ( int32_t c=0; c<ncol; c++ ) {
+          this->at(r,c) = *p++;
+        }
       }
-    } else {
-      logger->warn( LOCATION,
-		    "UPPER_TRIANGLE: Matrix is not square(%d,%d)",
-		    nrow, ncol );
-    }
-  } break;
+    } break;
 
-  case LOWER_TRIANGLE: { // --------------------------------------------------------------
-    if ( isSquare() ) {
+    case DIAGONAL: { // --------------------------------------------------------------------
       for ( int32_t r=0; r<nrow; r++ ) {
-	for ( int32_t c=0; c<=r; c++ ) {
-	  real8_t x = *p++;
-	  this->at(r,c) = x;
-	  if ( r != c ) {
-	    this->at(c,r) = x;
-	  }
-	}
+        for ( int32_t c=0; c<ncol; c++ ) {
+          if ( r == c ) {
+            this->at(r,c) = *p++;
+          } else {
+            this->at(r,c) = D_ZERO;
+          }
+        }
       }
-    } else {
-      logger->warn( LOCATION,
-		    "LOWER_TRIANGLE: Matrix is not square(%d,%d)",
-		    nrow, ncol );
-    }
-  } break;
+    } break;
 
-  case IDENTITY:
-  default: { // --------------------------------------------------------------------------
-    std::cerr << "This Should not be possible\n";
-    throw 1;
-  }
+    case UPPER_TRIANGLE: { // --------------------------------------------------------------
+      if ( isSquare() ) {
+        for ( int32_t r=0; r<nrow; r++ ) {
+          for ( int32_t c=r; c<ncol; c++ ) {
+            real8_t x = *p++;
+            this->at(r,c) = x;
+            if ( r != c ) {
+              this->at(c,r) = x;
+            }
+          }
+        }
+      } else {
+        logger->warn( LOCATION,
+                      "UPPER_TRIANGLE: Matrix is not square(%d,%d)",
+                      nrow, ncol );
+      }
+    } break;
+
+    case LOWER_TRIANGLE: { // --------------------------------------------------------------
+      if ( isSquare() ) {
+        for ( int32_t r=0; r<nrow; r++ ) {
+          for ( int32_t c=0; c<=r; c++ ) {
+            real8_t x = *p++;
+            this->at(r,c) = x;
+            if ( r != c ) {
+              this->at(c,r) = x;
+            }
+          }
+        }
+      } else {
+        logger->warn( LOCATION,
+                      "LOWER_TRIANGLE: Matrix is not square(%d,%d)",
+                      nrow, ncol );
+      }
+    } break;
+
+    case IDENTITY:
+    default: { // --------------------------------------------------------------------------
+      std::cerr << "This Should not be possible\n";
+      throw 1;
+    }
   }
   
   return p;
@@ -417,67 +407,67 @@ real8_t* Matrix::load( const real8_t* src, matrix_format_e order ) {
  *  destination array and return the fourth position.
  */
 // ---------------------------------------------------------------------------------------
-real8_t* Matrix::store( const real8_t* dst, matrix_format_e order ) {
+real8_t* Matrix::store( real8_t* dst, matrix_format_e order ) {
   // -------------------------------------------------------------------------------------
-  real8_t* p = const_cast<real8_t*>(dst);
+  real8_t* p = dst;
   
   switch(order) {
-  case COLUMN_MAJOR: { // ----------------------------------------------------------------
-    for ( int32_t c=0; c<ncol; c++ ) {
-      for ( int32_t r=0; r<nrow; r++ ) {
-	*p++ = this->at(r,c);
-      }
-    }
-  } break;
-
-  case ROW_MAJOR: { // -------------------------------------------------------------------
-    for ( int32_t r=0; r<nrow; r++ ) {
+    case COLUMN_MAJOR: { // ----------------------------------------------------------------
       for ( int32_t c=0; c<ncol; c++ ) {
-	*p++ = this->at(r,c);
+        for ( int32_t r=0; r<nrow; r++ ) {
+          *p++ = get(r,c);
+        }
       }
-    }
-  } break;
+    } break;
 
-  case DIAGONAL: { // --------------------------------------------------------------------
-    int32_t n = Min( nrow, ncol );
-    for ( int32_t i=0; i<n; i++ ) {
-      *p++ = this->at(i,i);
-    }
-  } break;
-
-  case UPPER_TRIANGLE: { // --------------------------------------------------------------
-    if ( isSquare() ) {
+    case ROW_MAJOR: { // -------------------------------------------------------------------
       for ( int32_t r=0; r<nrow; r++ ) {
-	for ( int32_t c=r; c<ncol; c++ ) {
-	  *p++ = this->at(r,c);
-	}
+        for ( int32_t c=0; c<ncol; c++ ) {
+          *p++ = get(r,c);
+        }
       }
-    } else {
-      logger->warn( LOCATION,
-		    "UPPER_TRIANGLE: Matrix is not square(%d,%d)",
-		    nrow, ncol );
-    }
-  } break;
+    } break;
 
-  case LOWER_TRIANGLE: { // --------------------------------------------------------------
-    if ( isSquare() ) {
-      for ( int32_t r=0; r<nrow; r++ ) {
-	for ( int32_t c=0; c<=r; c++ ) {
-	  *p++ = this->at(r,c);
-	}
+    case DIAGONAL: { // --------------------------------------------------------------------
+      int32_t n = Min( nrow, ncol );
+      for ( int32_t i=0; i<n; i++ ) {
+        *p++ = get(i,i);
       }
-    } else {
-      logger->warn( LOCATION,
-		    "LOWER_TRIANGLE: Matrix is not square(%d,%d)",
-		    nrow, ncol );
-    }
-  } break;
+    } break;
 
-  case IDENTITY:
-  default: { // --------------------------------------------------------------------------
-    std::cerr << "This Should not be possible\n";
-    throw 1;
-  }
+    case UPPER_TRIANGLE: { // --------------------------------------------------------------
+      if ( isSquare() ) {
+        for ( int32_t r=0; r<nrow; r++ ) {
+          for ( int32_t c=r; c<ncol; c++ ) {
+            *p++ = get(r,c);
+          }
+        }
+      } else {
+        logger->warn( LOCATION,
+                      "UPPER_TRIANGLE: Matrix is not square(%d,%d)",
+                      nrow, ncol );
+      }
+    } break;
+
+    case LOWER_TRIANGLE: { // --------------------------------------------------------------
+      if ( isSquare() ) {
+        for ( int32_t r=0; r<nrow; r++ ) {
+          for ( int32_t c=0; c<=r; c++ ) {
+            *p++ = get(r,c);
+          }
+        }
+      } else {
+        logger->warn( LOCATION,
+                      "LOWER_TRIANGLE: Matrix is not square(%d,%d)",
+                      nrow, ncol );
+      }
+    } break;
+
+    case IDENTITY:
+    default: { // --------------------------------------------------------------------------
+      std::cerr << "This Should not be possible\n";
+      throw 1;
+    }
   }
 
   return p;
@@ -510,14 +500,14 @@ std::string toString( const Matrix&      M,
   int32_t nr = size(M,0);
   int32_t nc = size(M,1);
   for ( int32_t r=0; r<nr; r++ ) {
-    snprintf( buffer, 64, fmt, const_cast<Matrix&>(M).at(r,0) );
+    snprintf( buffer, 64, fmt, M.get(r,0) );
     if ( 0 == r ) {
       tstr = buffer;
     } else {
       tstr.append( buffer );
     }
     for ( int32_t c=1; c<nc; c++ ) {
-      snprintf( buffer, 64, col_del, const_cast<Matrix&>(M).at(r,c) );
+      snprintf( buffer, 64, col_del, M.get(r,c) );
       tstr.append( buffer );
     }
     if ( r < (nr-1)) {
@@ -560,12 +550,12 @@ std::string toString( const std::string& prefix,
 // ---------------------------------------------------------------------------------------
 void Matrix::T( const Matrix& M ) {
   // -------------------------------------------------------------------------------------
-  int32_t nr = const_cast<Matrix&>(M).size(1);
-  int32_t nc = const_cast<Matrix&>(M).size(0);
+  const int32_t nr = M.size( 1 );
+  const int32_t nc = M.size( 0 );
   resize( nr, nc );
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = const_cast<Matrix&>(M).at(c,r);
+      at(r,c) = M.get(c,r);
     }
   }
 }
@@ -579,12 +569,12 @@ void Matrix::T( const Matrix& M ) {
  *  Sum of the elemets of this Matrix.
  */
 // ---------------------------------------------------------------------------------------
- real8_t  Matrix::sum( void )  {
+real8_t  Matrix::sum( void ) const {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      sum += at(r,c);
+      sum += get(r,c);
     }
   }
   return sum;
@@ -600,12 +590,12 @@ void Matrix::T( const Matrix& M ) {
  *  Sum the squares of all elements of this Matrix.
  */
 // ---------------------------------------------------------------------------------------
- real8_t  Matrix::sumsq( void ) {
+real8_t  Matrix::sumsq( void ) const {
   // -------------------------------------------------------------------------------------
   real8_t sum = D_ZERO;
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      real8_t x = at(r,c);
+      real8_t x = get(r,c);
       sum += (x*x);
     }
   }
@@ -623,14 +613,14 @@ void Matrix::T( const Matrix& M ) {
  *  intersection will be 
  */
 // ---------------------------------------------------------------------------------------
- real8_t  Matrix::sumsq( const Matrix& that ) {
+real8_t  Matrix::sumsq( const Matrix& that ) const {
   // -------------------------------------------------------------------------------------
-  int32_t nr  = Min( nrow, const_cast<Matrix&>(that).size(0) );
-  int32_t nc  = Min( ncol, const_cast<Matrix&>(that).size(1) );
+  int32_t nr  = Min( nrow, that.size(0) );
+  int32_t nc  = Min( ncol, that.size(1) );
   real8_t sum = D_ZERO;
   for ( int32_t c=0; c<nc; c++ ) {
     for ( int32_t r=0; r<nr; r++ ) {
-      real8_t x = at(r,c) - const_cast<Matrix&>(that).at(r,c);
+      real8_t x = get(r,c) - that.get(r,c);
       sum += (x*x);
     }
   }
@@ -648,9 +638,9 @@ void Matrix::T( const Matrix& M ) {
 // ---------------------------------------------------------------------------------------
 void Matrix::dot( const Matrix& lhs, const Matrix& rhs ) {
   // -------------------------------------------------------------------------------------
-  int32_t m    = const_cast<Matrix&>(lhs).size(0);
-  int32_t n    = const_cast<Matrix&>(rhs).size(1);
-  int32_t k    = const_cast<Matrix&>(lhs).size(1);
+  int32_t m    = lhs.size(0);
+  int32_t n    = rhs.size(1);
+  int32_t k    = lhs.size(1);
   real8_t one  = D_ONE;
   real8_t zero = D_ZERO;
 
@@ -699,7 +689,7 @@ void Matrix::add( const Matrix& M ) {
   if ( ncol != M.ncol ) { throw new std::length_error( "number of columns do not match" ); }
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) += const_cast<Matrix&>(M).at(r,c);
+      at(r,c) += M.get(r,c);
     }
   }
 }
@@ -719,7 +709,7 @@ void Matrix::add( const real8_t s, const Matrix& M ) {
   resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = s + const_cast<Matrix&>(M).at(r,c);
+      at(r,c) = s + M.get(r,c);
     }
   }
 }
@@ -739,7 +729,7 @@ void Matrix::add( const Matrix& M, const real8_t s ) {
   resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = const_cast<Matrix&>(M).at(r,c) + s;
+      at(r,c) = M.get(r,c) + s;
     }
   }
 }
@@ -761,7 +751,7 @@ void Matrix::add( const Matrix& lhs, const Matrix& rhs ) {
   resize(lhs.nrow,lhs.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = const_cast<Matrix&>(lhs).at(r,c) + const_cast<Matrix&>(rhs).at(r,c);
+      at(r,c) = lhs.get(r,c) + rhs.get(r,c);
     }
   }
 }
@@ -803,7 +793,7 @@ void Matrix::sub( const Matrix& M ) {
   if ( ncol != M.ncol ) { throw new std::length_error( "number of columns do not match" ); }
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) -= const_cast<Matrix&>(M).at(r,c);
+      at(r,c) -= M.get(r,c);
     }
   }
 }
@@ -823,7 +813,7 @@ void Matrix::sub( const real8_t s, const Matrix& M ) {
   resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = s - const_cast<Matrix&>(M).at(r,c);
+      at(r,c) = s - M.get(r,c);
     }
   }
 }
@@ -843,7 +833,7 @@ void Matrix::sub( const Matrix& M, const real8_t s ) {
   resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = const_cast<Matrix&>(M).at(r,c) - s;
+      at(r,c) = M.get(r,c) - s;
     }
   }
 }
@@ -865,7 +855,7 @@ void Matrix::sub( const Matrix& lhs, const Matrix& rhs ) {
   resize(lhs.nrow,lhs.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = const_cast<Matrix&>(lhs).at(r,c) - const_cast<Matrix&>(rhs).at(r,c);
+      at(r,c) = lhs.get(r,c) - rhs.get(r,c);
     }
   }
 }
@@ -907,7 +897,7 @@ void Matrix::mul( const Matrix& M ) {
   if ( ncol != M.ncol ) { throw new std::length_error( "number of columns do not match" ); }
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) *= const_cast<Matrix&>(M).at(r,c);
+      at(r,c) *= M.get(r,c);
     }
   }
 }
@@ -927,7 +917,7 @@ void Matrix::mul( const real8_t s, const Matrix& M ) {
   resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = s * const_cast<Matrix&>(M).at(r,c);
+      at(r,c) = s * M.get(r,c);
     }
   }
 }
@@ -947,7 +937,7 @@ void Matrix::mul( const Matrix& M, const real8_t s ) {
   resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = const_cast<Matrix&>(M).at(r,c) * s;
+      at(r,c) = M.get(r,c) * s;
     }
   }
 }
@@ -969,7 +959,7 @@ void Matrix::mul( const Matrix& lhs, const Matrix& rhs ) {
   resize(lhs.nrow,lhs.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = const_cast<Matrix&>(lhs).at(r,c) * const_cast<Matrix&>(rhs).at(r,c);
+      at(r,c) = lhs.get(r,c) * rhs.get(r,c);
     }
   }
 }
@@ -1011,7 +1001,7 @@ void Matrix::div( const Matrix& M ) {
   if ( ncol != M.ncol ) { throw new std::length_error( "number of columns do not match" ); }
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) /= const_cast<Matrix&>(M).at(r,c);
+      at(r,c) /= M.get(r,c);
     }
   }
 }
@@ -1031,7 +1021,7 @@ void Matrix::div( const real8_t s, const Matrix& M ) {
   resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = s / const_cast<Matrix&>(M).at(r,c);
+      at(r,c) = s / M.get(r,c);
     }
   }
 }
@@ -1051,7 +1041,7 @@ void Matrix::div( const Matrix& M, const real8_t s ) {
   resize(M.nrow,M.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = const_cast<Matrix&>(M).at(r,c) / s;
+      at(r,c) = M.get(r,c) / s;
     }
   }
 }
@@ -1074,7 +1064,7 @@ void Matrix::div( const Matrix& lhs, const Matrix& rhs ) {
   resize(lhs.nrow,lhs.ncol);
   for ( int32_t c=0; c<ncol; c++ ) {
     for ( int32_t r=0; r<nrow; r++ ) {
-      at(r,c) = const_cast<Matrix&>(lhs).at(r,c) / const_cast<Matrix&>(rhs).at(r,c);
+      at(r,c) = lhs.get(r,c) / rhs.get(r,c);
     }
   }
 }
@@ -1088,34 +1078,30 @@ void Matrix::div( const Matrix& lhs, const Matrix& rhs ) {
 
 // =======================================================================================
 /** @brief Determinant.
- *  @param[in] CM reference to a Matrix;
+ *  @param[in] M reference to a Matrix;
  *  @return determinant of the Matrix CM.
  *
  *  Calculate the determinant of a 2x2 Matrix directly.
  */
 // ---------------------------------------------------------------------------------------
-real8_t det2x2( const Matrix& CM ) {
+real8_t det2x2( const Matrix& M ) {
   // -------------------------------------------------------------------------------------
-  Matrix& M = const_cast<Matrix&>(CM);
-  
-    real8_t* q = M.A();
-    return (q[0] * q[3]) - (q[1] * q[2]);
+  real8_t* q = const_cast<Matrix&>(M).A();
+  return (q[0] * q[3]) - (q[1] * q[2]);
 }
 
 // =======================================================================================
 /** @brief Determinant.
- *  @param[in] CM reference to a Matrix;
+ *  @param[in] M reference to a Matrix;
  *  @return determinant of the Matrix CM.
  *
  *  Calculate the determinant of a 2x2 Matrix directly.
  */
 // ---------------------------------------------------------------------------------------
-real8_t det3x3( const Matrix& CM ) {
+real8_t det3x3( const Matrix& M ) {
   // -------------------------------------------------------------------------------------
-  Matrix& M = const_cast<Matrix&>(CM);
-  
-    real8_t* q = M.A();
-    return 
+  real8_t* q = const_cast<Matrix&>(M).A();
+  return 
       q[0]*(q[4]*q[8] - q[5]*q[7]) +
       q[1]*(q[5]*q[6] - q[3]*q[8]) +
       q[2]*(q[3]*q[7] - q[4]*q[6]);
@@ -1146,7 +1132,7 @@ real8_t detNxN( const Matrix& CM ) {
   } else {
     d = D_ONE;
     for ( int32_t i=0; i<n; i++ ) {
-      d = ((ipiv[i] == (i+1)) ? d : -d) * M.at(i,i);
+      d = ((ipiv[i] == (i+1)) ? d : -d) * M.get(i,i);
     }
   }
 
@@ -1155,39 +1141,37 @@ real8_t detNxN( const Matrix& CM ) {
 
 // =======================================================================================
 // ---------------------------------------------------------------------------------------
-real8_t inv2x2( Matrix& A, const Matrix& CM ) {
+real8_t inv2x2( Matrix& A, const Matrix& M ) {
   // -------------------------------------------------------------------------------------
-  Matrix&  M = const_cast<Matrix&>(CM);
-  real8_t  D = det2x2(CM);
+  real8_t  D = det2x2(M);
   real8_t* a = A.A();
   
-    real8_t* q = M.A();
-    a[0] =  q[3]/D;         a[2] = -q[2]/D;
-    a[1] = -q[1]/D;         a[3] =  q[0]/D;
+  real8_t* q = const_cast<Matrix&>(M).A();
+  a[0] =  q[3]/D;         a[2] = -q[2]/D;
+  a[1] = -q[1]/D;         a[3] =  q[0]/D;
   
   return D;
 }
 
 // =======================================================================================
 // ---------------------------------------------------------------------------------------
-real8_t inv3x3( Matrix& A, const Matrix& CM ) {
+real8_t inv3x3( Matrix& A, const Matrix& M ) {
   // -------------------------------------------------------------------------------------
-  Matrix&  M = const_cast<Matrix&>(CM);
-  real8_t  D = det3x3(CM);
+  real8_t  D = det3x3(M);
   real8_t* a = A.A();
 
-    real8_t* q = M.A();
-    a[0] = (q[4]*q[8] - q[7]*q[5])/D;
-    a[1] = (q[7]*q[2] - q[1]*q[8])/D;
-    a[2] = (q[1]*q[5] - q[4]*q[2])/D;
+  real8_t* q = const_cast<Matrix&>(M).A();
+  a[0] = (q[4]*q[8] - q[7]*q[5])/D;
+  a[1] = (q[7]*q[2] - q[1]*q[8])/D;
+  a[2] = (q[1]*q[5] - q[4]*q[2])/D;
 
-    a[3] = (q[6]*q[5] - q[3]*q[8])/D;
-    a[4] = (q[0]*q[8] - q[6]*q[2])/D;
-    a[5] = (q[3]*q[2] - q[0]*q[5])/D;
+  a[3] = (q[6]*q[5] - q[3]*q[8])/D;
+  a[4] = (q[0]*q[8] - q[6]*q[2])/D;
+  a[5] = (q[3]*q[2] - q[0]*q[5])/D;
 
-    a[6] = (q[3]*q[7] - q[6]*q[4])/D;
-    a[7] = (q[6]*q[1] - q[0]*q[7])/D;
-    a[8] = (q[0]*q[4] - q[3]*q[1])/D;
+  a[6] = (q[3]*q[7] - q[6]*q[4])/D;
+  a[7] = (q[6]*q[1] - q[0]*q[7])/D;
+  a[8] = (q[0]*q[4] - q[3]*q[1])/D;
 
   return D;
 }
@@ -1214,7 +1198,7 @@ real8_t invNxN( Matrix& A, const Matrix& CM ) {
   real8_t d = D_ONE;
 
   for ( int32_t i=0; i<n; i++ ) {
-    d = ((ipiv[i] == (i+1)) ? d : -d) * A.at(i,i);
+    d = ((ipiv[i] == (i+1)) ? d : -d) * A.get(i,i);
   }
   
   // -------------------------------------------------------------------------------------
@@ -1259,7 +1243,7 @@ real8_t invNxN( Matrix& A, const Matrix& CM ) {
  *        Orders 4 and above are approximated using LAPACK call to DGETRF.
  */
 // ---------------------------------------------------------------------------------------
-real8_t  Matrix::det( void ) {
+real8_t  Matrix::det( void ) const {
   // -------------------------------------------------------------------------------------
   int32_t n = nrow;
   
@@ -1270,11 +1254,11 @@ real8_t  Matrix::det( void ) {
 
   real8_t d = D_ZERO;
   switch(n) {
-  case 0:                       break;
-  case 1:  d = *data;           break;
-  case 2:  d = det2x2( *this ); break;
-  case 3:  d = det3x3( *this ); break;
-  default: d = detNxN( *this ); break;
+    case 0:                       break;
+    case 1:  d = *data;           break;
+    case 2:  d = det2x2( *this ); break;
+    case 3:  d = det3x3( *this ); break;
+    default: d = detNxN( *this ); break;
   }
   
   return d;
@@ -1302,24 +1286,24 @@ real8_t  Matrix::inverse( const Matrix& M ) {
   real8_t d = D_ZERO;
   
   switch(n) {
-  case 0:
-    break;
-  case 1:
-    d     = *data;
-    *data = D_ONE / d;
-    break;
-  case 2:
-    resize(2);
-    d = inv2x2( *this, M );
-    break;
-  case 3:
-    resize(3);
-    d = inv3x3( *this, M );
-    break;
-  default:
-    resize(n);
-    d = invNxN( *this, M );
-    break;
+    case 0:
+      break;
+    case 1:
+      d     = *data;
+      *data = D_ONE / d;
+      break;
+    case 2:
+      resize(2);
+      d = inv2x2( *this, M );
+      break;
+    case 3:
+      resize(3);
+      d = inv3x3( *this, M );
+      break;
+    default:
+      resize(n);
+      d = invNxN( *this, M );
+      break;
   }
   
   return d;

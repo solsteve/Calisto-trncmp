@@ -256,6 +256,7 @@ void AppOptions::setConfigPath( std::string path ) {
   I->config_path = path;
 }
 
+
 // =======================================================================================
 /** @brief 
  *  @param[in] 
@@ -268,6 +269,7 @@ void AppOptions::setEnvSectionName( std::string sec_name ) {
   AppOptions::classInstance* I = AppOptions::getInstance();
   I->env_secname = sec_name;
 }
+
 
 // =======================================================================================
 /** @brief 
@@ -282,6 +284,7 @@ void AppOptions::setOptSectionName( std::string sec_name ) {
   I->opt_secname = sec_name;
 }
 
+
 // =======================================================================================
 /** @brief 
  *  @param[in] 
@@ -294,6 +297,7 @@ void AppOptions::setEnvConfigFilename( std::string env_name ) {
   AppOptions::classInstance* I = AppOptions::getInstance();
   I->env_keyname = env_name;
 }
+
 
 // =======================================================================================
 /** @brief 
@@ -308,6 +312,7 @@ void AppOptions::setOptConfigFilename( std::string opt_name ) {
   I->opt_keyname = opt_name;
 }
 
+
 // =======================================================================================
 /** @brief 
  *  @param[in] 
@@ -321,7 +326,7 @@ void AppOptions::setHelp( std::string help_name ) {
   I->help_keyname = help_name;
   I->check_for_help = true;
 }
-  static void setHelp              ( std::string help_name );
+
 
 // =======================================================================================
 /** @brief 
@@ -791,7 +796,7 @@ ConfigDB* AppOptions::getConfigDB( void ) {
 	  missing_opt += 1;
 	}
       }
-    } catch ( ConfigDB::NoSuchSection e ) {
+    } catch ( ConfigDB::NoSuchSection& e ) {
       missing_opt += 1;
     }
   }

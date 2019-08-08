@@ -256,11 +256,11 @@ int32_t FixedNormal::nextInt( void ) {
 // ---------------------------------------------------------------------------------------
 void FixedNormal::report( std::ostream& ps ) {
   // -------------------------------------------------------------------------------------
-  std::cout << "Use Fixed " << fixed      << "\n"
-            << "Mean      " << mean_value << "\n"
-            << "Std Dev   " << std_dev    << "\n"
-            << "Min Val   " << min_value  << "\n"
-            << "Max Val   " << max_value  << "\n";
+  ps << "Use Fixed " << fixed      << "\n"
+     << "Mean      " << mean_value << "\n"
+     << "Std Dev   " << std_dev    << "\n"
+     << "Min Val   " << min_value  << "\n"
+     << "Max Val   " << max_value  << "\n";
 
 }
 

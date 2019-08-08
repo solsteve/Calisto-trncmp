@@ -1,12 +1,12 @@
 // ====================================================================== BEGIN FILE =====
-// **                                    L I N A L G                                    **
+// **                                       P C A                                       **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 2019, Stephen W. Soliday                                           **
-// **                      stephen.soliday@trncmp.org                                   **
-// **                      http://research.trncmp.org                                   **
+// **  Copyright (c) 2018-19, Stephen W. Soliday                                        **
+// **                         stephen.soliday@trncmp.org                                **
+// **                         http://research.trncmp.org                                **
 // **                                                                                   **
 // **  -------------------------------------------------------------------------------  **
 // **                                                                                   **
@@ -24,52 +24,39 @@
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief  Linear algebra functions.
- *  @file   LinAlg.hh
+/** @brief  Principle Component Analysis.
+ *  @file   PCA.hh
  *  @author Stephen W. Soliday
- *  @date   2019-Jul-23
- *
- *  Provides the interface for linear algebra functions.
+ *  @date   2018-Apr-20 Original release.
+ *  @date   2019-Aug-06 Port from Java to C++.
+ *  Provides the interface for performing Principle Component Analysis.
  */
 // =======================================================================================
 
-#ifndef __HH_LINALG_TRNCMP
-#define __HH_LINALG_TRNCMP
 
-#include <Vector.hh>
-#include <Matrix.hh>
-#include <Table.hh>
+#ifndef __HH_PCA_TRNCMP
+#define __HH_PCA_TRNCMP
 
-void    getRow  ( Vector& v, Matrix& M, int32_t ridx );
-void    setRow  ( Matrix& M, Vector& v, int32_t ridx );
+#include <trncmp.hh>
 
-void    getCol  ( Vector& v, Matrix& M, int32_t cidx );
-void    setCol  ( Matrix& M, Vector& v, int32_t cidx );
+// =======================================================================================
+class PCA {
+  // -------------------------------------------------------------------------------------
+ protected:
 
-void    getDiag ( Vector& v, Matrix& M );
-void    setDiag ( Matrix& M, Vector& v );
+  Vector* mu;
+  Vector* variance;
+  Matrix* covariance;
+  Matrix* fwdTransform;
+  Matrix* rvsTransform;
+  
 
-void    dot     ( Vector& a, Vector& v, Matrix& M );
-void    dot     ( Vector& a, Matrix& M, Vector& v );
 
-void    dotAdd  ( Vector& a, Vector& v, Matrix& M, Vector& b );
-void    dotAdd  ( Vector& a, Matrix& M, Vector& v, Vector& b );
-
-void    outer   ( Matrix& M, Vector& col, Vector& row );
-
-real8_t vMv     ( Vector& a, Matrix& M );
-real8_t vMv     ( Vector& row, Matrix& M,  Vector& col );
-real8_t vMv     ( Vector& a, Vector& mu, Matrix& S );
-
-void    covariance ( Matrix& cov, const Table& tab, const Vector&  mu );
-void    covariance ( Matrix& cov, const Table& tab, real8_t* mu );
-void    covariance ( Matrix& cov, const Table& tab );
-
-void    correlate  ( Matrix& cor, const Matrix& cov );
+}; // end class PCA
 
 #endif
 
-
 // =======================================================================================
-// **                                    L I N A L G                                    **
+// **                                       P C A                                       **
 // ======================================================================== END FILE =====
+

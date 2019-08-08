@@ -50,9 +50,9 @@ TLOGGER_REFERENCE( Table, logger );
  *  Reallocate space if required.
  */
 // ---------------------------------------------------------------------------------------
-void Table::resize( const size_t ns, const size_t nv ) {
+void Table::resize( const int32_t ns, const int32_t nv ) {
   // -------------------------------------------------------------------------------------
-  size_t new_alloc = ns * nv;
+  int32_t new_alloc = ns * nv;
   if ( new_alloc > nalloc ) {
     destroy();
     data = new real8_t[ new_alloc ];
@@ -95,7 +95,7 @@ Table::Table( void ) : INIT_VAR(0) {
  *  @param[in] nv number of variables (col).
  */
 // ---------------------------------------------------------------------------------------
-Table::Table( const size_t ns, const size_t nv ) : INIT_VAR(0) {
+Table::Table( const int32_t ns, const int32_t nv ) : INIT_VAR(0) {
   // -------------------------------------------------------------------------------------
   resize( ns, nv );
 }
@@ -142,8 +142,8 @@ Table::~Table( void ) {
 // ---------------------------------------------------------------------------------------
 void Table::set( const real8_t value ) {
   // -------------------------------------------------------------------------------------
-  const size_t n = nsamp * nvar;
-  for ( size_t i=0; i<n; i++ ) {
+  const int32_t n = nsamp * nvar;
+  for ( int32_t i=0; i<n; i++ ) {
     data[i] = value;
   }
 }
@@ -159,8 +159,8 @@ void Table::set( const real8_t value ) {
 void Table::copy( const Table& tab ) {
   // -------------------------------------------------------------------------------------
   resize( tab.nsamp, tab.nvar );
-  const size_t n = nsamp * nvar;
-  for ( size_t i=0; i<n; i++ ) {
+  const int32_t n = nsamp * nvar;
+  for ( int32_t i=0; i<n; i++ ) {
     data[i] = tab.data[i];
   }
 }
@@ -176,11 +176,11 @@ void Table::copy( const Table& tab ) {
  *        enough to copy the entire row.
  */
 // ---------------------------------------------------------------------------------------
-void Table::row( real8_t* row, const size_t sidx ) {
+void Table::row( real8_t* row, const int32_t sidx ) {
   // -------------------------------------------------------------------------------------
   real8_t* src = (data + sidx);
   real8_t* dst = row;
-  for ( size_t i=0; i<nvar; i++ ) {
+  for ( int32_t i=0; i<nvar; i++ ) {
     *dst++ = *src; src += nsamp;
   }
 }
@@ -203,13 +203,13 @@ bool Table::read_ascii( const std::string fspc ) {
     return true;
   }
 
-  size_t  ns, nv;
+  int32_t  ns, nv;
   real8_t x;
   inf >> ns;
   inf >> nv;
   resize( ns, nv );
-  for ( size_t s=0; s<ns; s++ ) {
-    for ( size_t v=0; v<nv; v++ ) {
+  for ( int32_t s=0; s<ns; s++ ) {
+    for ( int32_t v=0; v<nv; v++ ) {
       inf >> x; at(s,v) = x;
     }
   }
@@ -242,9 +242,9 @@ bool Table::write_ascii( const std::string fspc, const std::string sfmt ) {
   }
 
   outf << nsamp << " " << nvar << "\n";
-  for ( size_t s=0; s<nsamp; s++ ) {
+  for ( int32_t s=0; s<nsamp; s++ ) {
     outf << c_fmt( sfmt.c_str(), at(s,0) );
-    for ( size_t v=1; v<nvar; v++ ) {
+    for ( int32_t v=1; v<nvar; v++ ) {
       outf << " " << c_fmt( sfmt.c_str(), at(s,v) );
     }
     outf << "\n";
@@ -252,6 +252,78 @@ bool Table::write_ascii( const std::string fspc, const std::string sfmt ) {
   
   outf.close();
   return false;
+}
+
+
+// =======================================================================================
+/** @brief Sum.
+ *  @param[out] s    pointer to an array containing the sums.
+ *  @param[in]  n    number of items to sum
+ *  @param[in]  axis the axis along which to sum. (default: 0)
+ *  @return 0==success
+ *
+ *  Depending on the value of axis, this procedure will sum samples of vairables.
+ *  For example: is axis==0 then the samples will be summed and there will be nvar sums.
+ *               otherwise the variables will be summed and there will be nsamp sums.
+ */
+// ---------------------------------------------------------------------------------------
+int Table::sum( real8_t* s, const int32_t n, const int axis ) const {
+  // -------------------------------------------------------------------------------------
+  int rv = 0;
+  if ( 0==axis ) {
+    if ( n > nvar ) {
+      logger->error( LOCATION, "n(%d) must be less than or equal to nvar(%d)", n, nvar );
+      rv = 1;
+    } else {
+      const int32_t nv = Min( n, nvar );
+      for ( int32_t iv=0; iv<nv; iv++ ) {
+	s[iv] = D_ZERO;
+	for ( int32_t is=0; is<nsamp; is++ ) {
+	  s[iv] += get(is,iv);
+	}
+      }
+    }
+  } else {
+    if ( n > nsamp ) {
+      logger->error( LOCATION, "n(%d) must be less than or equal to nsamp(%d)", n, nsamp );
+      rv = 2;
+    } else {
+      const int32_t ns = Min( n, nsamp );
+      for ( int32_t is=0; is<ns; is++ ) {
+	s[is] = D_ZERO;
+	for ( int32_t iv=0; iv<nvar; iv++ ) {
+	  s[is] += get(is,iv);
+	}
+      }
+    }
+  }
+  return rv;
+}
+
+
+// =======================================================================================
+/** @brief Mean
+ *  @param[out] s    pointer to an array containing the means.
+ *  @param[in]  n    number of means
+ *  @param[in]  axis the axis along which to find means. (default: 0)
+ *  @return 0==success
+ *
+ *  Depending on the value of axis, this procedure will average samples of vairables.
+ *  For example: is axis==0 then the samples will be aveaged and there will be nvar means.
+ *               otherwise the variables will be averages and there will be nsamp means.
+ */
+// ---------------------------------------------------------------------------------------
+int Table::mean( real8_t* mu, const int32_t n, const int axis ) const {
+  // -------------------------------------------------------------------------------------
+  int rv = sum(mu, n, axis);
+  if ( 0 == rv ) {
+    const real8_t count = static_cast<real8_t>((0==axis) ? (nsamp) : (nvar));
+
+    for ( int32_t i=0; i<n; i++ ) {
+      mu[i] /= count;
+    }
+  }
+  return rv;
 }
 
 

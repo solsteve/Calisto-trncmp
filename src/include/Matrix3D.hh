@@ -68,6 +68,7 @@ class Matrix3D {
   Matrix3D&       operator=   ( const Matrix3D& ) = default;
 
   void            set         ( const real8_t s = D_ZERO );
+  bool            equals      ( const Matrix3D& that, const real8_t eps = D_EPSILON ) const;
   void            copy        ( const Matrix3D& that );
   void            copy        ( const Matrix3D* that );
 
@@ -75,7 +76,7 @@ class Matrix3D {
   void            toArray     (       real8_t A[3][3] );
 
   real8_t*        load        ( const real8_t* src, matrix3d_format_e order = ROW_MAJOR );
-  real8_t*        store       ( const real8_t* dst, matrix3d_format_e order = ROW_MAJOR );
+  real8_t*        store       (       real8_t* dst, matrix3d_format_e order = ROW_MAJOR );
 
   static Matrix3D Zero        ( void );
   static Matrix3D Ident       ( void );

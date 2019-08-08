@@ -53,7 +53,7 @@ class Vector {
   
   void destroy        ( void );
               
-public:
+ public:
   Vector              ( void );
   Vector              ( const int32_t n,             const bool init=false );
   Vector              ( const int32_t n, real8_t* a, const int32_t ins=1 );
@@ -65,14 +65,15 @@ public:
   void     resize     ( const int32_t n );
 
   void     set        ( const real8_t v=D_ZERO );
-  bool     equals     ( const Vector& V, const real8_t eps = D_EPSILON );
+  bool     equals     ( const Vector& V, const real8_t eps = D_EPSILON ) const;
   void     copy       ( const Vector& src );
 
   real8_t* load       ( real8_t* src, const int32_t ins=1 );
   real8_t* store      ( real8_t* dst, const int32_t ins=1 );
 
-  real8_t& at         ( const int32_t i ) const;
-  real8_t& operator() ( const int32_t i ) const;
+  real8_t  get        ( const int32_t i ) const;
+  real8_t& at         ( const int32_t i );
+  real8_t& operator() ( const int32_t i );
   Vector&  operator=  ( const Vector& src );
 
   int32_t  size       ( void ) const;
@@ -168,7 +169,7 @@ inline  void Vector::copy( const Vector& src ) {
   // -------------------------------------------------------------------------------------
   resize( src.ne );
   for ( int32_t i=0; i<ne; i++ ) {
-    at(i) = src(i);
+    at(i) = src.get(i);
   }
   //dcopy_(src.N(), src.X(), src.INCX(), x, &ne );
 }
@@ -182,7 +183,7 @@ inline  void Vector::copy( const Vector& src ) {
  *  Access the element at (idx).
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t& Vector::at( const int32_t idx ) const {
+inline  real8_t Vector::get( const int32_t idx ) const {
   // -------------------------------------------------------------------------------------
   return *(x+idx);
 }
@@ -196,7 +197,21 @@ inline  real8_t& Vector::at( const int32_t idx ) const {
  *  Access the element at (idx).
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t& Vector::operator()( const int32_t idx ) const {
+inline  real8_t& Vector::at( const int32_t idx ) {
+  // -------------------------------------------------------------------------------------
+  return *(x+idx);
+}
+
+
+// =======================================================================================
+/** @brief Access.
+ *  @param[in] idx index.
+ *  @return reference to the element at (idx).
+ *
+ *  Access the element at (idx).
+ */
+// ---------------------------------------------------------------------------------------
+inline  real8_t& Vector::operator()( const int32_t idx ) {
   // -------------------------------------------------------------------------------------
   return *(x+idx);
 }

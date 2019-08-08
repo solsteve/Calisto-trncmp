@@ -112,6 +112,23 @@ void Matrix2D::copy( const Matrix2D& that ) {
 
 
 // =======================================================================================
+/** @brief Equals.
+ *  @param[in] that reference to another Matrix2D.
+ *  @return true if Matrices are element by element equal.
+ */
+// ---------------------------------------------------------------------------------------
+bool Matrix2D::equals( const Matrix2D& that, const real8_t eps ) const {
+  // -------------------------------------------------------------------------------------
+  for ( size_t i=0; i<4; i++ ) {
+    const real8_t dif = this->q[i] - that.q[i];
+    if ( dif < -eps ) { return false; }
+    if ( dif >  eps ) { return false; }
+  }
+  return true;
+}
+
+
+// =======================================================================================
 /** @brief Copy.
  *  @param[in] v pointer to a source Vector2D.
  */
@@ -200,9 +217,9 @@ real8_t* Matrix2D::load( const real8_t* src, matrix2d_format_e order ) {
  *  destination array and return the fourth position.
  */
 // ---------------------------------------------------------------------------------------
-real8_t* Matrix2D::store( const real8_t* dst, matrix2d_format_e order ) {
+real8_t* Matrix2D::store( real8_t* dst, matrix2d_format_e order ) {
   // -------------------------------------------------------------------------------------
-  real8_t* p = const_cast<real8_t*>(dst);
+  real8_t* p = dst;
   
   switch(order) {
     case ROW_MAJOR:

@@ -450,6 +450,94 @@ real8_t vMv( Vector& a, Vector& mu, Matrix& S ) {
 }
 
 
+
+// =======================================================================================
+/** @brief Covariance.
+ *  @param[out] cov reference to the covariance Matrix.
+ *  @param[in]  tab reference to the Table containng the data.
+ *  @param[in]  mu  reference to a Vector containing the column means from the table.
+ */
+// ---------------------------------------------------------------------------------------
+void covariance( Matrix& cov, const Table& tab, const Vector& mu ) {
+  // -------------------------------------------------------------------------------------
+  int32_t ns   = tab.size(0);
+  int32_t nv   = tab.size(1);
+  real8_t fnm1 = static_cast<real8_t>(ns - 1);
+
+  cov.resize(nv);
+
+  for ( int32_t i=0; i<nv; i++ ) {
+    real8_t iMean = mu.get(i);
+    for ( int32_t j=i; j<nv; j++ ) {
+      real8_t jMean = mu.get(j);
+      real8_t c_sum = D_ZERO;
+      for ( int32_t k=0; k<ns; k++ ) {
+        real8_t x = tab.get(k,i) - iMean;
+        real8_t y = tab.get(k,j) - jMean;
+        c_sum += ( x * y );
+      }
+      c_sum /= fnm1;
+      cov(i,j) = c_sum;
+      cov(j,i) = c_sum;
+    }
+  }
+
+}
+
+
+// =======================================================================================
+/** @brief Covariance.
+ *  @param[out] cov reference to the covariance Matrix.
+ *  @param[in]  tab reference to the Table containng the data.
+ *  @param[in]  mu  pointer to an array containing the column means from the table.
+ */
+// ---------------------------------------------------------------------------------------
+void covariance( Matrix& cov, const Table& tab, real8_t* mu ) {
+  // -------------------------------------------------------------------------------------
+  Vector temp( size(tab,1), mu );
+  covariance( cov, tab, temp );
+}
+
+
+// =======================================================================================
+/** @brief Covariance.
+ *  @param[out] cov reference to the covariance Matrix.
+ *  @param[in]  tab reference to the Table containng the data.
+ */
+// ---------------------------------------------------------------------------------------
+void covariance( Matrix& cov, const Table& tab ) {
+  // -------------------------------------------------------------------------------------
+  real8_t temp[size(tab,1)];
+  tab.mean( temp, size(tab,1), 0 );
+  covariance( cov, tab, temp );
+}
+
+
+// =======================================================================================
+/** @brief Correlation.
+ *  @param[out] cor reference to the correlation Matrix.
+ *  @param[in]  cov reference to the covariance Matrix.
+ */
+// ---------------------------------------------------------------------------------------
+void correlate( Matrix& cor, const Matrix& cov ) {
+  // -------------------------------------------------------------------------------------
+  const int32_t n = Min( size( cov, 0 ), size( cov, 1 ) );
+  cor.resize( n, n );
+  for ( int32_t j=0; j<n; j++ ) {
+    const real8_t jvar = cov.get(j,j);
+    for ( int32_t i=0; i<n; i++ ) {
+      if ( i==j ) {
+	cor(i,i) = D_ONE;
+      } else {
+	real8_t w = cov.get(i,j) / ( cov.get(i,i) * jvar );
+	cor(i,j) = w;
+	cor(j,i) = w;
+      }
+    }
+  }
+}
+
+
 // =======================================================================================
 // **                                    L I N A L G                                    **
 // ======================================================================== END FILE =====

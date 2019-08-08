@@ -69,11 +69,12 @@ class Matrix2D {
   void            set         ( const real8_t s = D_ZERO );
   void            copy        ( const Matrix2D& that );
   void            copy        ( const Matrix2D* that );
+  bool            equals      ( const Matrix2D& that, const real8_t eps = D_EPSILON ) const;
   void            fromArray   ( const real8_t A[2][2] );
   void            toArray     ( real8_t A[2][2] );
 
   real8_t*        load        ( const real8_t* src, matrix2d_format_e order = ROW_MAJOR );
-  real8_t*        store       ( const real8_t* dst, matrix2d_format_e order = ROW_MAJOR );
+  real8_t*        store       (       real8_t* dst, matrix2d_format_e order = ROW_MAJOR );
 
   static Matrix2D Zero        ( void );
   static Matrix2D Ident       ( void );
