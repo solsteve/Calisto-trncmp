@@ -67,6 +67,9 @@ void    covariance ( Matrix& cov, const Table& tab );
 
 void    correlate  ( Matrix& cor, const Matrix& cov );
 
+void    rotateWithRows    ( Table& out, const Table& in, const Matrix& rot );
+void    rotateWithColumns ( Table& out, const Table& in, const Matrix& rot );
+
 #endif
 
 

@@ -37,11 +37,12 @@
 #include <trncmp.hh>
 #include <string.h>
 #include <StringTool.hh>
+#include <array_print.hh>
 
 
 // =======================================================================================
 // ---------------------------------------------------------------------------------------
-int main( void ) {
+void TEST01( void ) {
   // -------------------------------------------------------------------------------------
 
   real8_t E = exp(1.0e0) * 10.0;
@@ -66,7 +67,6 @@ int main( void ) {
   std::cout << "A:   [" << A << "]" << std::endl;
   std::cout << "B:   [" << B << "]" << std::endl;
 
-
   std::cout << "PI = " << StringTool::toString( P ) << std::endl;
   std::cout << "PI = " << StringTool::toString( P, "%11.6f" ) << std::endl;
 
@@ -86,8 +86,6 @@ int main( void ) {
   }
 
 #define SPACE(a) std::cout << #a << " = " << sizeof(a) << std::endl;
-
- 
 
   SPACE(int8_t);
   SPACE(int16_t);
@@ -110,16 +108,77 @@ int main( void ) {
   SPACE(unsigned int);
   SPACE(unsigned long int);
   SPACE(unsigned long long int);
-
-
-
-
-
-
-  
-  return 0;
 }
 
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+real8_t LABEL( int32_t i, int32_t r, int32_t c ) {
+  // -------------------------------------------------------------------------------------
+  real8_t idx = static_cast<real8_t>(i+1) / 100.0;
+  real8_t row = static_cast<real8_t>(r) * 100.0;
+  real8_t col = static_cast<real8_t>(c);
+
+  return row + col + idx;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+void TEST02( void ) {
+  // -------------------------------------------------------------------------------------
+  const int32_t NR = 4;
+  const int32_t NC = 4;
+  const int32_t NB = NR*NC;
+
+
+  // ----- row-major ----------------------------------------
+  real8_t rowmaj[NB];
+  int32_t idx = 0;
+  for ( int32_t r=1; r<=NR; r++ ) {
+    for ( int32_t c=1; c<=NC; c++ ) {
+      rowmaj[idx] = LABEL( idx, r, c );
+      idx++;
+    }
+  }
+
+  // ----- row-major ----------------------------------------
+  real8_t colmaj[NB];
+  idx = 0;
+  for ( int32_t c=1; c<=NC; c++ ) {
+    for ( int32_t r=1; r<=NR; r++ ) {
+      colmaj[idx] = LABEL( idx, r, c );
+      idx++;
+    }
+  }
+
+  real8_t RR[NB];
+  real8_t CC[NB];
+
+  toRow(    RR, colmaj, NR, NC );
+  toColumn( CC, rowmaj, NR, NC );
+  
+  std::cout << "R = " << toString( rowmaj, NB, "%07.2f" ) << "\n"
+            << "C = " << toString( colmaj, NB, "%07.2f" ) << "\n\n";
+
+  std::cout << "row-major\n" << toStringRowMajor(    rowmaj, NR, NC, "%07.2f" ) << "\n\n"
+            << "col-major\n" << toStringColumnMajor( colmaj, NR, NC, "%07.2f" ) << "\n\n";
+  
+  std::cout << "row-major\n" << toStringRowMajor(    RR, NR, NC, "%07.2f" ) << "\n\n"
+            << "col-major\n" << toStringColumnMajor( CC, NR, NC, "%07.2f" ) << "\n\n";
+
+  std::cout << "R = " << toString( RR, NB, "%07.2f" ) << "\n"
+            << "C = " << toString( CC, NB, "%07.2f" ) << "\n\n";
+
+}
+
+
+  // =======================================================================================
+// ---------------------------------------------------------------------------------------
+int main( void ) {
+  // -------------------------------------------------------------------------------------
+  TEST02();
+}
 
 
 // =======================================================================================

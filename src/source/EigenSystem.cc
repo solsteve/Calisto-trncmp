@@ -34,19 +34,9 @@
 // =======================================================================================
 
 #include <EigenSystem.hh>
+#include <lapack_interface.hh>
 
 TLOGGER_REFERENCE( EigenSystem, logger );
-
-extern "C" {
-  extern int dgeev_( char *jobvl, char *jobvr, int32_t *n,
-		     real8_t *a,  int32_t *lda,  real8_t *wr, real8_t *wi,
-		     real8_t *vl, int32_t *ldvl, real8_t *vr, int32_t *ldvr,
-		     real8_t *work, int32_t *lwork, int32_t *info );
-
-  extern int dsyev_( char *jobz, char *uplo, int32_t *n,
-		     real8_t *a,    int32_t *lda,   real8_t *w,
-		     real8_t *work, int32_t *lwork, int32_t *info );
-}
 
 // =======================================================================================
 /** @brief Constructor.
@@ -55,9 +45,9 @@ extern "C" {
  */
 // ---------------------------------------------------------------------------------------
 EigenSystem::EigenSystem( int32_t n, bool sym ) :
-  is_sym(sym), N(n), A(0), LDA(n), WR(0), WI(0),
-  VL(0), LDVL(n), VR(0), LDVR(1),
-  WORK(0), LWORK(-1), INFO(0), vec_real(0), vec_imag(0) {
+    is_sym(sym), N(n), A(0), LDA(n), WR(0), WI(0),
+    VL(0), LDVL(n), VR(0), LDVR(1),
+    WORK(0), LWORK(-1), INFO(0), vec_real(0), vec_imag(0) {
   // -------------------------------------------------------------------------------------
   char NVEC = 'N';
   char YVEC = 'V';
@@ -91,9 +81,8 @@ EigenSystem::EigenSystem( int32_t n, bool sym ) :
 
   if ( 0 == INFO ) {
     LWORK = (int32_t)floor(wkopt);
-
-    WORK = new real8_t[LWORK];
-    INFO = 0;
+    WORK  = new real8_t[LWORK];
+    INFO  = 0;
   } else {
     if ( 0 > INFO ) {
       logger->error( "%dth argument was illegal", -INFO );
@@ -320,8 +309,8 @@ void EigenSystem::compute( void ) {
     if ( 0 == INFO ) {
       for ( int32_t i=0; i<N; i++ ) {
         for ( int32_t j=0; j<N; j++ ) {
-            vec_real[j][i] = A[i+j*LDA];
-            vec_imag[j][i] = D_ZERO;
+          vec_real[j][i] = A[i+j*LDA];
+          vec_imag[j][i] = D_ZERO;
         }
       }
     } else {
@@ -368,6 +357,40 @@ void EigenSystem::compute( void ) {
 
 
 // =======================================================================================
+/** @brief Sort.
+ *
+ *  Sort the Eigen Vectors such that the corresponding eigen values are in
+ *  descending order.
+ */
+// ---------------------------------------------------------------------------------------
+void EigenSystem::sort( void ) {
+  // -------------------------------------------------------------------------------------
+  const int32_t n = N;
+  const int32_t m = N - 1;
+  
+  for ( int32_t i=0; i<m; i++ ) {
+    for ( int32_t j=i+1; j<n; j++ ) {
+      if ( WR[j] > WR[i] ) {
+        real8_t rtemp = WR[j];
+        WR[j]    = WR[i];
+        WR[i]    = rtemp;
+        for ( int32_t k=0; k<n; k++ ) {
+          const real8_t t = vec_real[i][k];
+          vec_real[i][k]  = vec_real[j][k];
+          vec_real[j][k]  = t;
+        }
+      }
+    }
+  }
+
+}
+
+
+// =======================================================================================
+/** @brief Report.
+ *  @param[in] os  reference to an otput stream.
+ *  @param[in] fmt edit descriptor.
+ */
 // ---------------------------------------------------------------------------------------
 void EigenSystem::display( std::ostream& os, std::string fmt ) {
   // -------------------------------------------------------------------------------------
@@ -395,11 +418,6 @@ void EigenSystem::display( std::ostream& os, std::string fmt ) {
     }
     
     os << " ]\n";
-  }
-  
-  for ( i=0; i<N*N; i++ ) {
-    os << c_fmt( fmt, VL[i] );
-    os << "\n";
   }
 }
 

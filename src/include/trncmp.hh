@@ -230,6 +230,77 @@ std::string EXPECTED( std::string l, A e, B g ) {
 }
 
 
+// =======================================================================================
+/** @brief Convert.
+ *  @param[out] row_major pointer to an output array like object in Row-major    layout.
+ *  @param[in]  col_major pointer to an input  array like object in Column-major layout.
+ *  @param[in]  nrow      number of rows.
+ *  @param[in]  ncol      number of columns.
+ */
+// ---------------------------------------------------------------------------------------
+template< class T, class A, class S >
+void fromColumn( T* row_major, A* col_major, const S nrow, const S ncol ) {
+  // -------------------------------------------------------------------------------------
+  T* src = reinterpret_cast<T*>(col_major);
+
+  S idx = 0;
+  for ( S r=0; r<nrow; r++ ) {
+    for ( S c=0; c<ncol; c++ ) {
+      row_major[idx++] = src[c*nrow + r];
+    }
+  }
+}
+
+// =======================================================================================
+/** @brief Convert.
+ *  @param[in]  col_major pointer to an input  array like object in Column-major layout.
+ *  @param[out] row_major pointer to an output array like object in Row-major    layout.
+ *  @param[in]  nrow      number of rows.
+ *  @param[in]  ncol      number of columns.
+ */
+// ---------------------------------------------------------------------------------------
+template< class T, class A, class S >
+void fromRow( T* col_major, A* row_major, const S nrow, const S ncol ) {
+  // -------------------------------------------------------------------------------------
+  T* src = reinterpret_cast<T*>(row_major);
+
+  S idx = 0;
+  for ( S c=0; c<ncol; c++ ) {
+    for ( S r=0; r<nrow; r++ ) {
+      col_major[idx++] = src[r*ncol + c];
+    }
+  }
+}
+
+
+// =======================================================================================
+/** @brief Convert.
+ *  @param[out] row_major pointer to an output array like object in Row-major    layout.
+ *  @param[in]  col_major pointer to an input  array like object in Column-major layout.
+ *  @param[in]  nrow      number of rows.
+ *  @param[in]  ncol      number of columns.
+ */
+// ---------------------------------------------------------------------------------------
+template< class T, class A, class S >
+void toRow( T* row_major, A* col_major, const S nrow, const S ncol ) {
+  // -------------------------------------------------------------------------------------
+  fromColumn( row_major, col_major, nrow, ncol );
+}
+
+// =======================================================================================
+/** @brief Convert.
+ *  @param[in]  col_major pointer to an input  array like object in Column-major layout.
+ *  @param[out] row_major pointer to an output array like object in Row-major    layout.
+ *  @param[in]  nrow      number of rows.
+ *  @param[in]  ncol      number of columns.
+ */
+// ---------------------------------------------------------------------------------------
+template< class T, class A, class S >
+void toColumn( T* col_major, A* row_major, const S nrow, const S ncol ) {
+  // -------------------------------------------------------------------------------------
+  fromRow( col_major, row_major, nrow, ncol );
+}
+
 #endif
 
 

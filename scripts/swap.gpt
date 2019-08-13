@@ -1,0 +1,11 @@
+set title  'Matrix row/col Swaps
+set xlabel 'Order'
+set ylabel 'Millon Swaps per Second (bigger is better)'
+set terminal postscript color
+set output 'test.ps'
+plot 'test.dat' using 1:3  w l title 'col blas', \
+     'test.dat' using 1:4  w l title 'col no blas', \
+     'test.dat' using 1:5  w l title 'col reindex', \
+     'test.dat' using 1:6  w l title 'row blas', \
+     'test.dat' using 1:7  w l title 'row no blas', \
+     'test.dat' using 1:8  w l title 'row reindex', \

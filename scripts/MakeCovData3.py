@@ -49,20 +49,35 @@ data = np.matrix(np.zeros((N_SAMP,3)))
 P    = np.matrix(np.zeros((3,1)))
 
 for i in range(N_SAMP):
-    P[0,0] = MU_X + SIGMA_X*rnd.normal()
-    P[1,0] = MU_Y + SIGMA_Y*rnd.normal()
-    P[2,0] = MU_Z + SIGMA_Z*rnd.normal()
+    P[0,0] = SIGMA_X*rnd.normal()
+    P[1,0] = SIGMA_Y*rnd.normal()
+    P[2,0] = SIGMA_Z*rnd.normal()
 
     X = np.dot(rot,P)
 
-    data[i,:] = X.T
+    data[i,0] = X[0]
+    data[i,1] = X[1]
+    data[i,2] = X[2]
 
-C = np.cov(data.T)
+C1 = np.cov(data.T)
+
+for i in range(N_SAMP):
+    data[i,0] += MU_X
+    data[i,1] += MU_Y
+    data[i,2] += MU_Z
+
+C2 = np.cov(data.T)
 
 print( '\nreal8_t cov[3][3] = {' )
-print( '   { %23.16e, %23.16e, %23.16e },' % ( C[0,0], C[0,1], C[0,2] ) )
-print( '   { %23.16e, %23.16e, %23.16e },' % ( C[1,0], C[1,1], C[1,2] ) )
-print( '   { %23.16e, %23.16e, %23.16e }'  % ( C[2,0], C[2,1], C[2,2] ) )
+print( '   { %23.16e, %23.16e, %23.16e },' % ( C1[0,0], C1[0,1], C1[0,2] ) )
+print( '   { %23.16e, %23.16e, %23.16e },' % ( C1[1,0], C1[1,1], C1[1,2] ) )
+print( '   { %23.16e, %23.16e, %23.16e }'  % ( C1[2,0], C1[2,1], C1[2,2] ) )
+print( '};\n' )
+
+print( '\nreal8_t cov[3][3] = {' )
+print( '   { %23.16e, %23.16e, %23.16e },' % ( C2[0,0], C2[0,1], C2[0,2] ) )
+print( '   { %23.16e, %23.16e, %23.16e },' % ( C2[1,0], C2[1,1], C2[1,2] ) )
+print( '   { %23.16e, %23.16e, %23.16e }'  % ( C2[2,0], C2[2,1], C2[2,2] ) )
 print( '};\n' )
 
 n = np.shape(data)[0]

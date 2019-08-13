@@ -32,18 +32,18 @@
  *  Provides C++ interface to FORTRAN Linerar Algebra Package (LAPACK) procedures.
  
  @BOOK{laug,
-      AUTHOR = {Anderson, E. and Bai, Z. and Bischof, C. and
-                Blackford, S. and Demmel, J. and Dongarra, J. and
-                Du Croz, J. and Greenbaum, A. and Hammarling, S. and
-                McKenney, A. and Sorensen, D.},
-      TITLE = {{LAPACK} Users' Guide},
-      EDITION = {Third},
-      PUBLISHER = {Society for Industrial and Applied Mathematics},
-      YEAR = {1999},
-      ADDRESS = {Philadelphia, PA},
-      ISBN = {0-89871-447-8 (paperback)} }
+ AUTHOR = {Anderson, E. and Bai, Z. and Bischof, C. and
+ Blackford, S. and Demmel, J. and Dongarra, J. and
+ Du Croz, J. and Greenbaum, A. and Hammarling, S. and
+ McKenney, A. and Sorensen, D.},
+ TITLE = {{LAPACK} Users' Guide},
+ EDITION = {Third},
+ PUBLISHER = {Society for Industrial and Applied Mathematics},
+ YEAR = {1999},
+ ADDRESS = {Philadelphia, PA},
+ ISBN = {0-89871-447-8 (paperback)} }
 
- */
+*/
 // =======================================================================================
 
 
@@ -82,6 +82,44 @@ extern "C" {
                        const int32_t* info );
 
   // -------------------------------------------------------------------------------------
+  // DGESVD - compute the singular value decomposition of a general rectangular matrix.
+  // -------------------------------------------------------------------------------------
+
+  extern void dgesvd_( const char*    jobu,
+                       const char*    jobvt,
+                       const int32_t* m,
+                       const int32_t* n,
+                       const real8_t* A,
+                       const int32_t* lda,
+                       const real8_t* S,
+                       const real8_t* U,
+                       const int32_t* ldu,
+                       const real8_t* Vt,
+                       const int32_t* ldvt,
+                       const real8_t* work,
+                       const int32_t* lwork,
+                       const int32_t* info );
+
+  // -------------------------------------------------------------------------------------
+  // DGESDD - compute the singular value decomposition of a general rectangular matrix.
+  // -------------------------------------------------------------------------------------
+
+  extern void dgesdd_( const char*    jobz,
+                       const int32_t* m,
+                       const int32_t* n,
+                       const real8_t* A,
+                       const int32_t* lda,
+                       const real8_t* S,
+                       const real8_t* U,
+                       const int32_t* ldu,
+                       const real8_t* Vt,
+                       const int32_t* ldvt,
+                       const real8_t* work,
+                       const int32_t* lwork,
+                       const int32_t* iwork,
+                       const int32_t* info );
+
+  // -------------------------------------------------------------------------------------
   // ILAENV - called from the LAPACK routines to choose problem-dependent parameters
   //          for the local environment
   // -------------------------------------------------------------------------------------
@@ -94,6 +132,39 @@ extern "C" {
                           const int32_t* n3,
                           const int32_t* n4 );
 
+  // -------------------------------------------------------------------------------------
+  // DGEEV - compute for an N-by-N real nonsymmetric matrix A, the eigenvalues and,
+  //         optionally, the left and/or right eigenvectors
+  // -------------------------------------------------------------------------------------
+  extern int dgeev_( const char    *jobvl,
+                     const char    *jobvr,
+                     const int32_t *n,
+		     const real8_t *a,
+                     const int32_t *lda,
+                     const real8_t *wr,
+                     const real8_t *wi,
+		     const real8_t *vl,
+                     const int32_t *ldvl,
+                     const real8_t *vr,
+                     const int32_t *ldvr,
+		     const real8_t *work,
+                     const int32_t *lwork,
+                     const int32_t *info );
+
+  // -------------------------------------------------------------------------------------
+  // DSYEV - compute all eigenvalues and, optionally, eigenvectors of a real
+  //         symmetric matrix A
+  // -------------------------------------------------------------------------------------
+  extern int dsyev_( const char    *jobz,
+                     const char    *uplo,
+                     const int32_t *n,
+		     const real8_t *a,
+                     const int32_t *lda,
+                     const real8_t *w,
+		     const real8_t *work,
+                     const int32_t *lwork,
+                     const int32_t *info );
+  
 } // end extern "C"
 
 

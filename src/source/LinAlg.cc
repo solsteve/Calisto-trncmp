@@ -539,5 +539,75 @@ void correlate( Matrix& cor, const Matrix& cov ) {
 
 
 // =======================================================================================
+/** @brief Rotate Table.
+ *  @param[out] out reference to the output Table.
+ *  @param[in]  in  reference to the input  Table.
+ *  @param[in]  rot reference to the rotation Matrix.
+ *
+ *  Rotate the points in the input Table using the rotation Matrix. Store the new points
+ *  in the output Table. The rotation basis vectors are stored in the rows of rot.
+ */
+// ---------------------------------------------------------------------------------------
+void rotateWithRows( Table& out, const Table& in, const Matrix& rot ) {
+  // -------------------------------------------------------------------------------------
+  const int32_t ns = size( in,  0 );
+  const int32_t ni = size( in,  1 );
+  const int32_t no = size( rot, 0 );
+  const int32_t tt = size( rot, 1 );
+
+  if ( ni != tt ) {
+    throw std::length_error( "rotation matrix is incompatable with input table" );
+  }
+
+  out.resize( ns, no );
+
+  for ( int32_t s=0; s<ns; s++ ) {
+    for ( int32_t v=0; v<no; v++ ) {
+      real8_t sum = D_ZERO;
+      for ( int32_t k=0; k<ni; k++ ) {
+        sum += ( in.get(s,k) * rot.get(v,k) );
+      }
+      out(s,v) = sum;
+    }
+  }  
+}
+
+
+// =======================================================================================
+/** @brief Rotate Table.
+ *  @param[out] out reference to the output Table.
+ *  @param[in]  in  reference to the input  Table.
+ *  @param[in]  rot reference to the rotation Matrix.
+ *
+ *  Rotate the points in the input Table using the rotation Matrix. Store the new points
+ *  in the output Table. The rotation basis vectors are stored in the columns of rot.
+ */
+// ---------------------------------------------------------------------------------------
+void rotateWithColumns( Table& out, const Table& in, const Matrix& rot ) {
+  // -------------------------------------------------------------------------------------
+  const int32_t ns = size( in,  0 );
+  const int32_t ni = size( in,  1 );
+  const int32_t no = size( rot, 1 );
+  const int32_t tt = size( rot, 0 );
+
+  if ( ni != tt ) {
+    throw std::length_error( "rotation matrix is incompatable with input table" );
+  }
+
+  out.resize( ns, no );
+
+  for ( int32_t s=0; s<ns; s++ ) {
+    for ( int32_t v=0; v<no; v++ ) {
+      real8_t sum = D_ZERO;
+      for ( int32_t k=0; k<ni; k++ ) {
+        sum += ( in.get(s,k) * rot.get(k,v) );
+      }
+      out(s,v) = sum;
+    }
+  }  
+}
+
+
+// =======================================================================================
 // **                                    L I N A L G                                    **
 // ======================================================================== END FILE =====

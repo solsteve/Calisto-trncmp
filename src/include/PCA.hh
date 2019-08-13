@@ -37,24 +37,41 @@
 #ifndef __HH_PCA_TRNCMP
 #define __HH_PCA_TRNCMP
 
-#include <trncmp.hh>
+#include <LinAlg.hh>
+#include <TLogger.hh>
 
 // =======================================================================================
 class PCA {
   // -------------------------------------------------------------------------------------
  protected:
+  EMPTY_PROTOTYPE( PCA );
 
-  Vector* mu;
-  Vector* variance;
-  Matrix* covariance;
-  Matrix* fwdTransform;
-  Matrix* rvsTransform;
-  
+  TLOGGER_HEADER(logger);    ///< Reference to logger instance
 
+  int32_t  num_var;           ///< Number of variables
+  Vector   mu;                ///< Sample mean
+  Vector   variance;          ///< Principle axis variance
+  Matrix   covariance;        ///< Covariance
+  Matrix   rotation;          ///< Reverse Transformation matrix
+  real8_t* rwork;             ///< Rotation work vector
+
+ public:
+  PCA  ( void );
+  ~PCA ( void );
+
+  int  fromSamples    ( Table& table );
+  int  fromCovariance ( Matrix& cov, Vector& mean );
+  int  transform      ( Table&  out, Table&  in );
+  int  transform      ( Vector& out, Vector& in );
+  int  recover        ( Table&  out, Table&  in );
+  int  recover        ( Vector& out, Vector& in );
+  void report         ( std::ostream& os, const std::string& sfmt = "%g" );
 
 }; // end class PCA
 
+
 #endif
+
 
 // =======================================================================================
 // **                                       P C A                                       **

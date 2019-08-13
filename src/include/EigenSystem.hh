@@ -38,13 +38,13 @@
 
 #include <array_print.hh>
 #include <TLogger.hh>
+#include <Matrix.hh>
 
 // =======================================================================================
-// ---------------------------------------------------------------------------------------
 class EigenSystem {
   // -------------------------------------------------------------------------------------
 
-protected:
+ protected:
   TLOGGER_HEADER( logger );
   EMPTY_PROTOTYPE( EigenSystem );
 
@@ -68,14 +68,20 @@ protected:
   
   EigenSystem( int32_t n, bool sym );
 
-public:
+ public:
   ~EigenSystem( void );
 
   static EigenSystem* general        ( real8_t **data, size_t n );
   static EigenSystem* general        ( real8_t  *data, size_t n );
+  static EigenSystem* general        ( Matrix& M ) {
+    return general( M.A(), ::size( M, 0 ) );
+  }
 
   static EigenSystem* symetric       ( real8_t **data, size_t n );
   static EigenSystem* symetric       ( real8_t  *data, size_t n );
+  static EigenSystem* symetric       ( Matrix& M ) {
+    return symetric( M.A(), ::size( M, 0 ) );
+  }
 
   static EigenSystem* upper_triangle ( real8_t  *data, size_t n );
   static EigenSystem* lower_triangle ( real8_t  *data, size_t n );
@@ -88,6 +94,7 @@ public:
   void         setLower       ( real8_t  *data ); 
 
   void         compute        ( void );
+  void         sort           ( void );
 
   real8_t      eval           ( const size_t i );
   real8_t      ieval          ( const size_t i );
@@ -143,7 +150,7 @@ inline  real8_t EigenSystem::ieval( const size_t i ) {
 // ---------------------------------------------------------------------------------------
 inline  real8_t* EigenSystem::evec( const size_t i ) {
   // -------------------------------------------------------------------------------------
-  return (VR+(LDVR*i));
+  return &(vec_real[i][0]);
 }
 
 
@@ -157,7 +164,7 @@ inline  real8_t* EigenSystem::evec( const size_t i ) {
 // ---------------------------------------------------------------------------------------
 inline  real8_t  EigenSystem::evec( const size_t i, const size_t j ) {
   // -------------------------------------------------------------------------------------
-  return VR[LDVR*i + j];
+  return vec_real[i][j];
 }
 
 

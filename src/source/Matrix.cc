@@ -1311,6 +1311,182 @@ real8_t  Matrix::inverse( const Matrix& M ) {
 
 
 // =======================================================================================
+/* @brief Swap Rows.
+ * @param[in] i first  index of row to be swaped with second.
+ * @param[in] j second index of row to be swaped with first.
+ *
+ * Swap the elements of rows i and j.
+ */
+// ---------------------------------------------------------------------------------------
+void Matrix::swap_row_blas( const int32_t i, const int32_t j ) {
+  // -------------------------------------------------------------------------------------
+  if ( i != j ) {
+    if ( i < 0 ) {
+      throw std::length_error( "Matrix::swap_row - first index less than zero" );
+    }
+    
+    if ( j < 0 ) {
+      throw std::length_error( "Matrix::swap_row - second index less than zero" );
+    }
+    
+    if ( i < nrow ) {
+      if ( j < nrow ) {
+        const int32_t INCX=nrow;
+        // -------------------------------------------------------------------------------
+        dswap_( &ncol, (data+i), &INCX, (data+j), &INCX );
+        // -------------------------------------------------------------------------------
+      } else {
+        throw std::length_error( "Matrix::swap_row - second index excceds bounds" );
+      }
+    } else {
+      throw std::length_error( "Matrix::swap_row - first index excceds bounds" );
+    }
+  }
+}
+
+
+// =======================================================================================
+/* @brief Swap Columns.
+ * @param[in] i first  index of column to be swaped with second.
+ * @param[in] j second index of column to be swaped with first.
+ *
+ * Swap the elements of columns i and j.
+ */
+// ---------------------------------------------------------------------------------------
+void Matrix::swap_column_blas( const int32_t i, const int32_t j ) {
+  // -------------------------------------------------------------------------------------
+  if ( i != j ) {
+    if ( i < 0 ) {
+      throw std::length_error( "Matrix::swap_column - first index less than zero" );
+    }
+    
+    if ( j < 0 ) {
+      throw std::length_error( "Matrix::swap_column - second index less than zero" );
+    }
+    
+    if ( i < ncol ) {
+      if ( j < ncol ) {
+        const int32_t INCX=1;
+        // -------------------------------------------------------------------------------
+        dswap_( &nrow, (data+i*nrow), &INCX, (data+j*nrow), &INCX );
+        // -------------------------------------------------------------------------------
+      } else {
+        throw std::length_error( "Matrix::swap_column - second index excceds bounds" );
+      }
+    } else {
+      throw std::length_error( "Matrix::swap_column - first index excceds bounds" );
+    }
+  }
+}
+
+
+// =======================================================================================
+/* @brief Swap Rows.
+ * @param[in] i first  index of row to be swaped with second.
+ * @param[in] j second index of row to be swaped with first.
+ *
+ * Swap the elements of rows i and j.
+ */
+// ---------------------------------------------------------------------------------------
+void Matrix::swap_row_noblas( const int32_t i, const int32_t j ) {
+  // -------------------------------------------------------------------------------------
+  if ( i != j ) {
+    if ( i < 0 ) {
+      throw std::length_error( "Matrix::swap_row - first index less than zero" );
+    }
+    
+    if ( j < 0 ) {
+      throw std::length_error( "Matrix::swap_row - second index less than zero" );
+    }
+    
+    if ( i < nrow ) {
+      if ( j < nrow ) {
+        // -------------------------------------------------------------------------------
+        for ( int32_t k=0; k<ncol; k++ ) {
+          const real8_t a = get(i,k);
+          const real8_t b = get(j,k);
+          set(i,k,b);
+          set(j,k,a);
+        }
+        // -------------------------------------------------------------------------------
+      } else {
+        throw std::length_error( "Matrix::swap_row - second index excceds bounds" );
+      }
+    } else {
+      throw std::length_error( "Matrix::swap_row - first index excceds bounds" );
+    }
+  }
+}
+
+// =======================================================================================
+/* @brief Swap Columns.
+ * @param[in] i first  index of column to be swaped with second.
+ * @param[in] j second index of column to be swaped with first.
+ *
+ * Swap the elements of columns i and j.
+ */
+// ---------------------------------------------------------------------------------------
+void Matrix::swap_column_noblas( const int32_t i, const int32_t j ) {
+  // -------------------------------------------------------------------------------------
+  if ( i != j ) {
+    if ( i < 0 ) {
+      throw std::length_error( "Matrix::swap_column - first index less than zero" );
+    }
+    
+    if ( j < 0 ) {
+      throw std::length_error( "Matrix::swap_column - second index less than zero" );
+    }
+    
+    if ( i < ncol ) {
+      if ( j < ncol ) {
+        // -------------------------------------------------------------------------------
+        for ( int32_t k=0; k<nrow; k++ ) {
+          const real8_t a = get(k,i);
+          const real8_t b = get(k,j);
+          set(k,i,b);
+          set(k,j,a);
+        }
+        // -------------------------------------------------------------------------------
+      } else {
+        throw std::length_error( "Matrix::swap_column - second index excceds bounds" );
+      }
+    } else {
+      throw std::length_error( "Matrix::swap_column - first index excceds bounds" );
+    }
+  }
+}
+
+
+
+
+
+
+void Matrix::reindex_rows( Matrix& M, int32_t* index ) {
+  const int32_t nr = M.size( 0 );
+  const int32_t nc = M.size( 1 );
+  resize( nr, nc );
+  for ( int32_t r=0; r<nr; r++ ) {
+      const int32_t alt = index[r];
+    for ( int32_t c=0; c<nc; c++ ) {
+      set( r, c, M.get( alt, c ) );
+    }
+  }  
+}
+
+void Matrix::reindex_columns( Matrix& M, int32_t* index ) {
+  const int32_t nr = M.size( 0 );
+  const int32_t nc = M.size( 1 );
+  resize( nr, nc );
+    for ( int32_t c=0; c<nc; c++ ) {
+      const int32_t alt = index[c];
+  for ( int32_t r=0; r<nr; r++ ) {
+    set( r, c, M.get( r, alt ) );
+    }
+  }  
+}
+
+
+// =======================================================================================
 // **                                    M A T R I X                                    **
 // ======================================================================== END FILE =====
 

@@ -250,6 +250,109 @@ std::string toString_sage( T** A, size_t nr, size_t nc, std::string sfmt = DEFAU
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+// =======================================================================================
+/** @brief To String.
+ *  @param[in] A    pointer to an array.
+ *  @param[in] nr   number of array elements.
+ *  @param[in] nc   number of array elements.
+ *  @param[in] sfmt edit descriptor.
+ *  @param[in] cdel column delimeter.
+ *  @param[in] rdel row delimeter.
+ *
+ *  Format an 2D array that is stored in row-major ordering for printing and return an
+ *  appropriate string.
+ */
+// ---------------------------------------------------------------------------------------
+template<class T, class S>
+std::string toStringRowMajor( T* A, S nr, S nc,
+                               std::string sfmt = DEFAULT_PRINT_FORMAT,
+                               std::string cdel = DEFAULT_PRINT_COL_DELIM,
+                               std::string rdel = DEFAULT_PRINT_ROW_DELIM ) {
+  // -------------------------------------------------------------------------------------
+  if (static_cast<T*>(0) == A) throw std::invalid_argument("array is NULL");
+  if (0 == nr) throw std::invalid_argument("zero row length array");
+  if (0 == nc) throw std::invalid_argument("zero col length array");
+
+  std::string tstr = c_fmt( sfmt, A[0] );
+
+  for ( S c=1; c<nc; c++ ) {
+    tstr.append( cdel );
+    tstr.append( c_fmt( sfmt, A[c] ) );
+  }
+  
+  for ( S r=1; r<nr; r++ ) {
+    tstr.append( rdel );
+    tstr.append( c_fmt( sfmt, A[r*nc] ) );
+    for ( S c=1; c<nc; c++ ) {
+      tstr.append( cdel );
+      tstr.append( c_fmt( sfmt, A[r*nc + c] ) );
+    }
+  }
+
+  return tstr;
+}
+
+
+// =======================================================================================
+/** @brief To String.
+ *  @param[in] A    pointer to an array.
+ *  @param[in] nr   number of array elements.
+ *  @param[in] nc   number of array elements.
+ *  @param[in] sfmt edit descriptor.
+ *  @param[in] cdel column delimeter.
+ *  @param[in] rdel row delimeter.
+ *
+ *  Format an 2D array that is stored in row-major ordering for printing and return an
+ *  appropriate string.
+ */
+// ---------------------------------------------------------------------------------------
+template<class T, class S>
+std::string toStringColumnMajor( T* A, S nr, S nc,
+                               std::string sfmt = DEFAULT_PRINT_FORMAT,
+                               std::string cdel = DEFAULT_PRINT_COL_DELIM,
+                               std::string rdel = DEFAULT_PRINT_ROW_DELIM ) {
+  // -------------------------------------------------------------------------------------
+  if (static_cast<T*>(0) == A) throw std::invalid_argument("array is NULL");
+  if (0 == nr) throw std::invalid_argument("zero row length array");
+  if (0 == nc) throw std::invalid_argument("zero col length array");
+
+  std::string tstr = c_fmt( sfmt, A[0] );
+
+  for ( S c=1; c<nc; c++ ) {
+    tstr.append( cdel );
+    tstr.append( c_fmt( sfmt, A[c*nr] ) );
+  }
+  
+  for ( S r=1; r<nr; r++ ) {
+    tstr.append( rdel );
+    tstr.append( c_fmt( sfmt, A[r] ) );
+    for ( S c=1; c<nc; c++ ) {
+      tstr.append( cdel );
+      tstr.append( c_fmt( sfmt, A[c*nr + r] ) );
+    }
+  }
+
+  return tstr;
+}
+
+
+
+
+
+
+
+
 #endif
 
 

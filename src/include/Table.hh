@@ -44,9 +44,9 @@ class Table {
   // -------------------------------------------------------------------------------------
  protected:
   real8_t* data;    ///< pointer to the table data
-  int32_t   nsamp;   ///< number of samples
-  int32_t   nvar;    ///< number of variables
-  int32_t   nalloc;  /// < max allocation (@see: Resize)
+  int32_t  nsamp;   ///< number of samples
+  int32_t  nvar;    ///< number of variables
+  int32_t  nalloc;  /// < max allocation (@see: Resize)
 
   TLOGGER_HEADER( logger );
 
@@ -74,6 +74,11 @@ class Table {
   void     row          ( real8_t* row, const int32_t sidx );
   real8_t* col          ( const int32_t vidx );
 
+  bool     read_ascii   ( std::istream& inf );
+  bool     write_ascii  ( std::ostream& outf, const std::string sfmt="%23.16e" );
+  bool     write_ascii  ( std::ostream& outf, const int32_t start, const int32_t finis,
+                          const std::string sfmt="%23.16e" );
+  
   bool     read_ascii   ( const std::string fspc );
   bool     write_ascii  ( const std::string fspc, const std::string sfmt="%23.16e" );
   

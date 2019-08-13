@@ -639,6 +639,86 @@ namespace {
 
   }
 
+// =======================================================================================
+TEST(test_vector_buffer, ownsbuffer) {
+  // -------------------------------------------------------------------------------------
+  Vector A(3);
+  EXPECT_EQ( 3, size( A ) );
+
+  {
+    bool test = false;
+    try {
+      A.resize(4);
+      EXPECT_EQ( 4, size( A ) );
+      test = true;
+    } catch( std::exception& e ) {
+      std::cerr << "Exception was not suposed to be thrown - Vector owns its buffer\n";
+      test = false;
+    }
+    EXPECT_TRUE(test);
+  }
+}
+  
+
+// =======================================================================================
+TEST(test_vector_buffer, attach) {
+  // -------------------------------------------------------------------------------------
+  real8_t dat[] = { 1.4, 2.3, 3.2, 4.1 };
+  int32_t nv = sizeof(dat) / sizeof(dat[0]);
+
+    
+  Vector B(8);
+  EXPECT_EQ( 8, size( B ) );
+  B.attach( dat, nv );
+  EXPECT_EQ( nv, size( B ) );
+  for ( int32_t i=0; i<nv; i++ ) {
+    EXPECT_DOUBLE_EQ( dat[i], B.get(i) );
+  }
+    
+  {
+    bool test = false;
+    try {
+      B.resize(nv+2);
+      std::cerr << "Exception Failed - Vector does not own its buffer\n";
+      test = false;
+    } catch( std::exception& e ) {
+      test = true;
+    }
+    EXPECT_TRUE(test);
+  }
+}
+  
+
+// =======================================================================================
+TEST(test_vector_buffer, view) {
+  // -------------------------------------------------------------------------------------
+  real8_t dat[] = { 1.4, 2.3, 3.2, 4.1 };
+  int32_t nv = sizeof(dat) / sizeof(dat[0]);
+
+    
+  Vector B = Vector::view( dat, nv );
+
+  EXPECT_EQ( nv, size( B ) );
+  for ( int32_t i=0; i<nv; i++ ) {
+    EXPECT_DOUBLE_EQ( dat[i], B.get(i) );
+  }
+    
+  {
+    bool test = false;
+    try {
+      B.resize(nv+2);
+      std::cerr << "Exception Failed - Vector does not own its buffer\n";
+      test = false;
+    } catch( std::exception& e ) {
+      test = true;
+    }
+    EXPECT_TRUE(test);
+  }
+}
+  
+
+
+
 
 } // end namespace
 

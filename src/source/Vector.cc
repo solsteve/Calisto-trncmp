@@ -43,21 +43,56 @@ const int32_t Vector::static_one = 1;
 
 
 // =======================================================================================
-/** @brief Resize.
- *  @param[in] n desired number of elements.
+/** @brief Attach external buffer.
+ *  @param[in] buffer pointer to a data source.
+ *  @param[in] n      number of elements to use.
  *
- *  Resize this Vector, if the current allocation will not suport the desired
- *  number of elements.
+ *  Make this Vector a view of another source. The buffer is attached to this Vector as
+ *  its data buffer. The number of elements n becomes the dimension of this Vector.
+ *
+ *  @note it is the programers responsibility to clean this buffer up. A common mistake
+ *        is to attack a local array to a Vector with a greater scope. When the local
+ *        array goes out of scope the effect on using the Vector elsewhere becomes
+ *        undefined.
  */
 // ---------------------------------------------------------------------------------------
-void Vector::resize( const int32_t n ) {
+void Vector::attach( real8_t* buffer, int32_t n ) {
   // -------------------------------------------------------------------------------------
-  if ( n > nx ) {
-    destroy();
-    x  = new real8_t[n];
-    nx = n;
+  destroy();
+  x   = buffer;
+  ne  = n;
+  nx  = n;
+  own = false;
+}
+
+// =======================================================================================
+/** @brief Resize.
+ *  @param[in] n      desired number of elements.
+ *  @param[in] source optional source buffer.
+ *
+ *  Resize this Vector, if the current allocation will not suport the desired
+ *  number of elements. Optionally supply an external buffer.
+ *  @note if this Vector does not own its data it may only be resized with another
+ *        source buffer.
+ */
+// ---------------------------------------------------------------------------------------
+void Vector::resize( const int32_t n, real8_t* source ) {
+  // -------------------------------------------------------------------------------------
+  if ( static_cast<real8_t*>(0) == source ) {
+    if ( n > nx ) {
+      if ( own ) {
+        destroy();
+        x   = new real8_t[n];
+        own = true;
+        nx  = n;
+      } else {
+        throw std::invalid_argument( "Vector::resize - Vector does not own its buffer" );
+      }
+    }
+    ne = n;
+  } else {
+    attach( source, n );
   }
-  ne = n;
 }
 
 
@@ -69,12 +104,30 @@ void Vector::resize( const int32_t n ) {
 // ---------------------------------------------------------------------------------------
 void Vector::destroy ( void ) {
   // -------------------------------------------------------------------------------------
-  if ( static_cast<real8_t*>(0) != x ) {
-    delete[] x;
+  if ( own ) {
+    if ( static_cast<real8_t*>(0) != x ) {
+      delete[] x;
+    }
   }
-  ne = 0;
-  nx = 0;
+  x   = static_cast<real8_t*>(0);
+  ne  = 0;
+  nx  = 0;
+  own = true;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // =======================================================================================
@@ -256,7 +309,7 @@ void Vector::add( const Vector& v ) {
       at(i) += v.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -277,7 +330,7 @@ void Vector::add( const real8_t s, const Vector& v ) {
       at(i) = s + v.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -298,7 +351,7 @@ void Vector::add( const Vector& v, const real8_t s ) {
       at(i) = v.get(i) + s;
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -319,7 +372,7 @@ void Vector::add( const Vector& a, const Vector& b ) {
       at(i) = a.get(i) + b.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -359,7 +412,7 @@ void Vector::sub( const Vector& v ) {
       at(i) -= v.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -380,7 +433,7 @@ void Vector::sub( const real8_t s, const Vector& v ) {
       at(i) = s - v.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -401,7 +454,7 @@ void Vector::sub( const Vector& v, const real8_t s ) {
       at(i) = v.get(i) - s;
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -422,7 +475,7 @@ void Vector::sub( const Vector& a, const Vector& b ) {
       at(i) = a.get(i) - b.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -462,7 +515,7 @@ void Vector::mul( const Vector& v ) {
       at(i) *= v.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -483,7 +536,7 @@ void Vector::mul( const real8_t s, const Vector& v ) {
       at(i) = s * v.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -504,7 +557,7 @@ void Vector::mul( const Vector& v, const real8_t s ) {
       at(i) = v.get(i) * s;
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -525,7 +578,7 @@ void Vector::mul( const Vector& a, const Vector& b ) {
       at(i) = a.get(i) * b.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw  std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -565,7 +618,7 @@ void Vector::div( const Vector& v ) {
       at(i) /= v.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw  std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -586,7 +639,7 @@ void Vector::div( const real8_t s, const Vector& v ) {
       at(i) = s / v.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw  std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -607,7 +660,7 @@ void Vector::div( const Vector& v, const real8_t s ) {
       at(i) = v.get(i) / s;
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -628,7 +681,7 @@ void Vector::div( const Vector& a, const Vector& b ) {
       at(i) = a.get(i) / b.get(i);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw  std::length_error( "two vectors are not equal in size" );
   }
 }
 
@@ -655,7 +708,7 @@ real8_t Vector::dot( const Vector& v ) {
       sum += ( get(i) * v.get(i) );
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw  std::length_error( "two vectors are not equal in size" );
   }
   return sum;
 }
@@ -734,7 +787,7 @@ real8_t Vector::sumsq( const Vector& v ) const {
       sum += (d*d);
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
   return sum;
 }
@@ -754,7 +807,7 @@ real8_t Vector::dist1( const Vector& v ) const {
       sum += Abs( get(i) - v.get(i) );
     }
   } else {
-    throw new std::length_error( "two vectors are not equal in size" );
+    throw std::length_error( "two vectors are not equal in size" );
   }
   return sum;
 }

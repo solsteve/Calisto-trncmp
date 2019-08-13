@@ -48,6 +48,7 @@ class Vector {
   real8_t * x;     ///< pointer to vectors data vector.
   int32_t   ne;    ///< number of elements.
   int32_t   nx;    ///< max allocation
+  bool      own;   ///< does this Vector own its buffer x?
 
   static const int32_t static_one;
   
@@ -62,7 +63,10 @@ class Vector {
 
   ~Vector             ( void );
 
-  void     resize     ( const int32_t n );
+  static Vector view  ( real8_t* buffer, int32_t n );
+  void     attach     ( real8_t* buffer, int32_t n );
+
+  void     resize     ( const int32_t n, real8_t* source = static_cast<real8_t*>(0) );
 
   void     set        ( const real8_t v=D_ZERO );
   bool     equals     ( const Vector& V, const real8_t eps = D_EPSILON ) const;
@@ -71,6 +75,7 @@ class Vector {
   real8_t* load       ( real8_t* src, const int32_t ins=1 );
   real8_t* store      ( real8_t* dst, const int32_t ins=1 );
 
+  void     set        ( const int32_t i, const real8_t val );
   real8_t  get        ( const int32_t i ) const;
   real8_t& at         ( const int32_t i );
   real8_t& operator() ( const int32_t i );
@@ -155,7 +160,26 @@ std::string toString( std::string lp, Vector& V, std::string rp,
   AMAX
 */
 
-#define INIT_VEC(a) x(a), ne(a), nx(a)
+#define INIT_VEC(a) x(a), ne(a), nx(a), own(true)
+
+
+// =======================================================================================
+/** @brief Create Vector with an external buffer.
+ *  @param[in] buffer pointer to a data source.
+ *  @param[in] n      number of elements to use.
+ *
+ *  Make a Vector as view of another source. The buffer is attached to the new Vector as
+ *  its data buffer. The number of elements n becomes the dimension of that Vector.
+ *
+ *  @note it is the programers responsibility to clean this buffer up.
+ */
+// ---------------------------------------------------------------------------------------
+inline  Vector Vector::view( real8_t* buffer, int32_t n ) {
+  // -------------------------------------------------------------------------------------
+  Vector temp;
+  temp.attach( buffer, n );
+  return temp;
+}
 
 
 // =======================================================================================
@@ -172,6 +196,20 @@ inline  void Vector::copy( const Vector& src ) {
     at(i) = src.get(i);
   }
   //dcopy_(src.N(), src.X(), src.INCX(), x, &ne );
+}
+
+
+// =======================================================================================
+/** @brief Access.
+ *  @param[in] idx index.
+ *  @param[in] val value.
+ *
+ *  Access the element at (idx).
+ */
+// ---------------------------------------------------------------------------------------
+inline  void Vector::set( const int32_t idx, const real8_t val ) {
+  // -------------------------------------------------------------------------------------
+  *(x+idx) = val;
 }
 
 

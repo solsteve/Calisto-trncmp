@@ -114,6 +114,7 @@ class Matrix {
   real8_t* load           ( const real8_t* src, matrix_format_e fmt = COLUMN_MAJOR );
   real8_t* store          (       real8_t* dst, matrix_format_e fmt = COLUMN_MAJOR );
 
+  void     set            ( const int32_t r, const int32_t c, const real8_t val );
   real8_t  get            ( const int32_t r, const int32_t c ) const;
   real8_t& at             ( const int32_t r, const int32_t c );
   real8_t& operator()     ( const int32_t r, const int32_t c );
@@ -131,6 +132,15 @@ class Matrix {
   real8_t  sumsq          ( const Matrix& that ) const;
   
   void     dot            ( const Matrix& lhs, const Matrix& rhs );
+
+  void     swap_row_blas      ( const int32_t i, const int32_t j );
+  void     swap_column_blas   ( const int32_t i, const int32_t j );
+
+  void     swap_row_noblas    ( const int32_t i, const int32_t j );
+  void     swap_column_noblas ( const int32_t i, const int32_t j );
+
+  void     reindex_rows       ( Matrix& M, int32_t* index );
+  void     reindex_columns    ( Matrix& M, int32_t* index );
 
   // ----- inplace element operations -------------------------------------
 
@@ -211,6 +221,22 @@ inline  Matrix& Matrix::operator= ( const Matrix& rhs ) {
   return *this;
 }
 
+
+
+// =======================================================================================
+/** @brief Access.
+ *  @param[in] r   row    index.
+ *  @param[in] c   column index.
+ *  @param[in] val value.
+ *  @return reference to the element at (r,c).
+ *
+ *  set element (r,c) to value.
+ */
+// ---------------------------------------------------------------------------------------
+inline  void  Matrix::set( const int32_t r, const int32_t c, const real8_t val )  {
+  // -------------------------------------------------------------------------------------
+  *(data + r + c*nrow) = val;
+}
 
 
 // =======================================================================================

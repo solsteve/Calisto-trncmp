@@ -186,8 +186,80 @@ void Table::row( real8_t* row, const int32_t sidx ) {
 }
 
 
+
+
 // =======================================================================================
 /** @brief Read ASCII File.
+ *  @param[in] inf reference to an input stream.
+ *  @return true if an error ocurred.
+ */
+// ---------------------------------------------------------------------------------------
+bool Table::read_ascii( std::istream& inf ) {
+  // -------------------------------------------------------------------------------------
+  int32_t  ns, nv;
+  real8_t x;
+  inf >> ns;
+  inf >> nv;
+  resize( ns, nv );
+  for ( int32_t s=0; s<ns; s++ ) {
+    for ( int32_t v=0; v<nv; v++ ) {
+      inf >> x; at(s,v) = x;
+    }
+  }
+
+  return false;
+}
+
+
+// =======================================================================================
+/** @brief Write ASCII.
+ *  @param[in] outf reference to an output stream.
+ *  @param[in] sfmt print format.
+ *  @return true if an error ocurred.
+ *
+ *  Write the contents of this Table to an output stream. This will begin with two
+ *  integers: number of samples and number of variables. Each subsequent line will
+ *  contain one sample of nvar variables. The format specified by the argument sfmt
+ *  is a string in the form of a printf edit descriptor.
+ */
+// ---------------------------------------------------------------------------------------
+bool Table::write_ascii( std::ostream& outf, const int32_t start, const int32_t finis,
+                         const std::string sfmt ) {
+  // -------------------------------------------------------------------------------------
+  for ( int32_t s=start; s<=finis; s++ ) {
+    outf << c_fmt( sfmt.c_str(), at(s,0) );
+    for ( int32_t v=1; v<nvar; v++ ) {
+      outf << " " << c_fmt( sfmt.c_str(), at(s,v) );
+    }
+    outf << "\n";
+  }
+
+  return false;
+}
+
+
+// =======================================================================================
+/** @brief Write ASCII.
+ *  @param[in] outf reference to an output stream.
+ *  @param[in] sfmt print format.
+ *  @return true if an error ocurred.
+ *
+ *  Write the contents of this Table to an output stream. This will begin with two
+ *  integers: number of samples and number of variables. Each subsequent line will
+ *  contain one sample of nvar variables. The format specified by the argument sfmt
+ *  is a string in the form of a printf edit descriptor.
+ */
+// ---------------------------------------------------------------------------------------
+bool Table::write_ascii( std::ostream& outf, const std::string sfmt ) {
+  // -------------------------------------------------------------------------------------
+  return write_ascii( outf, 0, nsamp-1, sfmt );
+}
+
+
+
+
+// =======================================================================================
+/** @brief Read ASCII.
  *  @param[in] fspc file specification for the source of this Table.
  *  @param[in] 
  *  @return 
@@ -203,19 +275,10 @@ bool Table::read_ascii( const std::string fspc ) {
     return true;
   }
 
-  int32_t  ns, nv;
-  real8_t x;
-  inf >> ns;
-  inf >> nv;
-  resize( ns, nv );
-  for ( int32_t s=0; s<ns; s++ ) {
-    for ( int32_t v=0; v<nv; v++ ) {
-      inf >> x; at(s,v) = x;
-    }
-  }
+  bool rv = read_ascii( inf );
   
   inf.close();
-  return false;
+  return rv;
 }
 
 
@@ -241,18 +304,13 @@ bool Table::write_ascii( const std::string fspc, const std::string sfmt ) {
     return true;
   }
 
-  outf << nsamp << " " << nvar << "\n";
-  for ( int32_t s=0; s<nsamp; s++ ) {
-    outf << c_fmt( sfmt.c_str(), at(s,0) );
-    for ( int32_t v=1; v<nvar; v++ ) {
-      outf << " " << c_fmt( sfmt.c_str(), at(s,v) );
-    }
-    outf << "\n";
-  }
+  bool rv = write_ascii( outf, sfmt );
   
   outf.close();
-  return false;
+  return rv;
 }
+
+
 
 
 // =======================================================================================
