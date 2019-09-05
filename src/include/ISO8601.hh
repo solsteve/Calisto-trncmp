@@ -1,10 +1,10 @@
 // ====================================================================== BEGIN FILE =====
-// **                                     T A B L E                                     **
+// **                                   I S O 8 6 0 1                                   **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 1993-2019, Stephen W. Soliday                                      **
+// **  Copyright (c) 2011-2019, Stephen W. Soliday                                      **
 // **                           stephen.soliday@trncmp.org                              **
 // **                           http://research.trncmp.org                              **
 // **                                                                                   **
@@ -24,177 +24,182 @@
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief  Table (2D Array)
- *  @file   Table.hh
+/** @brief  ISO 8601 Date and Time parser.
+ *  @file   ISO8601.hh
  *  @author Stephen W. Soliday
- *  @date   2019-Jul-26 CMake refactorization.
+ *  @date   2019-Aug-15
  *
- *  Provides the interface for a 2D Table
- *  @see Statistics, Covariance, and PCA
+ *  Provides the interface for an ISO8601 Parser and formater.
  */
 // =======================================================================================
 
-#ifndef __HH_TABLE_TRNCMP
-#define __HH_TABLE_TRNCMP
 
-#include <TLogger.hh>
+#ifndef __HH_ISO8601_TRNCMP
+#define __HH_ISO8601_TRNCMP
+
+#include <regex>
+#include <StringTool.hh>
 
 // =======================================================================================
-class Table {
+class ISO8601 {
   // -------------------------------------------------------------------------------------
  protected:
-  real8_t* data;    ///< pointer to the table data
-  int32_t  nsamp;   ///< number of samples
-  int32_t  nvar;    ///< number of variables
-  int32_t  nalloc;  /// < max allocation (@see: Resize)
+  int32_t year;
+  int32_t month;
+  int32_t day;
+  int32_t hour;
+  int32_t minute;
+  real8_t second;
+  int32_t offset;
+  bool    has_date;
+  bool    has_time;
 
-  TLOGGER_HEADER( logger );
+  void validate_time ( void );
+  void validate_date ( void );
+  void validate      ( void );
 
-  void destroy( void );
-  
-  // -------------------------------------------------------------------------------------
+  std::string date_to_string_basic    ( void );
+  std::string time_to_string_basic    ( void );
+  std::string date_to_string_extended ( void );
+  std::string time_to_string_extended ( void );
+
  public:
-  Table   ( void );
-  Table   ( const int32_t ns, const int32_t nv );
-  Table   ( const Table& tab );
-  Table   ( const std::string fspc );
-  ~Table  ( void );
-
-  void     resize       ( const int32_t ns, const int32_t nv );
-  void     set          ( const real8_t value = D_ZERO );
-  void     copy         ( const Table& tab );
-
-  int32_t  size         ( const int dim=0 ) const;
-
-  real8_t& at           ( const int32_t sidx, const int32_t vidx );
-  real8_t  get          ( const int32_t sidx, const int32_t vidx ) const;
-  void     set          ( const int32_t sidx, const int32_t vidx, const real8_t val );
-  real8_t& operator()   ( const int32_t sidx, const int32_t vidx );
-  Table&   operator=    ( const Table& tab );
-
-  void     row          ( real8_t* row, const int32_t sidx );
-  real8_t* col          ( const int32_t vidx );
-
-  bool     read_ascii   ( std::istream& inf );
-  bool     write_ascii  ( std::ostream& outf, const std::string sfmt="%23.16e" );
-  bool     write_ascii  ( std::ostream& outf, const int32_t start, const int32_t finis,
-                          const std::string sfmt="%23.16e" );
   
-  bool     read_ascii   ( const std::string fspc );
-  bool     write_ascii  ( const std::string fspc, const std::string sfmt="%23.16e" );
+  ISO8601  ( void );
+  ISO8601  ( std::string str );
+  ~ISO8601 ( void );
+
+  void    clear     ( void );
+
+  int32_t getYear   ( void ) const;
+  int32_t getMonth  ( void ) const;
+  int32_t getDay    ( void ) const;
+  int32_t getHour   ( void ) const;
+  int32_t getMinute ( void ) const;
+  real8_t getSecond ( void ) const;
+  int32_t getOffset ( void ) const;
+
+  bool    hasDate   ( void ) const;
+  bool    hasTime   ( void ) const;
+
+  void    setDate   ( const int32_t y, const int32_t m=0, const int32_t d=0 );
+  void    setTime   ( const int32_t h, const int32_t m=0,
+                      const real8_t s=D_ZERO, const int32_t o=0 );
+
+  std::string toString       ( bool basic = false );
+  void        fromString     ( std::string str );
   
-  int      sum          ( real8_t* s, const int32_t n, const int axis=0 ) const;
-  int      mean         ( real8_t* s, const int32_t n, const int axis=0 ) const;
-  
-}; // end class Table
+  std::string dateToString   ( bool basic = false );
+  std::string timeToString   ( bool basic = false );
+  void        dateFromString ( std::string str );
+  void        timeFromString ( std::string str );
 
-int32_t size( const Table& tab, const int dim=0 );
+}; // end class ISO8601
+
+
 
 // =======================================================================================
-/** @brief Access.
- *  @param[in] sidx index for the sample (row)
- *  @param[in] vidx index of variable    (col)
- *  @return reference to the element varaible v in sample s.
+/** @brief Get Year.
+ *  @return year.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t Table::get( const int32_t sidx, const int32_t vidx ) const {
+inline  int32_t ISO8601::getYear( void ) const {
   // -------------------------------------------------------------------------------------
-  return data[sidx + vidx*nsamp];
+  return year;
 }
 
 
 // =======================================================================================
-/** @brief Access.
- *  @param[in] sidx index for the sample (row)
- *  @param[in] vidx index of variable    (col)
- *  @param[in] val  value to set;
+/** @brief Get Month.
+ *  @return month.
  */
 // ---------------------------------------------------------------------------------------
-inline  void Table::set( const int32_t sidx, const int32_t vidx, const real8_t val ) {
+  inline  int32_t ISO8601::getMonth( void ) const {
   // -------------------------------------------------------------------------------------
-  data[sidx + vidx*nsamp] = val;
+  return month;
 }
 
 
 // =======================================================================================
-/** @brief Access.
- *  @param[in] sidx index for the sample (row)
- *  @param[in] vidx index of variable    (col)
- *  @return reference to the element varaible v in sample s.
+/** @brief Get Day.
+ *  @return day.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t& Table::at( const int32_t sidx, const int32_t vidx ) {
+  inline  int32_t ISO8601::getDay( void ) const {
   // -------------------------------------------------------------------------------------
-  return data[sidx + vidx*nsamp];
+  return day;
 }
 
 
 // =======================================================================================
-/** @brief Access.
- *  @param[in] sidx index for the sample (row)
- *  @param[in] vidx index of variable    (col)
- *  @return reference to the element varaible v in sample s.
+/** @brief Get Hour.
+ *  @return hour.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t& Table::operator()( const int32_t sidx, const int32_t vidx ) {
+  inline  int32_t ISO8601::getHour( void ) const {
   // -------------------------------------------------------------------------------------
-  return data[sidx + vidx*nsamp];
+  return hour;
 }
 
 
 // =======================================================================================
-/** @brief Size.
- *  @param[in] dim dimension to return 0=number of samples, 1=number of variables.
- *  @return number of samples if dim==0, otherwise, number of variables.
+/** @brief Get Minute.
+ *  @return minute.
  */
 // ---------------------------------------------------------------------------------------
-inline  int32_t Table::size( const int dim ) const {
+  inline  int32_t ISO8601::getMinute( void ) const {
   // -------------------------------------------------------------------------------------
-  return ( (0==dim) ? (nsamp) : (nvar) );
+  return minute;
 }
 
 
 // =======================================================================================
-/** @brief Column.
- *  @param[in] vidx vaiable index (column)
- *  @return pointer to the start of the column.
+/** @brief Get Second.
+ *  @return second.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t* Table::col( const int32_t vidx ) {
+  inline  real8_t ISO8601::getSecond( void ) const {
   // -------------------------------------------------------------------------------------
-  return (data + vidx*nsamp);
-}
-
-// =======================================================================================
-/** @brief Copy.
- *  @param[in] tab reference to a source Table.
- *
- *  Copy the contents of the source Table tab into this Table.
- */
-// ---------------------------------------------------------------------------------------
-inline  Table& Table::operator=( const Table& tab ) {
-  // -------------------------------------------------------------------------------------
-  copy( tab );
-  return *this;
+  return second;
 }
 
 
 // =======================================================================================
-/** @brief Size.
- *  @param[in] tab reference to a tble.
- *  @param[in] dim dimension to return 0=number of samples, 1=number of variables.
- *  @return number of samples if dim==0, otherwise, number of variables.
+/** @brief Get UTC Offse.
+ *  @return UTC offset.
  */
 // ---------------------------------------------------------------------------------------
-inline  int32_t size( const Table& tab, const int dim ) {
+  inline  int32_t ISO8601::getOffset( void ) const {
   // -------------------------------------------------------------------------------------
-  return tab.size( dim );
+  return offset;
 }
 
 
-#endif
+// =======================================================================================
+/** @brief Has Date.
+ *  @return true if there is date data.
+ */
+// ---------------------------------------------------------------------------------------
+  inline  bool ISO8601::hasDate( void ) const {
+  // -------------------------------------------------------------------------------------
+  return has_date;
+}
 
 
 // =======================================================================================
-// **                                     T A B L E                                     **
+/** @brief Has Time.
+ *  @return true if there is time data.
+ */
+// ---------------------------------------------------------------------------------------
+  inline  bool ISO8601::hasTime( void ) const {
+  // -------------------------------------------------------------------------------------
+  return has_time;
+}
+
+
+#endif 
+
+
+// =======================================================================================
+// **                                   I S O 8 6 0 1                                   **
 // ======================================================================== END FILE =====

@@ -104,6 +104,9 @@ public:
   size_t    index     ( size_t maxValue );
   size_t    index     ( size_t from, size_t to );
 
+  template<class T> void random_index( T* index, const size_t len );
+  template<class T> T*   random_index( const size_t len );
+
   template<class T> void shuffle( T* a, size_t n );
 }; // end class Dice
 
@@ -120,9 +123,6 @@ inline  size_t Dice::index( size_t from, size_t to ) {
   // -------------------------------------------------------------------------------------
   return from + index( to - from );
 }
-
-
-
 
 
 
@@ -151,6 +151,21 @@ void Dice::shuffle( T* a, size_t n ) {
     a[j] = temp;
   }
 }
+
+template<class T> void Dice::random_index( T* index, const size_t len ) {
+  for ( size_t i=0; i<len; i++ ) {
+    index[i] = (T)i;
+  }
+  shuffle( index, len );
+}
+
+template<class T> T*   Dice::random_index( const size_t len ) {
+  T* temp = new T[len];
+  random_index( temp, len );
+  return temp;
+}
+
+
 
 
 #endif

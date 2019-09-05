@@ -226,6 +226,7 @@ bool Table::read_ascii( std::istream& inf ) {
 bool Table::write_ascii( std::ostream& outf, const int32_t start, const int32_t finis,
                          const std::string sfmt ) {
   // -------------------------------------------------------------------------------------
+  outf << (finis - start + 1) << " " << nvar << "\n";
   for ( int32_t s=start; s<=finis; s++ ) {
     outf << c_fmt( sfmt.c_str(), at(s,0) );
     for ( int32_t v=1; v<nvar; v++ ) {
@@ -271,7 +272,7 @@ bool Table::read_ascii( const std::string fspc ) {
   std::ifstream inf = FileTool::openRead( fspc, &istat );
 
   if ( 0 != istat ) {
-    logger->error( "Cannot open %s for reading." );
+    logger->error( "Cannot open %s for reading.", fspc );
     return true;
   }
 
@@ -288,7 +289,7 @@ bool Table::read_ascii( const std::string fspc ) {
  *  @param[in] sfmt print format.
  *  @return true if an error ocurred.
  *
- *  Write the contents of this Table to a file fspc. The file will be gin with two
+ *  Write the contents of this Table to a file fspc. The file will begin with two
  *  integers: number of samples and number of variables. Each subsequent line will
  *  contain one sample of nvar variables. The format specified by the argument sfmt
  *  is a string in the form of a printf edit descriptor.
@@ -300,10 +301,11 @@ bool Table::write_ascii( const std::string fspc, const std::string sfmt ) {
   std::ofstream outf = FileTool::openWrite( fspc, &istat );
 
   if ( 0 != istat ) {
-    logger->error( "Cannot open %s for writting." );
+    logger->error( "Cannot open %s for writing.", fspc );
     return true;
   }
 
+  
   bool rv = write_ascii( outf, sfmt );
   
   outf.close();

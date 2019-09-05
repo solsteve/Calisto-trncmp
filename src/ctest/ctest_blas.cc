@@ -30,7 +30,7 @@
  *  @date   2014-01-27  Original release.
  *  @date   2019-Jun-14 CMake refactorization.
  *
- *  Provides the interface for precision time keeping.
+ *  Provides the test of BLAS interface.
  */
 // =======================================================================================
 

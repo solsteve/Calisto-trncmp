@@ -653,6 +653,63 @@ void Matrix::dot( const Matrix& lhs, const Matrix& rhs ) {
 }
 
 
+// =======================================================================================
+/** @brief Inner Product.
+ *  @param[in] lhs reference to the left  hand Matrix.
+ *  @param[in] rhs reference to the right hand Matrix.
+ *
+ *  Set this 
+ */
+// ---------------------------------------------------------------------------------------
+void Matrix::dot( const Matrix& lhs, const bool ltran,
+                  const Matrix& rhs, const bool rtran ) {
+  // -------------------------------------------------------------------------------------
+  const real8_t one  = D_ONE;
+  const real8_t zero = D_ZERO;
+  const char*   NOTRAN = "NOTRAN";
+  const char*   TRAN   = "TRAN";
+
+  if ( ltran ) { // ----- transpose the left hand Matrix ---------------------------------
+    if ( rtran ) { // ----- transpose the right hand Matrix ------------------------------
+      int32_t m    = lhs.size(1);
+      int32_t n    = rhs.size(0);
+      int32_t k    = lhs.size(0);
+      dgemm_( TRAN, TRAN, &m, &n, &k,
+              &one, const_cast<Matrix&>(lhs).A(), const_cast<Matrix&>(lhs).LDA(),
+              const_cast<Matrix&>(rhs).A(), const_cast<Matrix&>(rhs).LDA(),
+              &zero, data, &nrow );
+    } else {       // ----- do not transpose the right hand Matrix -----------------------
+      int32_t m    = lhs.size(1);
+      int32_t n    = rhs.size(1);
+      int32_t k    = lhs.size(0);
+      dgemm_( TRAN, NOTRAN, &m, &n, &k,
+              &one, const_cast<Matrix&>(lhs).A(), const_cast<Matrix&>(lhs).LDA(),
+              const_cast<Matrix&>(rhs).A(), const_cast<Matrix&>(rhs).LDA(),
+              &zero, data, &nrow );
+    }
+  } else {       // ----- do not transpose the left hand Matrix --------------------------
+    if ( rtran ) { // ----- transpose the right hand Matrix ------------------------------
+      int32_t m    = lhs.size(0);
+      int32_t n    = rhs.size(0);
+      int32_t k    = lhs.size(1);
+      dgemm_( NOTRAN, TRAN, &m, &n, &k,
+              &one, const_cast<Matrix&>(lhs).A(), const_cast<Matrix&>(lhs).LDA(),
+              const_cast<Matrix&>(rhs).A(), const_cast<Matrix&>(rhs).LDA(),
+              &zero, data, &nrow );
+    } else {       // ----- do not transpose the right hand Matrix -----------------------
+      int32_t m    = lhs.size(0);
+      int32_t n    = rhs.size(1);
+      int32_t k    = lhs.size(1);
+      dgemm_( NOTRAN, NOTRAN, &m, &n, &k,
+              &one, const_cast<Matrix&>(lhs).A(), const_cast<Matrix&>(lhs).LDA(),
+              const_cast<Matrix&>(rhs).A(), const_cast<Matrix&>(rhs).LDA(),
+              &zero, data, &nrow );
+    }
+  }
+
+}
+
+
 
 
 

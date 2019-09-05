@@ -132,6 +132,8 @@ class Matrix {
   real8_t  sumsq          ( const Matrix& that ) const;
   
   void     dot            ( const Matrix& lhs, const Matrix& rhs );
+  void     dot            ( const Matrix& lhs, const bool ltran,
+                            const Matrix& rhs, const bool rtran );
 
   void     swap_row_blas      ( const int32_t i, const int32_t j );
   void     swap_column_blas   ( const int32_t i, const int32_t j );

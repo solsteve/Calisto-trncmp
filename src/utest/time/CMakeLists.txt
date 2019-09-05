@@ -1,5 +1,5 @@
 #/ ====================================================================== BEGIN FILE =====
-#/ **                              data - C M A K E L I S T                             **
+#/ **                              time - C M A K E L I S T                             **
 #/ =======================================================================================
 #/ **                                                                                   **
 #/ **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
@@ -33,12 +33,14 @@
 #/
 #/ =======================================================================================
 
-project( data CXX )
+project( time CXX )
 
 add_executable(${PROJECT_NAME} ../main.cc
-  utest_table
-  utest_stats
-  utest_exemplar
+  utest_iso8601
+  utest_time
+  utest_date
+  utest_datetime
+  utest_absolute
   )
 
 target_link_libraries(${PROJECT_NAME} GTest::GTest GTest::Main callisto ${lapackblas_libraries})
@@ -50,5 +52,5 @@ install(TARGETS ${PROJECT_NAME}
   ARCHIVE DESTINATION lib)
 
 #/ =======================================================================================
-#/ **                              data - C M A K E L I S T                             **
+#/ **                              time - C M A K E L I S T                             **
 #/ =========================================================================== END FILE ==

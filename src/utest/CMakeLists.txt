@@ -45,6 +45,7 @@ add_subdirectory ( matvec )
 add_subdirectory ( linalg )
 add_subdirectory ( blas )
 add_subdirectory ( data )
+add_subdirectory ( time )
 
 #/ =======================================================================================
 #/ **                              UTest - C M A K E L I S T                            **
