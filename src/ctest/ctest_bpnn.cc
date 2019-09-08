@@ -38,6 +38,7 @@
 #include <LinAlg.hh>
 #include <FileTool.hh>
 #include <BPNN.hh>
+#include <Exemplar.hh>
 
 static u_int32_t SEED_MATTER[] = { 0x29341EA3, 0x9257677C, 0xCC98B1D1, 0x7C5EB68C,
                                    0x13ED5BC5, 0x3C91F88F, 0xE1A42570, 0x24CA88CD,
@@ -250,6 +251,23 @@ void BuildTable( Matrix& X, Matrix& Y, real8_t data[],
 
 
 // =======================================================================================
+void BuildTable( Exemplar& E, real8_t data[],
+                 int32_t ns, int32_t nIn, int32_t nOut ) {
+  // -------------------------------------------------------------------------------------
+  int32_t idx = 0;
+  E.resize( ns, nIn, nOut );
+  for ( int32_t r=0; r<ns; r++ ) {
+    for ( int32_t c=0; c<nIn; c++ ) {
+      E.setIn( r, c, data[idx] ); idx++;
+    }
+    for ( int32_t c=0; c<nOut; c++ ) {
+      E.setOut( r, c, data[idx] ); idx++;
+    }
+  }
+}
+
+
+// =======================================================================================
 void randomWeight( Matrix& W, int32_t nr, int32_t nc, Dice* dd ) {
   // -------------------------------------------------------------------------------------
   W.resize(nr,nc);
@@ -293,7 +311,7 @@ void activate( Vector& a, Vector& z ) {
   // -------------------------------------------------------------------------------------
   const int32_t n = size( a );
   for ( int32_t i=0; i<n; i++ ) {
-      a.set( i, ACT( z.get( i ) ) );
+    a.set( i, ACT( z.get( i ) ) );
   }
 }
 
@@ -335,7 +353,7 @@ void backward( Matrix& dW, Vector& db, Vector& dm,
   // -------------------------------------------------------------------------------------
   int32_t n = size( E );
   for ( int32_t i=0; i<n; i++ ) {
-      E.set( i, d.get( i ) * INVACT( a.get( i ) ) );
+    E.set( i, d.get( i ) * INVACT( a.get( i ) ) );
   }
 
   dot(dm,W,E);
@@ -360,17 +378,17 @@ void forward4( Vector& a, Vector& z, Matrix& W, Vector& b, Vector& x ) {
           &ONE, z.X(), z.INCX() );
 
   for ( int32_t i=0; i<n; i++ ) {
-      a.set( i, ACT( z.get( i ) ) );
+    a.set( i, ACT( z.get( i ) ) );
   }
 }
 
 // =======================================================================================
 void backward4( Matrix& dW, Vector& db, Vector& dm,
-               Matrix&  W, Vector& d,  Vector& a, Vector& am, Vector& E ) {
+                Matrix&  W, Vector& d,  Vector& a, Vector& am, Vector& E ) {
   // -------------------------------------------------------------------------------------
   int32_t n = size( E );
   for ( int32_t i=0; i<n; i++ ) {
-      E.set( i, d.get( i ) * INVACT( a.get( i ) ) );
+    E.set( i, d.get( i ) * INVACT( a.get( i ) ) );
   }
 
   const char*   NOTRA = "NONE";
@@ -915,19 +933,19 @@ void TEST01( void ) {
 // =======================================================================================
 void TEST02( void ) {
   // -------------------------------------------------------------------------------------
-   real8_t adat[] = { -4.94, -8.78, -5.01, -7.47, -4.94,
-                   -1.95, -6.63,  6.79,  7.02, -3.88,
-                   -2.48, -2.19,  0.19, -4.04, -8.69 };
+  real8_t adat[] = { -4.94, -8.78, -5.01, -7.47, -4.94,
+                     -1.95, -6.63,  6.79,  7.02, -3.88,
+                     -2.48, -2.19,  0.19, -4.04, -8.69 };
 
-   real8_t bdat[] = {  0.63, -0.68,  7.66,  9.59,
-                   -6.12,  3.00, -3.47, -9.39,
-                    4.49, -1.71,  8.24, -7.70,
-                   -3.84,  6.75, -0.91,  9.77,
-                    5.54, -7.35, -1.11, -9.84 };
+  real8_t bdat[] = {  0.63, -0.68,  7.66,  9.59,
+                      -6.12,  3.00, -3.47, -9.39,
+                      4.49, -1.71,  8.24, -7.70,
+                      -3.84,  6.75, -0.91,  9.77,
+                      5.54, -7.35, -1.11, -9.84 };
 
-   real8_t cdat[] = {   29.4437,  -28.5272,  -36.3751,   49.2743,
-                     21.3822,   45.7281,   61.9373,   98.0368,
-                    -19.9355,   31.3930,    3.4904,   41.3567 };
+  real8_t cdat[] = {   29.4437,  -28.5272,  -36.3751,   49.2743,
+                       21.3822,   45.7281,   61.9373,   98.0368,
+                       -19.9355,   31.3930,    3.4904,   41.3567 };
 
 
   Matrix A = Matrix::row_major(3,5,adat);
@@ -963,7 +981,7 @@ real8_t oneHot( real8_t* A, real8_t* B, int32_t n ) {
 
 
 
-  // =======================================================================================
+// =======================================================================================
 void TEST06( void ) {
   // -------------------------------------------------------------------------------------
   std::cout << "\nClass Implementation\n";
@@ -1017,7 +1035,7 @@ void TEST06( void ) {
       load( input,   nIn,  train_in,  index[m] );
       load( testout, nOut, train_out, index[m] );
 
-    // ----- forward pass ----------------------------------------------------------------
+      // ----- forward pass ----------------------------------------------------------------
       mse += net.train( input, output, testout );
       //display( input, nIn, output, nOut, testout, nOut );
     }
@@ -1064,15 +1082,31 @@ void TEST06( void ) {
   delete[] train_error;
 }
 
+// =======================================================================================
+void TEST07( void ) {
+  // -------------------------------------------------------------------------------------
+  Exemplar E_train, E_test;
+  
+  int32_t nIn  = 4;
+  int32_t nOut = 3;
+  
+  BuildTable( E_test,  raw_test,  n_test,  nIn, nOut );
+  BuildTable( E_train, raw_train, n_train, nIn, nOut );
 
+  E_test.setFormat( "%3.1f" );
+  E_train.setFormat( "%3.1f" );
+  
+  E_test.write(  "iris_test.exm" );
+  E_train.write( "iris_train.exm" );
+}
 
 // =======================================================================================
 int main( void ) {
   // -------------------------------------------------------------------------------------
-//  TEST01();
-//  TEST03();
-//  TEST04();
-//  TEST05();
+  //  TEST01();
+  //  TEST03();
+  //  TEST04();
+  //  TEST05();
   TEST06();
   
   return 0;

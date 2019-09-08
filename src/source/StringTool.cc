@@ -36,6 +36,7 @@
 
 
 #include <StringTool.hh>
+#include <string.h>
 
 
 const size_t StringTool::NOT_FOUND = std::string::npos;
@@ -1327,6 +1328,235 @@ u_int16_t* StringTool::asUInt16List( size_t& n, const std::string S, int base ) 
   
   return list;
 }
+
+
+
+// =======================================================================================
+/** @brief Input.
+ *  @param[in] prompt prompt to display.
+ *  @param[in] def    default value.
+ *  @param[in[ os     output stream for prompt (default: stdin)
+ *  @return user input
+ *
+ *  Display a prompt and request user input. If user hits enter without supplying a value
+ *  then the default value from the argument list is returned.
+ */
+// ---------------------------------------------------------------------------------------
+int32_t StringTool::input( std::string prompt, int32_t def, std::ostream& os ) {
+  // -------------------------------------------------------------------------------------
+  os << prompt << " [" << def << "]: ";
+  char line[64];
+  std::cin.getline(line,63);
+  size_t n = strlen(line);
+  if ( 0 < n ) {
+    return StringTool::asInt32( line );
+  }
+  return def;
+}
+
+
+// =======================================================================================
+/** @brief Input.
+ *  @param[in] prompt prompt to display.
+ *  @param[in] def    default value.
+ *  @param[in[ os     output stream for prompt (default: stdin)
+ *  @return user input
+ *
+ *  Display a prompt and request user input. If user hits enter without supplying a value
+ *  then the default value from the argument list is returned.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t StringTool::input( std::string prompt, real8_t def, std::ostream& os ) {
+  // -------------------------------------------------------------------------------------
+  os << prompt << " [" << def << "]: ";
+  char line[64];
+  std::cin.getline(line,63);
+  size_t n = strlen(line);
+  if ( 0 < n ) {
+    return StringTool::asReal8( line );
+  }
+  return def;
+}
+
+
+// =======================================================================================
+/** @brief Input.
+ *  @param[in] prompt prompt to display.
+ *  @param[in] def    default value.
+ *  @param[in[ os     output stream for prompt (default: stdin)
+ *  @return user input
+ *
+ *  Display a prompt and request user input. If user hits enter without supplying a value
+ *  then the default value from the argument list is returned.
+ */
+// ---------------------------------------------------------------------------------------
+std::string StringTool::input( std::string prompt, std::string def, std::ostream& os ) {
+  // -------------------------------------------------------------------------------------
+  os << prompt << " [" << def << "]: ";
+  char line[64];
+  std::cin.getline(line,63);
+  size_t n = strlen(line);
+  if ( 0 < n ) {
+    return line;
+  }
+  return def;
+}
+
+
+// =======================================================================================
+/** @brief Input.
+ *  @param[in] prompt prompt to display.
+ *  @param[in[ os     output stream for prompt (default: stdin)
+ *  @return user input
+ *
+ *  Display a prompt and request user input. If user hits enter without supplying a value
+ *  then the prompt will be repeated, until the user supply's a value.
+ */
+// ---------------------------------------------------------------------------------------
+int32_t StringTool::inputI32( std::string prompt, std::ostream& os ) {
+  // -------------------------------------------------------------------------------------
+  char line[64];
+  do {
+    os << prompt << ": ";
+    std::cin.getline(line,63);
+  } while( 0 == strlen(line) );
+  return StringTool::asInt32( line );
+}
+
+
+// =======================================================================================
+/** @brief Input.
+ *  @param[in] prompt prompt to display.
+ *  @param[in[ os     output stream for prompt (default: stdin)
+ *  @return user input
+ *
+ *  Display a prompt and request user input. If user hits enter without supplying a value
+ *  then the prompt will be repeated, until the user supply's a value.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t StringTool::inputR8( std::string prompt, std::ostream& os ) {
+  // -------------------------------------------------------------------------------------
+  char line[64];
+  do {
+    os << prompt << ": ";
+    std::cin.getline(line,63);
+  } while( 0 == strlen(line) );
+  return StringTool::asReal8( line );
+}
+
+
+// =======================================================================================
+/** @brief Input.
+ *  @param[in] prompt prompt to display.
+ *  @param[in[ os     output stream for prompt (default: stdin)
+ *  @return user input
+ *
+ *  Display a prompt and request user input. If user hits enter without supplying a value
+ *  then the prompt will be repeated, until the user supply's a value.
+ */
+// ---------------------------------------------------------------------------------------
+std::string StringTool::inputStr( std::string prompt, std::ostream& os ) {
+  // -------------------------------------------------------------------------------------
+  char line[64];
+  do {
+    os << prompt << ": ";
+    std::cin.getline(line,63);
+  } while( 0 == strlen(line) );
+  return line;
+}
+
+
+// =======================================================================================
+/** @brief Yes No.
+ *  @param[in] prompt prompt to display.
+ *  @param[in] def    default value.
+ *  @param[in[ os     output stream for prompt (default: stdin)
+ *  @return true==yes, false==no
+ *
+ *  Display a prompt and request user input. If the user supply's an empty string
+ *  the default will be returned. If the user does not supply Yes, No, True, or False
+ *  the prompt will be repeated.
+ *  @note only the first letter is tested caseless.
+ */
+// ---------------------------------------------------------------------------------------
+bool StringTool::YesNo( std::string prompt, bool def, std::ostream& os ) {
+  // -------------------------------------------------------------------------------------
+  char line[64];
+  bool rv = false;
+  while (true) {
+    os << prompt << "[" << ((def)?("Y/n"):("y/N")) << "]: ";
+    std::cin.getline(line,63);
+    if ( 0 == strlen(line) ) { rv=def; break; }
+    char test = line[0];
+    if ( 'Y' == test ) { rv = true;  break; }
+    if ( 'y' == test ) { rv = true;  break; }
+    if ( 'T' == test ) { rv = true;  break; }
+    if ( 't' == test ) { rv = true;  break; }
+    if ( 'N' == test ) { rv = false; break; }
+    if ( 'n' == test ) { rv = false; break; }
+    if ( 'F' == test ) { rv = false; break; }
+    if ( 'f' == test ) { rv = false; break; }
+  }
+  return rv;
+}
+
+// =======================================================================================
+/** @brief Yes No.
+ *  @param[in] prompt prompt to display.
+ *  @param[in] def    default value.
+ *  @param[in[ os     output stream for prompt (default: stdin)
+ *  @return true==yes, false==no
+ *
+ *  Display a prompt and request user input. If the user supply's an empty string
+ *  the default will be returned. If the user does not supply Yes, No, True, or False
+ *  the prompt will be repeated.
+ *  @note only the first letter is tested caseless.
+ */
+// ---------------------------------------------------------------------------------------
+bool StringTool::YesNo( std::string prompt, std::ostream& os ) {
+  // -------------------------------------------------------------------------------------
+  char line[64];
+  bool rv = false;
+  while (true) {
+    os << prompt << "(y/n): ";
+    std::cin.getline(line,63);
+    if ( 0 < strlen(line) ) {
+      char test = line[0];
+      if ( 'Y' == test ) { rv = true;  break; }
+      if ( 'y' == test ) { rv = true;  break; }
+      if ( 'T' == test ) { rv = true;  break; }
+      if ( 't' == test ) { rv = true;  break; }
+      if ( 'N' == test ) { rv = false; break; }
+      if ( 'n' == test ) { rv = false; break; }
+      if ( 'F' == test ) { rv = false; break; }
+      if ( 'f' == test ) { rv = false; break; }
+    }
+  }
+  return rv;
+}
+
+// =======================================================================================
+/** @brief Yes No.
+ *  @param[in] test test.
+ *  @return "Yes" if test==true, else "No"
+ */
+// ---------------------------------------------------------------------------------------
+std::string StringTool::asYesNo( bool test ) {
+  // -------------------------------------------------------------------------------------
+  return (test) ? "Yes" : "No";
+}
+
+// =======================================================================================
+/** @brief Yes No.
+ *  @param[in] test test.
+ *  @return "No" if test==0, else "Yes"
+ */
+// ---------------------------------------------------------------------------------------
+std::string StringTool::asYesNo( int test ) {
+  // -------------------------------------------------------------------------------------
+  return (0==test) ? "No" : "Yes";
+}
+
 
 
 // =======================================================================================

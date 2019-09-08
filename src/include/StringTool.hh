@@ -142,6 +142,21 @@ class StringTool {
 
   static size_t       find_in      ( const std::string str, const char test );
 
+  static int32_t     input    ( std::string prompt, int32_t def, std::ostream& os = std::cerr );
+  static real8_t     input    ( std::string prompt, real8_t def, std::ostream& os = std::cerr );
+  static std::string input    ( std::string prompt, std::string def, std::ostream& os = std::cerr );
+  static int32_t     inputI32 ( std::string prompt, std::ostream& os = std::cerr );
+  static real8_t     inputR8  ( std::string prompt, std::ostream& os = std::cerr );
+  static std::string inputStr ( std::string prompt, std::ostream& os = std::cerr );
+
+  static bool        YesNo   ( std::string prompt, bool def, std::ostream& os = std::cerr );
+  static bool        YesNo   ( std::string prompt, std::ostream& os = std::cerr );
+  static std::string asYesNo ( bool test );
+  static std::string asYesNo ( int test );
+
+
+
+
 }; // end class StringTool
 
 

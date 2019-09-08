@@ -279,6 +279,7 @@ void BPNN::Layer::randomize( Dice* dd ) {
   Dice* rnd = dd;
   if ( static_cast<Dice*>(0) == dd ) {
     rnd = Dice::getInstance();
+    rnd->seed_set();
   }
   
   real8_t scl = D_ONE / sqrt( (real8_t) nOut );
