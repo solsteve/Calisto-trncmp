@@ -34,8 +34,8 @@
 #/ =======================================================================================
 project ( src CXX )
 
-file(GLOB LIB_SRC_FILES source/*.cc)
-file(GLOB LIB_HDR_FILES include/*.hh)
+file(GLOB LIB_SRC_FILES source/*.cc source/nns/*.cc)
+file(GLOB LIB_HDR_FILES include/*.hh include/astro/*.hh include/nns/*.hh)
 
 add_library( callisto STATIC ${LIB_SRC_FILES} )
 target_include_directories( callisto PUBLIC include )

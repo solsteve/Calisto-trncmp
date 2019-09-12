@@ -1,5 +1,5 @@
 // ====================================================================== BEGIN FILE =====
-// **                                      B P N N                                      **
+// **                                 N N S : : B P N N                                 **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
@@ -35,270 +35,17 @@
 // =======================================================================================
 
 
-#include <BPNN.hh>
+#include <nns/BPNN.hh>
 #include <FileTool.hh>
+
+
+namespace nns {
 
 
 TLOGGER_REFERENCE( BPNN, logger );
 
 
-#define INIT_VAR1(_a) nIn(_a), nOut(_a), nBuf(_a), W_buffer(_a), dW_buffer(_a), \
-    W(_a), b(_a), dW(_a), db(_a), z(_a), a(_a), E(_a), d(_a)
 #define INIT_VAR2(_a) nIn(_a), nOut(_a), nLayer(_a), L(_a)
-
-void display( real8_t*a, int32_t na ) {
-  fprintf( stdout, "%5.2f", a[0] );
-  for ( int32_t i=1; i<na; i++ ) { fprintf( stdout, " %5.2f", a[i] ); }
-  fprintf( stdout, "\n" );
-}
-
-void display( real8_t*a, int32_t na, real8_t*b, int32_t nb ) {
-  fprintf( stdout, "%5.2f", a[0] );
-  for ( int32_t i=1; i<na; i++ ) { fprintf( stdout, " %5.2f", a[i] ); }
-  for ( int32_t i=0; i<nb; i++ ) { fprintf( stdout, " %7.4f", b[i] ); }
-  fprintf( stdout, "\n" );
-}
-
-void display( real8_t*a, int32_t na, real8_t*b, int32_t nb, real8_t*c, int32_t nc ) {
-  fprintf( stdout, "%5.2f", a[0] );
-  for ( int32_t i=1; i<na; i++ ) { fprintf( stdout, " %5.2f", a[i] ); }
-  for ( int32_t i=0; i<nb; i++ ) { fprintf( stdout, " %7.4f", b[i] ); }
-  for ( int32_t i=0; i<nc; i++ ) { fprintf( stdout, " %7.4f", c[i] ); }
-  fprintf( stdout, "\n" );
-}
-
-
-
-
-// =======================================================================================
-/** @brief Resize.
- *  @param[in] n_in  number of connections/inputs.
- *  @param[in] n_out number of nodes/outputs.
- *
- *  Allocate internal storage.
- */
-// ---------------------------------------------------------------------------------------
-void BPNN::Layer::resize( const int32_t n_in, const int32_t n_out ) {
-  // -------------------------------------------------------------------------------------
-  destroy();
-  nIn  = n_in;
-  nOut = n_out;
-  nBuf = nIn * nOut;
-
-  W_buffer  = new real8_t[ nBuf ];
-  dW_buffer = new real8_t[ nBuf ];
-
-  W  = new real8_t*[ nOut ];
-  dW = new real8_t*[ nOut ];
-
-  real8_t* P1 =  W_buffer;
-  real8_t* P2 = dW_buffer;
-  for ( int32_t i=0; i<nOut; i++ ) {
-    W[i]  = P1; P1 += nIn;
-    dW[i] = P2; P2 += nIn;
-  }
-
-  b  = new real8_t[ nOut ];
-  db = new real8_t[ nOut ];
-  z  = new real8_t[ nOut ];
-  a  = new real8_t[ nOut ];
-  E  = new real8_t[ nOut ];
-  d  = new real8_t[ nOut ];
-}
-
-
-// =======================================================================================
-/** @brief Destroy.
- *
- *  Free all internal allocation and reset all pointers to NULL.
- */
-// ---------------------------------------------------------------------------------------
-void BPNN::Layer::destroy( void ) {
-  // -------------------------------------------------------------------------------------
-  if ( static_cast<real8_t**>(0) != W ) {
-    for ( int32_t i=0; i<nOut; i++ ) {
-      W[i] = static_cast<real8_t*>(0);
-    }
-    delete[] W;
-  }
-
-  if ( static_cast<real8_t**>(0) != dW ) {
-    for ( int32_t i=0; i<nOut; i++ ) {
-      dW[i] = static_cast<real8_t*>(0);
-    }
-    delete[] dW;
-  }
-
-  if ( static_cast<real8_t*>(0) !=  W_buffer ) { delete[]  W_buffer; }
-  if ( static_cast<real8_t*>(0) != dW_buffer ) { delete[] dW_buffer; }
-
-  if ( static_cast<real8_t*>(0) != db ) { delete[] db; }
-  if ( static_cast<real8_t*>(0) !=  b ) { delete[]  b; }
-  if ( static_cast<real8_t*>(0) !=  z ) { delete[]  z; }
-  if ( static_cast<real8_t*>(0) !=  a ) { delete[]  a; }
-  if ( static_cast<real8_t*>(0) !=  E ) { delete[]  E; }
-  if ( static_cast<real8_t*>(0) !=  d ) { delete[]  d; }
-
-  // -------------------------------------------------------------------------------------
-
-  nIn       = 0;
-  nOut      = 0;
-  nBuf      = 0;
-  W_buffer  = static_cast<real8_t*>(0);
-  dW_buffer = static_cast<real8_t*>(0);
-  W         = static_cast<real8_t**>(0);
-  b         = static_cast<real8_t*>(0);
-  dW        = static_cast<real8_t**>(0);
-  db        = static_cast<real8_t*>(0);
-  z         = static_cast<real8_t*>(0);
-  a         = static_cast<real8_t*>(0);
-  E         = static_cast<real8_t*>(0);
-  d         = static_cast<real8_t*>(0);
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- *
- *  Construct a void layer.
- */
-// ---------------------------------------------------------------------------------------
-BPNN::Layer::Layer( void ) : INIT_VAR1(0) {
-  // -------------------------------------------------------------------------------------
-}
-
-
-// =======================================================================================
-/** @briefConstructor.
- *  @param[in] n_in  number of connections/inputs.
- *  @param[in] n_out number of nodes/outputs.
- *
- *  Construct a layer from number of inputs/outputs
- */
-// ---------------------------------------------------------------------------------------
-BPNN::Layer::Layer( const int32_t n_in, const int32_t n_out ) : INIT_VAR1(0) {
-  // -------------------------------------------------------------------------------------
-  resize( n_in, n_out );
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- *  @param[in] inf reference to an input file stream.
- *
- *  Read meta data and weights from an input stream.
- */
-// ---------------------------------------------------------------------------------------
-BPNN::Layer::Layer( std::ifstream& inf ) : INIT_VAR1(0) {
-  // -------------------------------------------------------------------------------------
-  read( inf );
-}
-
-
-// =======================================================================================
-/** @brief Destructor.
- */
-// ---------------------------------------------------------------------------------------
-BPNN::Layer::~Layer( void ) {
-  // -------------------------------------------------------------------------------------
-  destroy();
-}
-
-
-// =======================================================================================
-/** @brief Read File.
- *  @param[in] inf reference to an input file stream.
- *  @return true if error occured.
- *
- *  Read meta data and weights from an input stream.
- */
-// ---------------------------------------------------------------------------------------
-bool BPNN::Layer::read( std::ifstream& inf ) {
-  // -------------------------------------------------------------------------------------
-  int32_t ni, no;
-  real8_t x;
-  inf >> ni >> no;
-  resize( ni, no );
-  int32_t idx = 0;
-  for ( int32_t i=0; i<nOut; i++ ) {
-    inf >> x; b[i] = x;
-    for ( int32_t j=0; j<nIn; j++ ) {
-      inf >> x; W_buffer[idx++] = x;
-    }
-  }
-
-  return false;
-}
-
-
-// =======================================================================================
-/** @brief Write File.
- *  @param[in] inf reference to an input file stream.
- *  @return true if error occured.
- *
- *
- */
-// ---------------------------------------------------------------------------------------
-bool BPNN::Layer::write( std::ofstream& outf, std::string sfmt ) {
-  // -------------------------------------------------------------------------------------
-  const char* fmt = sfmt.c_str();
-  outf << nIn << " " << nOut << "\n";
-  int32_t idx = 0;
-  for ( int32_t i=0; i<nOut; i++ ) {
-    outf << c_fmt( fmt, b[i] ) << " ";
-    for ( int32_t j=0; j<nIn; j++ ) {
-      outf << " " << c_fmt( fmt, W_buffer[idx++] );
-    }
-    outf << "\n";
-  }
-
-  return false;
-}
-
-
-// =======================================================================================
-// ---------------------------------------------------------------------------------------
-void BPNN::Layer::debug( int32_t i ) {
-  // -------------------------------------------------------------------------------------
-  real8_t id = ((real8_t) (i+1) ) / 100.0;
-  for ( int32_t nod=0; nod<nOut; nod++ ) {
-    for ( int32_t con=0; con<nIn; con++ ) {
-      (W[nod])[con] = 100.0*((real8_t) (nod+1)) + ((real8_t) (con+1)) + id;
-    }
-  }
-  for ( int32_t nod=0; nod<nOut; nod++ ) {
-    b[nod] = ((real8_t) (nod+1)) + id;
-  }
-}
-
-
-// =======================================================================================
-// ---------------------------------------------------------------------------------------
-void BPNN::Layer::randomize( Dice* dd ) {
-  // -------------------------------------------------------------------------------------
-  Dice* rnd = dd;
-  if ( static_cast<Dice*>(0) == dd ) {
-    rnd = Dice::getInstance();
-    rnd->seed_set();
-  }
-  
-  real8_t scl = D_ONE / sqrt( (real8_t) nOut );
-
-  for ( int32_t i=0; i<nBuf; i++ ) {
-    W_buffer[i] = scl * rnd->normal();
-  }
-  for ( int32_t i=0; i<nOut; i++ ) {
-    b[i] = scl * rnd->normal();
-  }
-}
-
-
-
-
-
-
-
-
 
 
 // =======================================================================================
@@ -531,6 +278,11 @@ bool BPNN::write( std::string fspc, std::string sfmt ) {
 
 
 // =======================================================================================
+/** @brief Debug.
+ *
+ *  Load the weights with values that allow a human to read thier node and connection
+ *  indicies.
+ */
 // ---------------------------------------------------------------------------------------
 void BPNN::debug( void ) {
   // -------------------------------------------------------------------------------------
@@ -541,6 +293,11 @@ void BPNN::debug( void ) {
 
 
 // =======================================================================================
+/** @brief Randomize.
+ *  @param[in] dd pointer to a Dice instance.
+ *
+ *  Randomize each layer in this BPNN.
+ */
 // ---------------------------------------------------------------------------------------
 void BPNN::randomize( Dice* dd ) {
   // -------------------------------------------------------------------------------------
@@ -550,103 +307,11 @@ void BPNN::randomize( Dice* dd ) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
 // =======================================================================================
-// ---------------------------------------------------------------------------------------
-void BPNN::Layer::reset( void ) {
-  // -------------------------------------------------------------------------------------
-  for ( int32_t i=0; i<nBuf; i++ ) {
-    dW_buffer[i] = D_ZERO;
-  }
-  for ( int32_t i=0; i<nOut; i++ ) {
-    db[i] = D_ZERO;
-  }
-}
-
-
-// =======================================================================================
-// ---------------------------------------------------------------------------------------
-real8_t* BPNN::Layer::forward( real8_t* input ) {
-  // -------------------------------------------------------------------------------------
-  for ( int32_t i=0; i<nOut; i++ ) {
-    real8_t  sum = b[i];
-    real8_t* wgt = W[i];
-    for ( int32_t j=0; j<nIn; j++ ) {
-      sum += ( input[j] * wgt[j] );
-    }
-    z[i] = sum;
-  }
-
-  for ( int32_t i=0; i<nOut; i++ ) {
-    a[i] = BPNN::activate( z[i] );
-  }
-
-  return a;
-}
-
-
-// =======================================================================================
-// ---------------------------------------------------------------------------------------
-void BPNN::Layer::backward( real8_t* input, real8_t* delta ) {
-  // -------------------------------------------------------------------------------------
-  for ( int32_t i=0; i<nOut; i++ ) {
-    E[i] = d[i] * BPNN::derivative( a[i] );
-  }
-
-  if ( static_cast<real8_t*>(0) != delta ) {
-    for ( int32_t i=0; i<nIn; i++ ) {
-      real8_t sum = D_ZERO;
-      for ( int32_t j=0; j<nOut; j++ ) {
-        sum += (E[j] * (W[j])[i]);
-      }
-      delta[i] = sum;
-    }
-  }
-
-  int32_t idx = 0;
-  for ( int32_t i=0; i<nOut; i++ ) {
-    db[i] += E[i];
-  }
-
-  idx = 0;
-  for ( int32_t i=0; i<nOut; i++ ) {
-    const real8_t ee = E[i];
-    for ( int32_t j=0; j<nIn; j++ ) {
-      dW_buffer[idx++] += (input[j] * ee);
-    }
-  }
-}
-
-
-// =======================================================================================
-// ---------------------------------------------------------------------------------------
-void BPNN::Layer::update( const real8_t eta ) {
-  // -------------------------------------------------------------------------------------
-  for ( int32_t i=0; i<nBuf; i++ ) {
-    W_buffer[i] -= (eta*dW_buffer[i]);
-  }
-  for ( int32_t i=0; i<nOut; i++ ) {
-    b[i] -= (eta*db[i]);
-  }
-  reset();
-}
-
-
-
-
-
-
-// =======================================================================================
+/** @brief Reset.
+ *
+ *  Reset each layer in this BPNN.
+ */
 // ---------------------------------------------------------------------------------------
 void BPNN::reset( void ) {
   // -------------------------------------------------------------------------------------
@@ -656,6 +321,12 @@ void BPNN::reset( void ) {
 }
 
 // =======================================================================================
+/** @brief Execute.
+ *  @param[in]  input  pointer to an input  vector.
+ *  @param[out] output pointer to an output vector.
+ *
+ *  Process an input vector in feed froward direction to produce and output vector.
+ */
 // ---------------------------------------------------------------------------------------
 void BPNN::execute( real8_t* input, real8_t* output ) {
   // -------------------------------------------------------------------------------------
@@ -668,12 +339,21 @@ void BPNN::execute( real8_t* input, real8_t* output ) {
 
 
 // =======================================================================================
+/** @brief Cost Function.
+ *  @param[in]  output pointer to the desired output.
+ *  @param[in]  test   pointer to the actual output.
+ *  @param[out] delta  pointer the the output deltas
+ *  @param[in]  n      number of elements in the output vector.
+ *  @return mean of the square of the deltas.
+ *
+ *  Implement the basic cost function.
+ */
 // ---------------------------------------------------------------------------------------
-real8_t BPNN::cost( real8_t* output, real8_t* test, real8_t* delta, const int32_t n ) {
+real8_t BPNN::cost( real8_t* output, real8_t* desired, real8_t* delta, const int32_t n ) {
   // -------------------------------------------------------------------------------------
   real8_t mse = D_ZERO;
   for ( int32_t i=0; i<n; i++ ) {
-    const real8_t diff = output[i] - test[i];
+    const real8_t diff = output[i] - desired[i];
     delta[i] = diff;
     mse += (diff*diff);
   }
@@ -682,11 +362,21 @@ real8_t BPNN::cost( real8_t* output, real8_t* test, real8_t* delta, const int32_
 
 
 // =======================================================================================
+/** @brief Train.
+ *  @param[in]  input   pointer to the input vector.
+ *  @param[out] output  pointer to the actual network output.
+ *  @param[in]  desired pointer to the desired output vector.
+ *  @return mean square difference between the actual and desired outputs.
+ *
+ *  Process a backwards step, begining with the evaluation of the cost function.
+ *  Each iteration of this fucntion will accumulate a delta weight matrix.
+ *  These deltas are zeroed by a call to reset() or update().
+ */ 
 // ---------------------------------------------------------------------------------------
-real8_t BPNN::train( real8_t* input, real8_t* output, real8_t* test ) {
+real8_t BPNN::train( real8_t* input, real8_t* output, real8_t* desired ) {
   // -------------------------------------------------------------------------------------
   execute( input, output );
-  real8_t mse = cost( output, test, L[nLayer-1]->d, nOut );
+  real8_t mse = cost( output, desired, L[nLayer-1]->d, nOut );
   for ( int32_t i=nLayer-1; 0<i; i-- ) {
     L[i]->backward( L[i-1]->a, L[i-1]->d );
   }
@@ -697,6 +387,11 @@ real8_t BPNN::train( real8_t* input, real8_t* output, real8_t* test ) {
 
 
 // =======================================================================================
+/** @brief Update Weights.
+ *  @param[in] eta tarinig coefficient.
+ *
+ *  Apply the deltas for the weights and bias for each Layer.
+ */
 // ---------------------------------------------------------------------------------------
 void BPNN::update( const real8_t eta ) {
   // -------------------------------------------------------------------------------------
@@ -706,6 +401,9 @@ void BPNN::update( const real8_t eta ) {
 }
 
 
+}; // end namespace nns
+
+
 // =======================================================================================
-// **                                      B P N N                                      **
+// **                                 N N S : : B P N N                                 **
 // ======================================================================== END FILE =====

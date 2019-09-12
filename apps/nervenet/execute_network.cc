@@ -35,14 +35,63 @@
 
 
 #include <AppOptions.hh>
+#include <TLogger.hh>
+#include <Exemplar.hh>
+#include <nns/BPNN.hh>
+#include <StopWatch.hh>
 
+TLOGGER_INSTANCE(logger);
 
 // =======================================================================================
 int process( ConfigDB::Section* cfg ) {
   // -------------------------------------------------------------------------------------
-  std::string filename = cfg->get("netcfg");
+  StopWatch SW;
 
-  std::cout << "Writing new network configuration to [" << filename << "]\n";
+  std::string netcfg  = cfg->get("netcfg");
+  std::string infile  = cfg->get("infile");
+  std::string outfile = cfg->get("outfile");
+
+  std::string ifmt = cfg->get("ifmt");
+  std::string ofmt = (cfg->hasKey("ofmt")) ? (cfg->get("ofmt")) : (ifmt);
+
+  
+  Exemplar input( infile );
+
+  nns::BPNN net( netcfg );
+
+  const int32_t n_input  = net.nInput();
+  const int32_t n_output = net.nOutput();
+
+  const int32_t n_sample = input.nSample();
+
+  if ( n_input != input.nInput() ) {
+    logger->error( "Network and input data not compatable: net(in)=%d data(in)=%d",
+                   n_input, input.nInput() );
+    return 1;
+  }
+
+  Exemplar output( n_sample, n_input, n_output );
+
+  std::cout << "BPNN configuration from [" << netcfg << "]\n";
+  std::cout << "Reading from [" << infile << "]\n";
+  
+  SW.reset();
+  for ( int32_t i=0; i<n_sample; i++ ) {
+    real8_t* in_inp  = input.getIn(i);
+    real8_t* out_inp = output.getIn(i);
+    real8_t* out_out = output.getOut(i);
+    copy( out_inp, in_inp, n_input );
+    net.execute( in_inp, out_out );
+  }
+  real8_t elapsed = SW.check();
+
+  std::cerr << "Elapsed training: " << elapsed << " seconds\n";
+
+  std::cout << "Writting to  [" << outfile << "]\n";
+  std::cout << "Using: " << ifmt << " and " << ofmt << " as formats\n";
+  output.setInputFormat( ifmt );
+  output.setOutputFormat( ofmt );
+  output.write( outfile );
   
   return 0;
 }
@@ -57,7 +106,11 @@ int main( int argc, char *argv[], char **env ) {
   
   // ----- set the command line options -----------------------------------------------------
   AppOptions::cli_map_s CLI[] = {
-    { "net", "NNS", "netcfg",  true,  0, "network config file" },
+    { "net",  "NNS", "netcfg",  true,  0, "network config file" },
+    { "if",   "NNS", "infile",  true,  0, "input file (if labels exist they are ignored)" },
+    { "of",   "NNS", "outfile", true,  0, "output file (input and output written as a pair)" },
+    { "fmt",  "NNS", "ifmt",    true,  "%23.16e", "label file input  format (default: %23.16e)" },
+    { "ofmt", "NNS", "ofmt",    false, 0,         "label file output format (default: same as fmt)" },
     { 0, 0, 0, false, 0, 0 } 
   };
   

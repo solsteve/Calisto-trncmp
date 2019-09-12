@@ -40,7 +40,7 @@
 namespace {
 
   
-typedef struct {
+typedef struct _time_test {
   std::string  text;
   std::string  basic;
   std::string  extend;
@@ -51,8 +51,7 @@ typedef struct {
   int32_t      off_minute;
 } time_test;
 
-
-typedef struct {
+typedef struct _date_test {
   std::string  text;
   std::string  basic;
   std::string  extend;
@@ -62,7 +61,7 @@ typedef struct {
 } date_test;
 
 
-typedef struct {
+typedef struct _datetime_test {
   std::string  text;
   std::string  basic;
   std::string  extend;
@@ -80,6 +79,9 @@ typedef struct {
 // =======================================================================================
 TEST( test_ISO8601, time ) {
   // -------------------------------------------------------------------------------------
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winline"
 
   time_test dat[] = {
     { "T12:30:45",             "T123045Z",              "T12:30:45Z",            12, 30, 45.0,       0,  0 },
@@ -148,6 +150,8 @@ TEST( test_ISO8601, time ) {
     { "1230-2011",             "T123000-2011",          "T12:30:00-20:11",       12, 30,  0,       -20, 11 }
   };
 
+#pragma GCC diagnostic pop
+
   size_t n = sizeof(dat)/sizeof(dat[0]);
 
   for ( size_t i=0; i<n; i++ ) {
@@ -190,12 +194,17 @@ TEST( test_ISO8601, time ) {
 TEST( test_ISO8601, date ) {
   // -------------------------------------------------------------------------------------
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winline"
+
   date_test dat[] = {
     { "2019-06-18", "20190618", "2019-06-18", 2019, 6, 18 },
     { "20190618",   "20190618", "2019-06-18", 2019, 6, 18 },
     { "2019-06",    "20190601", "2019-06-01", 2019, 6,  1 },
     { "201906",     "20190601", "2019-06-01", 2019, 6,  1 }
   };
+
+#pragma GCC diagnostic pop
 
   size_t n = sizeof(dat)/sizeof(dat[0]);
 
@@ -222,6 +231,9 @@ TEST( test_ISO8601, date ) {
 // =======================================================================================
 TEST( test_ISO8601, datetime ) {
   // -------------------------------------------------------------------------------------
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Winline"
 
   datetime_test dat[] = {
     { "2019-06-18T12:34:45.06789",       "20190618T123445.06789Z",      "2019-06-18T12:34:45.06789Z",     2019, 6, 18, 12, 34, 45.06789,   0,  0 },
@@ -253,6 +265,8 @@ TEST( test_ISO8601, datetime ) {
     { "T12:34:45.06789-21:47",           "T123445.06789-2147",         "T12:34:45.06789-21:47",              0, 0,  0, 12, 34, 45.06789, -21, 47 },
     { "T123445.06789-2147",              "T123445.06789-2147",         "T12:34:45.06789-21:47",              0, 0,  0, 12, 34, 45.06789, -21, 47 },
   };
+
+#pragma GCC diagnostic pop
 
   size_t n = sizeof(dat)/sizeof(dat[0]);
 

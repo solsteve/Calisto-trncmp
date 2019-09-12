@@ -37,9 +37,10 @@
 #include <StopWatch.hh>
 #include <LinAlg.hh>
 #include <FileTool.hh>
-#include <BPNN.hh>
+#include <nns/BPNN.hh>
 #include <Exemplar.hh>
 
+/*
 static u_int32_t SEED_MATTER[] = { 0x29341EA3, 0x9257677C, 0xCC98B1D1, 0x7C5EB68C,
                                    0x13ED5BC5, 0x3C91F88F, 0xE1A42570, 0x24CA88CD,
                                    0xAE36E97A, 0x59BADCBB, 0x4B9ED120, 0x952318E6,
@@ -48,7 +49,7 @@ static u_int32_t SEED_MATTER[] = { 0x29341EA3, 0x9257677C, 0xCC98B1D1, 0x7C5EB68
                                    0x3B0590CF, 0xE20ACC41, 0x10A25D9B, 0xD59349FF,
                                    0x10BEE39E, 0x33CE2526, 0xD8029C5B, 0xFC6D3D65,
                                    0xD08E3996, 0x6FCFC48D, 0x2FD4F96B, 0x1AAEC36F };
-
+*/
 
 
 real8_t raw_test[] =  {
@@ -960,8 +961,8 @@ void TEST02( void ) {
 // =======================================================================================
 void TEST05( void ) {
   // -------------------------------------------------------------------------------------
-  BPNN A( 3, 5, 2 );
-  BPNN B;
+  nns::BPNN A( 3, 5, 2 );
+  nns::BPNN B;
 
   A.debug();
 
@@ -1002,13 +1003,13 @@ void TEST06( void ) {
   BuildTable( test_in,  test_out,  raw_test,  n_test,  nIn, nOut );
   BuildTable( train_in, train_out, raw_train, n_train, nIn, nOut );
 
-  BPNN net( nIn, nH, nL );
+  nns::BPNN net( nIn, nH, nL );
   net.randomize( dd );
   net.write( "/tmp/iris.net", "%9.6f" );
   
   // -------------------------------------------------------------------------------------
 
-  int32_t epochs = 100000;
+  int32_t epochs = 10000;
   real8_t eta    = 0.05;
 
   StopWatch SW;
@@ -1021,7 +1022,7 @@ void TEST06( void ) {
   real8_t* output  = new real8_t[ nOut ];
   real8_t* testout = new real8_t[ nOut ];
 
-  int32_t n_batch = n_train / 1;
+  int32_t n_batch = n_train / 2;
   int32_t* index = new int32_t[ n_train ];
   
   net.reset();

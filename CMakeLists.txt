@@ -100,8 +100,9 @@ set ( GWARN "\
 -fcheck-new -Wsign-promo -Woverloaded-virtual -Wno-unused-result" )
 
 set ( GFORM "-std=gnu++11" )
+set ( GFIX  "--param max-inline-insns-single=2000" )
 
-set ( CMAKE_CXX_FLAGS_RELEASE "-O3    ${GWARN} ${GARCH} ${GFORM}" )
+set ( CMAKE_CXX_FLAGS_RELEASE "-O3    ${GWARN} ${GARCH} ${GFORM} ${GFIX}" )
 set ( CMAKE_CXX_FLAGS_DEBUG   "-O1 -g ${GWARN} ${GARCH} ${GFORM}" )
 
 #/ =======================================================================================

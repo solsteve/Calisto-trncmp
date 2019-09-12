@@ -35,15 +35,77 @@
 
 
 #include <AppOptions.hh>
+#include <Exemplar.hh>
+#include <FileTool.hh>
+#include <TLogger.hh>
+#include <ConfusionMatrix.hh>
 
+TLOGGER_INSTANCE(logger);
 
 // =======================================================================================
 int process( ConfigDB::Section* cfg ) {
   // -------------------------------------------------------------------------------------
-  std::string filename = cfg->get("netcfg");
+  std::string true_data_filename = cfg->get( "true" );
+  std::string test_data_filename = cfg->get( "test" );
 
-  std::cout << "Writing new network configuration to [" << filename << "]\n";
+  Exemplar trueData( true_data_filename );
+  Exemplar testData( test_data_filename );
+
+  const int32_t n_sample = trueData.nSample();
+  const int32_t n_input  = trueData.nInput();
+  const int32_t n_output = trueData.nOutput();
+
+  if ( n_sample != testData.nSample() ) {
+    logger->error( "Ground-truth and test data files are not compatable: true(samp)=%d test(samp)=%d",
+                   n_input, testData.nSample() );
+    return 1;
+  }
+
+  if ( n_input != testData.nInput() ) {
+    logger->error( "Ground-truth and test data files are not compatable: true(in)=%d test(in)=%d",
+                   n_input, testData.nInput() );
+    return 2;
+  }
+
+  if ( n_output != testData.nOutput() ) {
+    logger->error( "Ground-truth and test data files are not compatable: true(out)=%d test(out)=%d",
+                   n_input, testData.nOutput() );
+    return 3;
+  }
+
+  // -------------------------------------------------------------------------------------
+
+  std::string report_filename = "/dev/stdout";
+
+  if ( cfg->hasKey( "report" ) ) {
+    std::string rname = cfg->get( "report" );
+    if ( '1' == rname[0] ) {
+      report_filename = "/dev/stdout";
+    } else {
+      if ( '2' == rname[0] ) {
+        report_filename = "/dev/stderr";
+      } else {
+        report_filename = rname;
+      }
+    }
+  }
+
+  // -------------------------------------------------------------------------------------
   
+  ConfusionMatrix CM( n_output );
+  
+  for ( int32_t i=0; i<n_sample; i++ ) {
+    const int32_t r = (int32_t) MaxLoc( trueData.getOut(i), n_output );
+    const int32_t c = (int32_t) MaxLoc( testData.getOut(i), n_output );
+    CM.add( r, c );
+  }
+
+  std::ofstream report = FileTool::openWrite( report_filename );
+
+  CM.display( );
+
+  report.close();
+
   return 0;
 }
 
@@ -57,7 +119,9 @@ int main( int argc, char *argv[], char **env ) {
   
   // ----- set the command line options -----------------------------------------------------
   AppOptions::cli_map_s CLI[] = {
-    { "net", "NNS", "netcfg",  true,  0, "network config file" },
+    { "tru", "NNS", "true",   true,  0, "path to ground truthed exemplar file" },
+    { "tst", "NNS", "test",   true,  0, "path to exemplar file to be tested" },
+    { "rpt", "NNS", "report", false, 0, "path to report file 1=stdout, 2=stderr" },
     { 0, 0, 0, false, 0, 0 } 
   };
   

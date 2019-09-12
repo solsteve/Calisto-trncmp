@@ -37,10 +37,12 @@
 #include <AppOptions.hh>
 #include <StringTool.hh>
 #include <string.h>
-#include <BPNN.hh>
+#include <nns/BPNN.hh>
 
 
+// =======================================================================================
 int32_t Guess( int32_t idx, int32_t mx, int32_t mn, int32_t nl ) {
+  // -------------------------------------------------------------------------------------
   const real8_t x  = (real8_t)idx;
   const real8_t y1 = (real8_t)mx;
   const real8_t y2 = (real8_t)mn;
@@ -51,33 +53,39 @@ int32_t Guess( int32_t idx, int32_t mx, int32_t mn, int32_t nl ) {
   return (int32_t)floor( y + 0.5 );
 }
 
+
 // =======================================================================================
 class netc {
   // -------------------------------------------------------------------------------------
  public:
-  int32_t  nIn;
-  int32_t  nOut;
-  int32_t  nLayers;
-  int32_t* hid;
+  int32_t      nIn;
+  int32_t      nOut;
+  int32_t      nLayers;
+  int32_t*     hid;
+  std::string* ltype;
  protected:
   EMPTY_PROTOTYPE( netc );
   void destroy( void );
 
  public:
-  netc( void ) : nIn(0), nOut(0), nLayers(0), hid(0) {};
+  netc( void ) : nIn(0), nOut(0), nLayers(0), hid(0), ltype(0) {};
   ~netc( void ) { destroy(); };
   void resize( const int32_t ni, const int32_t no, const int32_t nl );
 }; // end class netc
 
+
 // =======================================================================================
 void netc::destroy( void ) {
   // -------------------------------------------------------------------------------------
-  if ( static_cast<int32_t*>(0) != hid ) { delete[] hid; }
+  if ( static_cast<int32_t*>(0)     != hid )   { delete[] hid; }
+  if ( static_cast<std::string*>(0) != ltype ) { delete[] ltype; }
   nIn     = 0;
   nOut    = 0;
   nLayers = 0;
   hid     = static_cast<int32_t*>(0);
+  ltype   = static_cast<std::string*>(0);
 }
+
 
 // =======================================================================================
 void netc::resize( const int32_t ni, const int32_t no, const int32_t nl ) {
@@ -85,15 +93,19 @@ void netc::resize( const int32_t ni, const int32_t no, const int32_t nl ) {
   if ( nl != nLayers ) {
     destroy();
     nLayers = nl;
-    hid = new int32_t[nl];
+    hid     = new int32_t[nl];
+    ltype   = new std::string[nl];
+    MARK;
     for ( int32_t i=0; i<nLayers; i++ ) {
-      hid[i] = Guess( i, ni * no, no, nLayers );
+      hid[i]   = Guess( i, ni * no, no, nLayers );
+      ltype[i] = "Sigmoid";
     }
     hid[nLayers-1] = no;
   }
   nIn  = ni;
   nOut = no;
 }
+
 
 // =======================================================================================
 void firstInput( netc& N ) {
@@ -106,8 +118,10 @@ void firstInput( netc& N ) {
 
   for ( int32_t i=0; i<N.nLayers-1; i++ ) {
     std::string pr = c_fmt( "Hidden layer %d", i+1 );
-    N.hid[i] = StringTool::input( pr, N.hid[i] );
+    N.hid[i]   = StringTool::input( pr, N.hid[i] );
+    N.ltype[i] = StringTool::input( "       type", N.ltype[i] );
   }
+   N.ltype[N.nLayers-1] = StringTool::input( "Output type", N.ltype[N.nLayers-1] );
 }
 
 
@@ -122,7 +136,8 @@ void moreInput( netc& N ) {
 
   for ( int32_t i=0; i<N.nLayers-1; i++ ) {
     std::string pr = c_fmt( "Hidden layer %d", i+1 );
-    N.hid[i] = StringTool::input( pr, N.hid[i] );
+    N.hid[i]   = StringTool::input( pr, N.hid[i] );
+    N.ltype[i] = StringTool::input( "       type", N.ltype[i] );
   }
 }
 
@@ -135,16 +150,20 @@ void display( netc& N, std::ostream& os ) {
      <<   "  Number of Inputs:  " << N.nIn << "\n";
 
   for ( int32_t i=0; i<N.nLayers-1; i++ ) {
-    os << "  Hidden layer " << (i+1) << ":    " << N.hid[i] << "\n";
+    os << "  Hidden layer " << (i+1) << ":    " << N.hid[i] << " " << N.ltype[i] << "\n";
   }
 
-  os << "  Number of Outputs: " << N.hid[N.nLayers-1] << "\n\n";
+  os << "  Number of Outputs: " << N.hid[N.nLayers-1] <<  " " << N.ltype[N.nLayers-1] << "\n\n";
 }
+
 
 // =======================================================================================
 int build_network( std::string filename, netc& N ) {
   // -------------------------------------------------------------------------------------
-  BPNN net( N.nIn, N.hid, N.nLayers );
+  nns::BPNN net( N.nIn, N.hid, N.nLayers );
+  for ( int32_t i=0; i<N.nLayers; i++ ) {
+    net.setTransfer( i, N.ltype[i] );
+  }
   net.randomize();
   net.write( filename );
   return 0;
@@ -170,6 +189,7 @@ int process( ConfigDB::Section* cfg ) {
 
   return build_network( filename, netcfg );
 }
+
 
 // =======================================================================================
 /** @brief Entry point.

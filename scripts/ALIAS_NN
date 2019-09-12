@@ -1,0 +1,20 @@
+#!/bin/bash
+
+#M distclean
+
+#M
+
+#cd DEBUG
+
+#M install
+
+../scripts/MakeIrisExemplar.sh
+
+callisto/bin/make_network net=iris_rnd.net
+
+callisto/bin/train_network old=iris_rnd.net new=iris.net trn=iris_train.exm tst=iris_test.exm epc=20000 rpt=5000 bat=90 eta=0.09
+
+callisto/bin/execute_network net=iris.net if=iris_unlabeled.exm of=iris_labeled.exm fmt="%5.2f" ofmt="%7.4f"
+
+callisto/bin/validate_network tru=iris_train.exm tst=iris_labeled.exm rpt=report.txt
+

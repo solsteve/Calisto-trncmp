@@ -24,4 +24,19 @@ T/krbOSqWYDQvGYdS6dB+37k7X2UyheA4BJBc85rs9zu1NkGiAK/VFMMJc9atjYSucJ+ETruQ+nO
 XOWtrH563Av85x++mk8QoA0AAA==
 EOF
 
+cat<<EOF | base64 -d | zcat > iris_unlabeled.exm
+H4sICF1GeV0CA2lyaXNfdW5sYWJlbGVkLmV4bQBlVVG27CAI++8quoIeRUDd/8YexNh65330TBkQ
+SQK0Srn18kdvecZtj8evXPaU+G13i6c+5dJnhm23xlOfDrs9Nd7tLk+N+B72SF/YLfwatoTdws58
+aSvj87513uKJe8LusBUxeuX/Lf7b8Ra5BDET/n1eYVv4R7yXeJfjvsl69OqsL+9JfE5sijs87IF6
+DThbxHvYJeKTjwp+lr/Bn3j1D56OfIb89YfPetTTGJ+4Hf6K+gT3GTh04G3g2ohnIJ4YLwP+Av7q
+M5i/UB9jPekv0MtX3ay5XYt3Q0w98H3nB88b8QjwKOob5F+IN/Uz2pm3sN5Be+s5iCf7Y/Buhd2R
+L/XR43wnvnngEfK/803wqfBnvzn4cvSvEL/xPn39HXX77dRboXdqUegX5HOcH5iHNQvK/E6+lf1Y
+yU8hv4X1CPMV8tsZX3h+8dnZL068/+MX1G+Ia5zPwh5Jvpx6TurZOV8O/pf+Rj4m9a7Qd+kp4Gvr
+3xE/bwfmwXku7zwvfvxeuI36lzffwq9v/376tJe/zK/gPPEYsbRXnzV/ez9U8jVZz+/+yT5V9sTa
+Rys/7mQ/zKO/lfw28q3HvhHqOQ+9jPo6943j/Je/UZ/F9299znlYeivrG6xn17f1dvK3+WgHv4L5
++Pqtcx9Uxivny4/75Tg/sP+WX3/i5e3vzvrWvizcN/L26zd/Tn3nMc/C74Ue3w/D/tl4dn8raixH
+v/i777/6El/7o8+K98O/+qmxn9a812MfNN43Wf/mvx7zWv7EZ+1LFzv0SL+z35zzL/z+FfaDYF5k
+favIx7nvzn7twP8Pl9soX4YHAAA=
+EOF
+
 exit 0

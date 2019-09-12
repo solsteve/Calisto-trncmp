@@ -522,7 +522,7 @@ bool Exemplar::write_pair( std::ofstream& outf, Data& idat, Data& odat,
                            std::string ifmt, std::string ofmt ) {
   // -------------------------------------------------------------------------------------
   const char* fmt1 = ifmt.c_str();
-  const char* fmt2 = (0 == ofmt.size()) ? ifmt.c_str() : ifmt.c_str();
+  const char* fmt2 = (0 == ofmt.size()) ? ifmt.c_str() : ofmt.c_str();
 
   const int32_t ns = idat.size(0);
   const int32_t ni = idat.size(1);
