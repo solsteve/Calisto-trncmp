@@ -46,6 +46,7 @@ add_subdirectory ( linalg )
 add_subdirectory ( blas )
 add_subdirectory ( data )
 add_subdirectory ( time )
+add_subdirectory ( fuzzy )
 
 #/ =======================================================================================
 #/ **                              UTest - C M A K E L I S T                            **

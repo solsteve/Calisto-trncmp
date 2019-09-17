@@ -1,5 +1,5 @@
 #/ ====================================================================== BEGIN FILE =====
-#/ **                             Source - C M A K E L I S T                            **
+#/ **                             fuzzy - C M A K E L I S T                             **
 #/ =======================================================================================
 #/ **                                                                                   **
 #/ **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
@@ -29,27 +29,25 @@
 #/ @details Provides a common build environment.
 #/
 #/ @author  Stephen W. Soliday
-#/ @date    2019-04-11
+#/ @date    2019-Apr-28
 #/
 #/ =======================================================================================
-project ( src CXX )
 
-file(GLOB LIB_SRC_FILES source/*.cc source/nns/*.cc source/fuzzy/*.cc)
-file(GLOB LIB_HDR_FILES include/*.hh include/astro/*.hh include/nns/*.hh include/fuzzy/*.hh)
+project( fuzzy CXX )
 
-add_library( callisto STATIC ${LIB_SRC_FILES} )
-target_include_directories( callisto PUBLIC include )
+add_executable(${PROJECT_NAME} ../main.cc
+  utest_fset
+  utest_partition
+  )
 
-add_subdirectory ( ctest )
-add_subdirectory ( utest )
+target_link_libraries(${PROJECT_NAME} GTest::GTest GTest::Main callisto ${lapackblas_libraries})
+add_test(All${PROJECT_NAME}InBase ${PROJECT_NAME})
 
-install (TARGETS callisto
+install(TARGETS ${PROJECT_NAME}
+  RUNTIME DESTINATION test
   LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib )
-
-install (FILES ${LIB_HDR_FILES} DESTINATION include)
-
+  ARCHIVE DESTINATION lib)
 
 #/ =======================================================================================
-#/ **                             Source - C M A K E L I S T                            **
+#/ **                             fuzzy - C M A K E L I S T                             **
 #/ =========================================================================== END FILE ==
