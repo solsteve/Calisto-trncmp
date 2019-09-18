@@ -63,25 +63,25 @@ TEST( test_part_create, empty_one ) {
   EXPECT_EQ( 1, P1.nOut() );
   EXPECT_EQ( 1, P1.size() );
 
-  EXPECT_DOUBLE_EQ( -1.0, P1.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ(  0.0, P1.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  1.0, P1.getSet(0).getRight() );
+  EXPECT_DOUBLE_EQ( -1.0, P1.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ(  0.0, P1.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  1.0, P1.get(0).getRight() );
       
   EXPECT_EQ( 1, P2.nIn() );
   EXPECT_EQ( 1, P2.nOut() );
   EXPECT_EQ( 1, P2.size() );
 
-  EXPECT_DOUBLE_EQ(  3.0, P2.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ(  5.0, P2.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  7.0, P2.getSet(0).getRight() );
+  EXPECT_DOUBLE_EQ(  3.0, P2.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ(  5.0, P2.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  7.0, P2.get(0).getRight() );
       
   EXPECT_EQ( 1, P3.nIn() );
   EXPECT_EQ( 1, P3.nOut() );
   EXPECT_EQ( 1, P3.size() );
 
-  EXPECT_DOUBLE_EQ(  6.0, P3.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ(  7.0, P3.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  8.0, P3.getSet(0).getRight() );
+  EXPECT_DOUBLE_EQ(  6.0, P3.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ(  7.0, P3.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  8.0, P3.get(0).getRight() );
 }
 
 
@@ -103,52 +103,52 @@ TEST( test_part_create, empty_two ) {
   EXPECT_EQ( 2, P1.nOut() );
   EXPECT_EQ( 2, P1.size() );
 
-  EXPECT_DOUBLE_EQ( RA(P1.getSet(0).getLeft(),   P1.getSet(0).getCenter()),
-                    TA(P1.getSet(0).getCenter(), P1.getSet(0).getRight()) );
+  EXPECT_DOUBLE_EQ( RA(P1.get(0).getLeft(),   P1.get(0).getCenter()),
+                    TA(P1.get(0).getCenter(), P1.get(0).getRight()) );
 
-  EXPECT_DOUBLE_EQ( TA(P1.getSet(1).getLeft(),   P1.getSet(1).getCenter()),
-                    RA(P1.getSet(1).getCenter(), P1.getSet(1).getRight()) );
+  EXPECT_DOUBLE_EQ( TA(P1.get(1).getLeft(),   P1.get(1).getCenter()),
+                    RA(P1.get(1).getCenter(), P1.get(1).getRight()) );
 
-  EXPECT_DOUBLE_EQ( -2.0, P1.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ( -1.0, P1.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  1.0, P1.getSet(0).getRight() );
-  EXPECT_DOUBLE_EQ( -1.0, P1.getSet(1).getLeft() );
-  EXPECT_DOUBLE_EQ(  1.0, P1.getSet(1).getCenter() );
-  EXPECT_DOUBLE_EQ(  2.0, P1.getSet(1).getRight() );
+  EXPECT_DOUBLE_EQ( -2.0, P1.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ( -1.0, P1.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  1.0, P1.get(0).getRight() );
+  EXPECT_DOUBLE_EQ( -1.0, P1.get(1).getLeft() );
+  EXPECT_DOUBLE_EQ(  1.0, P1.get(1).getCenter() );
+  EXPECT_DOUBLE_EQ(  2.0, P1.get(1).getRight() );
       
   EXPECT_EQ( 1, P2.nIn()  );
   EXPECT_EQ( 2, P2.nOut() );
   EXPECT_EQ( 2, P2.size() );
 
-  EXPECT_DOUBLE_EQ( RA(P2.getSet(0).getLeft(),   P2.getSet(0).getCenter()),
-                    TA(P2.getSet(0).getCenter(), P2.getSet(0).getRight()) );
+  EXPECT_DOUBLE_EQ( RA(P2.get(0).getLeft(),   P2.get(0).getCenter()),
+                    TA(P2.get(0).getCenter(), P2.get(0).getRight()) );
 
-  EXPECT_DOUBLE_EQ( TA(P2.getSet(1).getLeft(),   P2.getSet(1).getCenter()),
-                    RA(P2.getSet(1).getCenter(), P2.getSet(1).getRight()) );
+  EXPECT_DOUBLE_EQ( TA(P2.get(1).getLeft(),   P2.get(1).getCenter()),
+                    RA(P2.get(1).getCenter(), P2.get(1).getRight()) );
 
-  EXPECT_DOUBLE_EQ(  1.0, P2.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ(  3.0, P2.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  7.0, P2.getSet(0).getRight() );
-  EXPECT_DOUBLE_EQ(  3.0, P2.getSet(1).getLeft() );
-  EXPECT_DOUBLE_EQ(  7.0, P2.getSet(1).getCenter() );
-  EXPECT_DOUBLE_EQ(  9.0, P2.getSet(1).getRight() );
+  EXPECT_DOUBLE_EQ(  1.0, P2.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ(  3.0, P2.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  7.0, P2.get(0).getRight() );
+  EXPECT_DOUBLE_EQ(  3.0, P2.get(1).getLeft() );
+  EXPECT_DOUBLE_EQ(  7.0, P2.get(1).getCenter() );
+  EXPECT_DOUBLE_EQ(  9.0, P2.get(1).getRight() );
       
   EXPECT_EQ( 1, P3.nIn() );
   EXPECT_EQ( 2, P3.nOut() );
   EXPECT_EQ( 2, P3.size() );
 
-  EXPECT_DOUBLE_EQ( RA(P3.getSet(0).getLeft(),   P3.getSet(0).getCenter()),
-                    TA(P3.getSet(0).getCenter(), P3.getSet(0).getRight()) );
+  EXPECT_DOUBLE_EQ( RA(P3.get(0).getLeft(),   P3.get(0).getCenter()),
+                    TA(P3.get(0).getCenter(), P3.get(0).getRight()) );
 
-  EXPECT_DOUBLE_EQ( TA(P3.getSet(1).getLeft(),   P3.getSet(1).getCenter()),
-                    RA(P3.getSet(1).getCenter(), P3.getSet(1).getRight()) );
+  EXPECT_DOUBLE_EQ( TA(P3.get(1).getLeft(),   P3.get(1).getCenter()),
+                    RA(P3.get(1).getCenter(), P3.get(1).getRight()) );
 
-  EXPECT_DOUBLE_EQ(  6.0, P3.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ(  7.0, P3.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  9.0, P3.getSet(0).getRight() );
-  EXPECT_DOUBLE_EQ(  7.0, P3.getSet(1).getLeft() );
-  EXPECT_DOUBLE_EQ(  9.0, P3.getSet(1).getCenter() );
-  EXPECT_DOUBLE_EQ( 10.0, P3.getSet(1).getRight() );
+  EXPECT_DOUBLE_EQ(  6.0, P3.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ(  7.0, P3.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  9.0, P3.get(0).getRight() );
+  EXPECT_DOUBLE_EQ(  7.0, P3.get(1).getLeft() );
+  EXPECT_DOUBLE_EQ(  9.0, P3.get(1).getCenter() );
+  EXPECT_DOUBLE_EQ( 10.0, P3.get(1).getRight() );
 }
 
 
@@ -170,67 +170,67 @@ TEST( test_part_create, empty_three ) {
   EXPECT_EQ( 3, P1.nOut() );
   EXPECT_EQ( 3, P1.size() );
 
-  EXPECT_DOUBLE_EQ( RA(P1.getSet(0).getLeft(),   P1.getSet(0).getCenter()),
-                    TA(P1.getSet(0).getCenter(), P1.getSet(0).getRight()) );
+  EXPECT_DOUBLE_EQ( RA(P1.get(0).getLeft(),   P1.get(0).getCenter()),
+                    TA(P1.get(0).getCenter(), P1.get(0).getRight()) );
 
-  EXPECT_DOUBLE_EQ( TA(P1.getSet(2).getLeft(),   P1.getSet(2).getCenter()),
-                    RA(P1.getSet(2).getCenter(), P1.getSet(2).getRight()) );
+  EXPECT_DOUBLE_EQ( TA(P1.get(2).getLeft(),   P1.get(2).getCenter()),
+                    RA(P1.get(2).getCenter(), P1.get(2).getRight()) );
 
-  EXPECT_DOUBLE_EQ( -1.5, P1.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ( -1.0, P1.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  0.0, P1.getSet(0).getRight() );
+  EXPECT_DOUBLE_EQ( -1.5, P1.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ( -1.0, P1.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  0.0, P1.get(0).getRight() );
   
-  EXPECT_DOUBLE_EQ( -1.0, P1.getSet(1).getLeft() );
-  EXPECT_DOUBLE_EQ(  0.0, P1.getSet(1).getCenter() );
-  EXPECT_DOUBLE_EQ(  1.0, P1.getSet(1).getRight() );
+  EXPECT_DOUBLE_EQ( -1.0, P1.get(1).getLeft() );
+  EXPECT_DOUBLE_EQ(  0.0, P1.get(1).getCenter() );
+  EXPECT_DOUBLE_EQ(  1.0, P1.get(1).getRight() );
   
-  EXPECT_DOUBLE_EQ(  0.0, P1.getSet(2).getLeft() );
-  EXPECT_DOUBLE_EQ(  1.0, P1.getSet(2).getCenter() );
-  EXPECT_DOUBLE_EQ(  1.5, P1.getSet(2).getRight() );
+  EXPECT_DOUBLE_EQ(  0.0, P1.get(2).getLeft() );
+  EXPECT_DOUBLE_EQ(  1.0, P1.get(2).getCenter() );
+  EXPECT_DOUBLE_EQ(  1.5, P1.get(2).getRight() );
       
   EXPECT_EQ( 1, P2.nIn()  );
   EXPECT_EQ( 3, P2.nOut() );
   EXPECT_EQ( 3, P2.size() );
 
-  EXPECT_DOUBLE_EQ( RA(P2.getSet(0).getLeft(),   P2.getSet(0).getCenter()),
-                    TA(P2.getSet(0).getCenter(), P2.getSet(0).getRight()) );
+  EXPECT_DOUBLE_EQ( RA(P2.get(0).getLeft(),   P2.get(0).getCenter()),
+                    TA(P2.get(0).getCenter(), P2.get(0).getRight()) );
 
-  EXPECT_DOUBLE_EQ( TA(P2.getSet(2).getLeft(),   P2.getSet(2).getCenter()),
-                    RA(P2.getSet(2).getCenter(), P2.getSet(2).getRight()) );
+  EXPECT_DOUBLE_EQ( TA(P2.get(2).getLeft(),   P2.get(2).getCenter()),
+                    RA(P2.get(2).getCenter(), P2.get(2).getRight()) );
 
-  EXPECT_DOUBLE_EQ(  5.0, P2.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ(  6.0, P2.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  8.0, P2.getSet(0).getRight() );
+  EXPECT_DOUBLE_EQ(  5.0, P2.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ(  6.0, P2.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  8.0, P2.get(0).getRight() );
   
-  EXPECT_DOUBLE_EQ(  6.0, P2.getSet(1).getLeft() );
-  EXPECT_DOUBLE_EQ(  8.0, P2.getSet(1).getCenter() );
-  EXPECT_DOUBLE_EQ( 10.0, P2.getSet(1).getRight() );
+  EXPECT_DOUBLE_EQ(  6.0, P2.get(1).getLeft() );
+  EXPECT_DOUBLE_EQ(  8.0, P2.get(1).getCenter() );
+  EXPECT_DOUBLE_EQ( 10.0, P2.get(1).getRight() );
   
-  EXPECT_DOUBLE_EQ(  8.0, P2.getSet(2).getLeft() );
-  EXPECT_DOUBLE_EQ( 10.0, P2.getSet(2).getCenter() );
-  EXPECT_DOUBLE_EQ( 11.0, P2.getSet(2).getRight() );
+  EXPECT_DOUBLE_EQ(  8.0, P2.get(2).getLeft() );
+  EXPECT_DOUBLE_EQ( 10.0, P2.get(2).getCenter() );
+  EXPECT_DOUBLE_EQ( 11.0, P2.get(2).getRight() );
       
   EXPECT_EQ( 1, P3.nIn() );
   EXPECT_EQ( 3, P3.nOut() );
   EXPECT_EQ( 3, P3.size() );
 
-  EXPECT_DOUBLE_EQ( RA(P3.getSet(0).getLeft(),   P3.getSet(0).getCenter()),
-                    TA(P3.getSet(0).getCenter(), P3.getSet(0).getRight()) );
+  EXPECT_DOUBLE_EQ( RA(P3.get(0).getLeft(),   P3.get(0).getCenter()),
+                    TA(P3.get(0).getCenter(), P3.get(0).getRight()) );
 
-  EXPECT_DOUBLE_EQ( TA(P3.getSet(2).getLeft(),   P3.getSet(2).getCenter()),
-                    RA(P3.getSet(2).getCenter(), P3.getSet(2).getRight()) );
+  EXPECT_DOUBLE_EQ( TA(P3.get(2).getLeft(),   P3.get(2).getCenter()),
+                    RA(P3.get(2).getCenter(), P3.get(2).getRight()) );
 
-  EXPECT_DOUBLE_EQ(  2.0, P3.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ(  3.0, P3.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  5.0, P3.getSet(0).getRight() );
+  EXPECT_DOUBLE_EQ(  2.0, P3.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ(  3.0, P3.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  5.0, P3.get(0).getRight() );
   
-  EXPECT_DOUBLE_EQ(  3.0, P3.getSet(1).getLeft() );
-  EXPECT_DOUBLE_EQ(  5.0, P3.getSet(1).getCenter() );
-  EXPECT_DOUBLE_EQ(  9.0, P3.getSet(1).getRight() );
+  EXPECT_DOUBLE_EQ(  3.0, P3.get(1).getLeft() );
+  EXPECT_DOUBLE_EQ(  5.0, P3.get(1).getCenter() );
+  EXPECT_DOUBLE_EQ(  9.0, P3.get(1).getRight() );
   
-  EXPECT_DOUBLE_EQ(  5.0, P3.getSet(2).getLeft() );
-  EXPECT_DOUBLE_EQ(  9.0, P3.getSet(2).getCenter() );
-  EXPECT_DOUBLE_EQ( 11.0, P3.getSet(2).getRight() );
+  EXPECT_DOUBLE_EQ(  5.0, P3.get(2).getLeft() );
+  EXPECT_DOUBLE_EQ(  9.0, P3.get(2).getCenter() );
+  EXPECT_DOUBLE_EQ( 11.0, P3.get(2).getRight() );
 }
 
 
@@ -252,91 +252,91 @@ TEST( test_part_create, empty_five ) {
   EXPECT_EQ( 5, P1.nOut() );
   EXPECT_EQ( 5, P1.size() );
 
-  EXPECT_DOUBLE_EQ( RA(P1.getSet(0).getLeft(),   P1.getSet(0).getCenter()),
-                    TA(P1.getSet(0).getCenter(), P1.getSet(0).getRight()) );
+  EXPECT_DOUBLE_EQ( RA(P1.get(0).getLeft(),   P1.get(0).getCenter()),
+                    TA(P1.get(0).getCenter(), P1.get(0).getRight()) );
 
-  EXPECT_DOUBLE_EQ( TA(P1.getSet(4).getLeft(),   P1.getSet(4).getCenter()),
-                    RA(P1.getSet(4).getCenter(), P1.getSet(4).getRight()) );
+  EXPECT_DOUBLE_EQ( TA(P1.get(4).getLeft(),   P1.get(4).getCenter()),
+                    RA(P1.get(4).getCenter(), P1.get(4).getRight()) );
 
-  EXPECT_DOUBLE_EQ( -1.25, P1.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ( -1.0, P1.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ( -0.5, P1.getSet(0).getRight() );
+  EXPECT_DOUBLE_EQ( -1.25, P1.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ( -1.0, P1.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ( -0.5, P1.get(0).getRight() );
   
-  EXPECT_DOUBLE_EQ( -1.0, P1.getSet(1).getLeft() );
-  EXPECT_DOUBLE_EQ( -0.5, P1.getSet(1).getCenter() );
-  EXPECT_DOUBLE_EQ(  0.0, P1.getSet(1).getRight() );
+  EXPECT_DOUBLE_EQ( -1.0, P1.get(1).getLeft() );
+  EXPECT_DOUBLE_EQ( -0.5, P1.get(1).getCenter() );
+  EXPECT_DOUBLE_EQ(  0.0, P1.get(1).getRight() );
   
-  EXPECT_DOUBLE_EQ( -0.5, P1.getSet(2).getLeft() );
-  EXPECT_DOUBLE_EQ(  0.0, P1.getSet(2).getCenter() );
-  EXPECT_DOUBLE_EQ(  0.5, P1.getSet(2).getRight() );
+  EXPECT_DOUBLE_EQ( -0.5, P1.get(2).getLeft() );
+  EXPECT_DOUBLE_EQ(  0.0, P1.get(2).getCenter() );
+  EXPECT_DOUBLE_EQ(  0.5, P1.get(2).getRight() );
       
-  EXPECT_DOUBLE_EQ(  0.0, P1.getSet(3).getLeft() );
-  EXPECT_DOUBLE_EQ(  0.5, P1.getSet(3).getCenter() );
-  EXPECT_DOUBLE_EQ(  1.0, P1.getSet(3).getRight() );
+  EXPECT_DOUBLE_EQ(  0.0, P1.get(3).getLeft() );
+  EXPECT_DOUBLE_EQ(  0.5, P1.get(3).getCenter() );
+  EXPECT_DOUBLE_EQ(  1.0, P1.get(3).getRight() );
       
-  EXPECT_DOUBLE_EQ(  0.5, P1.getSet(4).getLeft() );
-  EXPECT_DOUBLE_EQ(  1.0, P1.getSet(4).getCenter() );
-  EXPECT_DOUBLE_EQ(  1.25, P1.getSet(4).getRight() );
+  EXPECT_DOUBLE_EQ(  0.5, P1.get(4).getLeft() );
+  EXPECT_DOUBLE_EQ(  1.0, P1.get(4).getCenter() );
+  EXPECT_DOUBLE_EQ(  1.25, P1.get(4).getRight() );
       
   EXPECT_EQ( 1, P2.nIn()  );
   EXPECT_EQ( 5, P2.nOut() );
   EXPECT_EQ( 5, P2.size() );
 
-  EXPECT_DOUBLE_EQ( RA(P2.getSet(0).getLeft(),   P2.getSet(0).getCenter()),
-                    TA(P2.getSet(0).getCenter(), P2.getSet(0).getRight()) );
+  EXPECT_DOUBLE_EQ( RA(P2.get(0).getLeft(),   P2.get(0).getCenter()),
+                    TA(P2.get(0).getCenter(), P2.get(0).getRight()) );
 
-  EXPECT_DOUBLE_EQ( TA(P2.getSet(4).getLeft(),   P2.getSet(4).getCenter()),
-                    RA(P2.getSet(4).getCenter(), P2.getSet(4).getRight()) );
+  EXPECT_DOUBLE_EQ( TA(P2.get(4).getLeft(),   P2.get(4).getCenter()),
+                    RA(P2.get(4).getCenter(), P2.get(4).getRight()) );
 
-  EXPECT_DOUBLE_EQ(  5.0, P2.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ(  6.0, P2.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  8.0, P2.getSet(0).getRight() );
+  EXPECT_DOUBLE_EQ(  5.0, P2.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ(  6.0, P2.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  8.0, P2.get(0).getRight() );
   
-  EXPECT_DOUBLE_EQ(  6.0, P2.getSet(1).getLeft() );
-  EXPECT_DOUBLE_EQ(  8.0, P2.getSet(1).getCenter() );
-  EXPECT_DOUBLE_EQ( 10.0, P2.getSet(1).getRight() );
+  EXPECT_DOUBLE_EQ(  6.0, P2.get(1).getLeft() );
+  EXPECT_DOUBLE_EQ(  8.0, P2.get(1).getCenter() );
+  EXPECT_DOUBLE_EQ( 10.0, P2.get(1).getRight() );
   
-  EXPECT_DOUBLE_EQ(  8.0, P2.getSet(2).getLeft() );
-  EXPECT_DOUBLE_EQ( 10.0, P2.getSet(2).getCenter() );
-  EXPECT_DOUBLE_EQ( 12.0, P2.getSet(2).getRight() );
+  EXPECT_DOUBLE_EQ(  8.0, P2.get(2).getLeft() );
+  EXPECT_DOUBLE_EQ( 10.0, P2.get(2).getCenter() );
+  EXPECT_DOUBLE_EQ( 12.0, P2.get(2).getRight() );
       
-  EXPECT_DOUBLE_EQ( 10.0, P2.getSet(3).getLeft() );
-  EXPECT_DOUBLE_EQ( 12.0, P2.getSet(3).getCenter() );
-  EXPECT_DOUBLE_EQ( 14.0, P2.getSet(3).getRight() );
+  EXPECT_DOUBLE_EQ( 10.0, P2.get(3).getLeft() );
+  EXPECT_DOUBLE_EQ( 12.0, P2.get(3).getCenter() );
+  EXPECT_DOUBLE_EQ( 14.0, P2.get(3).getRight() );
       
-  EXPECT_DOUBLE_EQ( 12.0, P2.getSet(4).getLeft() );
-  EXPECT_DOUBLE_EQ( 14.0, P2.getSet(4).getCenter() );
-  EXPECT_DOUBLE_EQ( 15.0, P2.getSet(4).getRight() );
+  EXPECT_DOUBLE_EQ( 12.0, P2.get(4).getLeft() );
+  EXPECT_DOUBLE_EQ( 14.0, P2.get(4).getCenter() );
+  EXPECT_DOUBLE_EQ( 15.0, P2.get(4).getRight() );
       
   EXPECT_EQ( 1, P3.nIn() );
   EXPECT_EQ( 5, P3.nOut() );
   EXPECT_EQ( 5, P3.size() );
 
-  EXPECT_DOUBLE_EQ( RA(P3.getSet(0).getLeft(),   P3.getSet(0).getCenter()),
-                    TA(P3.getSet(0).getCenter(), P3.getSet(0).getRight()) );
+  EXPECT_DOUBLE_EQ( RA(P3.get(0).getLeft(),   P3.get(0).getCenter()),
+                    TA(P3.get(0).getCenter(), P3.get(0).getRight()) );
 
-  EXPECT_DOUBLE_EQ( TA(P3.getSet(4).getLeft(),   P3.getSet(4).getCenter()),
-                    RA(P3.getSet(4).getCenter(), P3.getSet(4).getRight()) );
+  EXPECT_DOUBLE_EQ( TA(P3.get(4).getLeft(),   P3.get(4).getCenter()),
+                    RA(P3.get(4).getCenter(), P3.get(4).getRight()) );
 
-  EXPECT_DOUBLE_EQ(  2.0, P3.getSet(0).getLeft() );
-  EXPECT_DOUBLE_EQ(  3.0, P3.getSet(0).getCenter() );
-  EXPECT_DOUBLE_EQ(  5.0, P3.getSet(0).getRight() );
+  EXPECT_DOUBLE_EQ(  2.0, P3.get(0).getLeft() );
+  EXPECT_DOUBLE_EQ(  3.0, P3.get(0).getCenter() );
+  EXPECT_DOUBLE_EQ(  5.0, P3.get(0).getRight() );
   
-  EXPECT_DOUBLE_EQ(  3.0, P3.getSet(1).getLeft() );
-  EXPECT_DOUBLE_EQ(  5.0, P3.getSet(1).getCenter() );
-  EXPECT_DOUBLE_EQ(  8.0, P3.getSet(1).getRight() );
+  EXPECT_DOUBLE_EQ(  3.0, P3.get(1).getLeft() );
+  EXPECT_DOUBLE_EQ(  5.0, P3.get(1).getCenter() );
+  EXPECT_DOUBLE_EQ(  8.0, P3.get(1).getRight() );
   
-  EXPECT_DOUBLE_EQ(  5.0, P3.getSet(2).getLeft() );
-  EXPECT_DOUBLE_EQ(  8.0, P3.getSet(2).getCenter() );
-  EXPECT_DOUBLE_EQ( 12.0, P3.getSet(2).getRight() );
+  EXPECT_DOUBLE_EQ(  5.0, P3.get(2).getLeft() );
+  EXPECT_DOUBLE_EQ(  8.0, P3.get(2).getCenter() );
+  EXPECT_DOUBLE_EQ( 12.0, P3.get(2).getRight() );
   
-  EXPECT_DOUBLE_EQ(  8.0, P3.getSet(3).getLeft() );
-  EXPECT_DOUBLE_EQ( 12.0, P3.getSet(3).getCenter() );
-  EXPECT_DOUBLE_EQ( 13.0, P3.getSet(3).getRight() );
+  EXPECT_DOUBLE_EQ(  8.0, P3.get(3).getLeft() );
+  EXPECT_DOUBLE_EQ( 12.0, P3.get(3).getCenter() );
+  EXPECT_DOUBLE_EQ( 13.0, P3.get(3).getRight() );
   
-  EXPECT_DOUBLE_EQ( 12.0, P3.getSet(4).getLeft() );
-  EXPECT_DOUBLE_EQ( 13.0, P3.getSet(4).getCenter() );
-  EXPECT_DOUBLE_EQ( 13.5, P3.getSet(4).getRight() );
+  EXPECT_DOUBLE_EQ( 12.0, P3.get(4).getLeft() );
+  EXPECT_DOUBLE_EQ( 13.0, P3.get(4).getCenter() );
+  EXPECT_DOUBLE_EQ( 13.5, P3.get(4).getRight() );
 }
 
 
@@ -514,8 +514,8 @@ TEST( test_part_storage, load_store ) {
   fuzzy::Partition P2( nc, ctrs2 );
 
   for ( int32_t i=0; i<nc; i++ ) {
-    EXPECT_DOUBLE_EQ( ctrs1[i], P1.getSet(i).getCenter() );
-    EXPECT_DOUBLE_EQ( ctrs2[i], P2.getSet(i).getCenter() );
+    EXPECT_DOUBLE_EQ( ctrs1[i], P1.get(i).getCenter() );
+    EXPECT_DOUBLE_EQ( ctrs2[i], P2.get(i).getCenter() );
   }
 
   real8_t* buffer = P1.create_buffer();
@@ -525,7 +525,7 @@ TEST( test_part_storage, load_store ) {
   P2.load( buffer );
 
   for ( int32_t i=0; i<nc; i++ ) {
-    EXPECT_DOUBLE_EQ( ctrs1[i], P2.getSet(i).getCenter() );
+    EXPECT_DOUBLE_EQ( ctrs1[i], P2.get(i).getCenter() );
   }
 
   delete[] buffer;
@@ -541,7 +541,7 @@ TEST( test_part_storage, read_write ) {
   fuzzy::Partition P2;
 
   for ( int32_t i=0; i<nc; i++ ) {
-    EXPECT_DOUBLE_EQ( ctrs1[i], P1.getSet(i).getCenter() );
+    EXPECT_DOUBLE_EQ( ctrs1[i], P1.get(i).getCenter() );
   }
 
   std::ofstream ofs = FileTool::openWrite( "/tmp/part" );
@@ -553,7 +553,7 @@ TEST( test_part_storage, read_write ) {
   ofs.close();
 
   for ( int32_t i=0; i<nc; i++ ) {
-    EXPECT_DOUBLE_EQ( ctrs1[i], P2.getSet(i).getCenter() );
+    EXPECT_DOUBLE_EQ( ctrs1[i], P2.get(i).getCenter() );
   }
 }
 

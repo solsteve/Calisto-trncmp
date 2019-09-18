@@ -1,10 +1,10 @@
 // ====================================================================== BEGIN FILE =====
-// **                                     A R R A Y                                     **
+// **                              F U Z Z Y : : G R O U P                              **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 2010-2019, Stephen W. Soliday                                      **
+// **  Copyright (c) 2015-2019, Stephen W. Soliday                                      **
 // **                           stephen.soliday@trncmp.org                              **
 // **                           http://research.trncmp.org                              **
 // **                                                                                   **
@@ -24,338 +24,280 @@
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief  Array.
- *  @file   Array.hh
+/** @brief  Fuzzy Group.
+ *  @file   fuzzy/Group.cc
  *  @author Stephen W. Soliday
- *  @date   2010-Feb-07 Original release.
- *  @date   2019-Sep-01 CMake refactorization.
  *
- *  Provides the interface for a templated 2-D array.
- */
-// =======================================================================================
-
-
-#ifndef __HH_ARRAY_TRNCMP
-#define __HH_ARRAY_TRNCMP
-
-#include <trncmp.hh>
-
-// =======================================================================================
-template<class T>
-class Array {
-  // -------------------------------------------------------------------------------------
- protected:
-  int32_t n_row;
-  int32_t n_col;
-  int32_t n_dat;
-  T*      data;
-
-  void destroy ( void );
-  
- public:
-  Array  ( void );
-  Array  ( const int32_t nr, const int32_t nc, T* src = static_cast<T*>(0) );
-  Array  ( const Array<T>& src );
-  ~Array ( void );
-
-  int32_t size       ( const int dim = 0 ) const;
-  void    resize     ( const int32_t nr, const int32_t nc );
-
-  Array<T>&  operator=  ( const Array<T>& src );
-  void    copy       ( const Array<T>& src );
-
-  T       get        ( const int32_t ir, const int32_t ic ) const;
-  T*      get        ( const int32_t ir ) const;
-
-  void    set        ( const T val = static_cast<T>(0) );
-  void    set        ( const int32_t ir, const int32_t ic, const T val );
-
-  T&      operator() ( const size_t ir, const size_t ic );
-  T*      operator() ( const size_t ir ) const;
-
-  T*      load       ( T* src );
-  T*      store      ( T* dst );
-
-}; // end class Array
-
-// =======================================================================================
-/** @brief Size
- *  @param[in] ary reference to an Array.
- *  @param[in] dim dimension to return ( default: number of rows )
- *  @return number of rows, if dim==0, else number of columns.
- */
-// ---------------------------------------------------------------------------------------
-template<class T>
-int32_t size( const Array<T>& ary, const int dim = 0 ) {
-  // -------------------------------------------------------------------------------------
-  return ary.size(dim);
-}
-
-// =======================================================================================
-/** @brief Destroy.
+ * Provides the methods for a fuzzy group. A group is a collection of fuzzy Partitions.
+ * R^m -> R^(mxSUM(n[i],i=1,n))
  *
- *  Remove internal allocation.
+ *
  */
+// =======================================================================================
+
+
+#include <fuzzy/Group.hh>
+
+
+namespace fuzzy {
+
+
+#define INIT_VAR(_a) num_part(_a), part(_a)
+
+
+// =======================================================================================
 // ---------------------------------------------------------------------------------------
-template<class T>
-void Array<T>::destroy( void ) {
+void Group::destroy( void ) {
   // -------------------------------------------------------------------------------------
-  if ( static_cast<T*>(0) != data ) {
-    delete[] data;
+  if ( static_cast<Partition**>(0) != part ) {
+    for ( int32_t i=0; i<num_part; i++ ) {
+      if ( static_cast<Partition*>(0) != part[i] ) {
+        delete part[i];
+      }
+      part[i] = static_cast<Partition*>(0);
+    }
+    delete part;
   }
-  n_row = 0;
-  n_col = 0;
-  n_dat = 0;
-  data  = static_cast<T*>(0);
+  part     = static_cast<Partition**>(0);
+  num_part = 0;
 }
 
 
 // =======================================================================================
-/** @brief resize.
- *  @param[in] nr number of rows.
- *  @param[in] nc number of columns.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-void Array<T>::resize( const int32_t nr, const int32_t nc ) {
+void Group::resize( const int32_t n ) {
   // -------------------------------------------------------------------------------------
-  const int32_t n = nr*nc;
-  if ( n != n_dat ) {
+  if ( num_part != n ) {
     destroy();
-    data = new T[ n ];
-    n_dat = n;
-  }
-  n_row = nr;
-  n_col = nc;
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- */
-// ---------------------------------------------------------------------------------------
-template<class T>
-Array<T>::Array( void )
-    : n_row(0), n_col(0), n_dat(0), data(0) {
-  // -------------------------------------------------------------------------------------
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- *  @param[in] nr  number of rows.
- *  @param[in] nc  number of columns.
- *  @param[in] src optional pointer to a data source.
- */
-// ---------------------------------------------------------------------------------------
-template<class T>
-Array<T>::Array( const int32_t nr, const int32_t nc, T* src )
-    : n_row(0), n_col(0), n_dat(0), data(0) {
-  // -------------------------------------------------------------------------------------
-  resize( nr, nc );
-  if ( static_cast<T*>(0) != src ) {
-    load( src );
+    num_part = n;
+    part     = new Partition*[num_part];
+    for ( int32_t i=0; i<num_part; i++ ) {
+      part[i] = static_cast<Partition*>(0);
+    }
   }
 }
 
 
 // =======================================================================================
-/** @brief Constructor.
- *  @param[in] src reference to a source Array.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-Array<T>::Array( const Array<T>& src ) : n_row(0), n_col(0), n_dat(0), data(0) {
+Group::Group( void ) : INIT_VAR(0) {
   // -------------------------------------------------------------------------------------
-  copy( src );
 }
 
 
 // =======================================================================================
-/** @brief Destructor.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-Array<T>::~Array( void ) {
+Group::Group( const int32_t np ) : INIT_VAR(0) {
+  // -------------------------------------------------------------------------------------
+  set( np );
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+Group::Group( const int32_t np, Partition** psrc ) : INIT_VAR(0) {
+  // -------------------------------------------------------------------------------------
+  set( np, psrc );
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+Group::Group( VarReal& V ) : INIT_VAR(0) {
+  // -------------------------------------------------------------------------------------
+  set( V );
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+Group::~Group( void ) {
   // -------------------------------------------------------------------------------------
   destroy();
 }
 
 
 // =======================================================================================
-/** @brief Size
- *  @param[in] dim dimension to return ( default: number of rows )
- *  @return number of rows, if dim==0, else number of columns.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-int32_t Array<T>::size( const int dim ) const {
+int32_t Group::nIn( void ) const {
   // -------------------------------------------------------------------------------------
-  if ( 0 == dim ) {
-    return n_row;
+  return num_part;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+int32_t Group::nOut( void ) const {
+  // -------------------------------------------------------------------------------------
+  int32_t sum = 0;
+  for ( int32_t i=0; i<num_part; i++ ) {
+    sum += part[i]->nOut();
   }
-  return n_col;
+  return sum;
 }
 
 
 // =======================================================================================
-/** @brief Copy.
- *  @param[in] reference to a source Array.
- *  @return reference to this Array.
- *
- *  Copy the contents of src.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-Array<T>& Array<T>::operator=( const Array<T>& src ) {
+int32_t Group::size( void ) const {
   // -------------------------------------------------------------------------------------
-  copy( src );
-  return *this;
-}
-
-
-// =======================================================================================
-/** @brief Copy.
- *  @param[in] reference to a source Array.
- *
- *  Copy the contents of src.
- */
-// ---------------------------------------------------------------------------------------
-template<class T>
-void Array<T>::copy( const Array<T>& src ) {
-  // -------------------------------------------------------------------------------------
-  resize( src.n_row, src.n_col );
-  for ( int32_t i=0; i<n_dat; i++ ) {
-    *(data+i) = *(src.data+i);
+  int32_t sum = 0;
+  for ( int32_t i=0; i<num_part; i++ ) {
+    sum += part[i]->size();
   }
+  return sum;
 }
 
 
 // =======================================================================================
-/** @brief Get.
- *  @param[in] ir row    index.
- *  @param[in] ic column index.
- *  @return value of the element indexed by ir and ic.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-T Array<T>::get( const int32_t ir, const int32_t ic ) const {
+real8_t* Group::create_buffer( void ) {
   // -------------------------------------------------------------------------------------
-  return *(data+ic+(ir*n_col));
+  const int32_t n = size();
+  return new real8_t[ n ];
 }
 
 
 // =======================================================================================
-/** @brief Get.
- *  @param[in] ir row index.
- *  @return pointer to the row indexed by ir.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-T* Array<T>::get( const int32_t ir ) const {
+Partition& Group::get( const int32_t i ) {
   // -------------------------------------------------------------------------------------
-  return (data+(ir*n_col));
+  return *(part[i]);
 }
 
 
 // =======================================================================================
-/** @brief Set.
- *  @param[in] val value to set (default: zero).
- *
- *  Set all elements of this Array to the value of val.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-void Array<T>::set( const T val ) {
+void Group::set( const int32_t i, Partition& p ) {
   // -------------------------------------------------------------------------------------
-  for ( int32_t i=0; i<n_dat; i++ ) {
-    *(data+i) = val;
+  if ( i < num_part ) {
+    if ( 0 > i ) {
+      throw( std::invalid_argument( "fuzzy::Group::set - index must be 0 or greater" ) );
+    } else {
+      if ( static_cast<Partition*>(0) == part[i] ) {
+        part[i] = p.clone();
+      } else {
+        part[i]->copy( p );
+      }
+    }
+  } else {
+    throw( std::invalid_argument( "fuzzy::Group::set - index must be less than num_set" ) );
   }
 }
 
 
 // =======================================================================================
-/** @brief Set.
- *  @param[in] ir row    index.
- *  @param[in] ic column index.
- *  @param[in] val value to set.
- *
- *  Set the element indexed by ir and ic to the value of val.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-void Array<T>::set( const int32_t ir, const int32_t ic, const T val ) {
+void Group::set( const int32_t np ) {
   // -------------------------------------------------------------------------------------
-  *(data+ic+(ir*n_col)) = val;
+  resize( np );
 }
 
 
 // =======================================================================================
-/** @brief Get.
- *  @param[in] ir row    index.
- *  @param[in] ic column index.
- *  @return refernce to the element indexed by ir and ic.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-T& Array<T>::operator()( const size_t ir, const size_t ic ) {
+void Group::set( const int32_t np, Partition** psrc ) {
   // -------------------------------------------------------------------------------------
-  return *(data+ic+(ir*n_col));
-}
-
-
-// =======================================================================================
-/** @brief Get.
- *  @param[in] ir row index.
- *  @return pointer to the row indexed by ir.
- */
-// ---------------------------------------------------------------------------------------
-template<class T>
-T* Array<T>::operator()( const size_t ir ) const {
-  // -------------------------------------------------------------------------------------
-  return (data+(ir*n_col));
-}
-
-// =======================================================================================
-/** @brief Store.
- *  @param[in] src pointer to an array of type T.
- *  @return return a pointer to the next available element of src.
- *
- *  Store the contents of this Array into a buffer provided by src. This copy is
- *  performed in row order.
- */
-// ---------------------------------------------------------------------------------------
-template<class T>
-T* Array<T>::load( T* src ) {
-  // -------------------------------------------------------------------------------------
-  for ( int32_t i=0; i<n_dat; i++ ) {
-    *(data+i) = *(src+i);
+  resize( np );
+  for ( int32_t i=0; i<np; i++ ) {
+    set( i, *(psrc[i]) );
   }
-  return (src+n_dat);
 }
 
 
 // =======================================================================================
-/** @brief Store.
- *  @param[in] src pointer to an array of type T.
- *  @return return a pointer to the next available element of dst.
- *
- *  Store the contents of this Array into a buffer provided by dst. This copy is
- *  performed in row order.
- */
 // ---------------------------------------------------------------------------------------
-template<class T>
-T* Array<T>::store( T* dst ) {
+void Group::set( VarReal& V ) {
   // -------------------------------------------------------------------------------------
-  for ( int32_t i=0; i<n_dat; i++ ) {
-    *(dst+i) = *(data+i);
+  const int32_t np = V.nRow();
+  resize( np );
+  for ( int32_t i=0; i<np; i++ ) {
+    const int32_t ns = V.nCol(i);
+    Partition P( ns, V(i) );
+    set( i, P );
   }
-  return (dst+n_dat);
 }
 
 
-#endif
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+void Group::fuzzify( real8_t* mu, real8_t* x  ) {
+  // -------------------------------------------------------------------------------------
+    int idx = 0;
+    for ( int i=0; i<num_part; i++ ) {
+      partitions[i].mu( mu, idx, x[i] );
+      idx += partitions[i].size();
+    }
+}
+
 
 // =======================================================================================
-// **                                     A R R A Y                                     **
+// ---------------------------------------------------------------------------------------
+void Group::defuzzify( real8_t* x,  real8_t* mu ) {
+  // -------------------------------------------------------------------------------------
+    int idx = 0;
+    for ( int i=0; i<num_part; i++ ) {
+      x[i] = partitions[i].coa( mu, idx );
+      idx += partitions[i].size();
+    }
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+real8_t* Group::load( real8_t* src ) {
+  // -------------------------------------------------------------------------------------
+  real8_t* ptr = src;
+  for ( int32_t i=0; i<num_part; i++ ) {
+    ptr = part[i]->load( ptr );
+  }
+  return ptr;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+real8_t* Group::store( real8_t* dst ) {
+  // -------------------------------------------------------------------------------------
+  real8_t* ptr = dst;
+  for ( int32_t i=0; i<num_part; i++ ) {
+    ptr = part[i]->store( ptr );
+  }
+  return ptr;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+bool Group::write( std::ofstream& ofs, std::string fmt ) {
+  // -------------------------------------------------------------------------------------
+  ofs << num_part << "\n";
+  for ( int32_t i=0; i<num_part; i++ ) {
+    if ( part[i]->write( ofs, fmt ) ) { return true; }
+  }
+  return false;
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+bool Group::read( std::ifstream& ifs ) {
+  // -------------------------------------------------------------------------------------
+  int32_t np;
+  ifs >> np;
+  resize( np );
+  for ( int32_t i=0; i<num_part; i++ ) {
+    Partition P;
+    if ( P.read( ifs) ) { return true; }
+    set( i, P );
+  }
+  return false;
+}
+
+
+}; // end namespace fuzzy
+
+
+// =======================================================================================
+// **                              F U Z Z Y : : G R O U P                              **
 // ======================================================================== END FILE =====

@@ -40,6 +40,7 @@ add_executable(${PROJECT_NAME} ../main.cc
   utest_stats
   utest_exemplar
   utest_array
+  utest_varreal
   )
 
 target_link_libraries(${PROJECT_NAME} GTest::GTest GTest::Main callisto ${lapackblas_libraries})

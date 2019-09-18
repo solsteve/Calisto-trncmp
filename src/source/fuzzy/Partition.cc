@@ -120,6 +120,18 @@ Partition::Partition( const int32_t n, real8_t* ctrs ) : INIT_VAR(0) {
 
 
 // =======================================================================================
+/** @brief Constructor.
+ *  @param[in] src reference to another Partition.
+ *
+ */
+// ---------------------------------------------------------------------------------------
+Partition::Partition( const Partition& psrc ) : INIT_VAR(0) {
+  // -------------------------------------------------------------------------------------
+  copy( psrc );
+}
+
+
+// =======================================================================================
 /** @brief Destructor.
  */
 // ---------------------------------------------------------------------------------------
@@ -238,7 +250,7 @@ bool Partition::resize( const int32_t n ) {
  *  @return reference to the ith Set.
  */
 // ---------------------------------------------------------------------------------------
-Set& Partition::getSet( const int32_t i ) {
+Set& Partition::get( const int32_t i ) {
   // -------------------------------------------------------------------------------------
   return *(fset[i]);
 }
@@ -490,6 +502,30 @@ void Partition::set( const real8_t minc, const real8_t maxc ) {
 
 
 
+// =======================================================================================
+/** @brief Copy.
+ *  @param[in] src reference to another Partition.
+ *
+ */
+// ---------------------------------------------------------------------------------------
+void Partition::copy( const Partition& psrc ) {
+  // -------------------------------------------------------------------------------------
+  
+}
+
+
+// =======================================================================================
+/** @brief Clone.
+ *  @param[in] src reference to another Partition.
+ *
+ */
+// ---------------------------------------------------------------------------------------
+Partition* Partition::clone( void ) {
+  // -------------------------------------------------------------------------------------
+  return new Partition( *this );
+}
+
+
 
 
 
@@ -575,23 +611,32 @@ real8_t* Partition::store( real8_t* dst ) {
 /** @brief Write.
  *  @param[in] ofs reference to an output file stream.
  *  @param[in] fmt optional edit descriptor.
+ *  @return true if error occurs.
  *
  *  Write the centers of the (n_set) fuzzy sets.
  */
 // ---------------------------------------------------------------------------------------
-void Partition::write( std::ofstream& ofs, std::string fmt ) {
+bool Partition::write( std::ofstream& ofs, std::string fmt ) {
   // -------------------------------------------------------------------------------------
   ofs << num_set;
   for ( int32_t i=0; i<num_set; i++ ) {
     ofs << " " << c_fmt( fmt, fset[i]->getCenter() );
   }
   ofs << "\n";
+
+  return false;
 }
 
 
 // =======================================================================================
+/** @brief Read.
+ *  @param[in] ifs reference to an input file stream.
+ *  @return true if error occurs.
+ *
+ *  Read the centers of the (n_set) fuzzy sets.
+ */
 // ---------------------------------------------------------------------------------------
-void Partition::read( std::ifstream& ifs ) {
+bool Partition::read( std::ifstream& ifs ) {
   // -------------------------------------------------------------------------------------
   int32_t nf;
   ifs >> nf;
@@ -603,6 +648,8 @@ void Partition::read( std::ifstream& ifs ) {
   }
 
   this->set( nf, ctrs );
+
+  return false;
 }
 
 

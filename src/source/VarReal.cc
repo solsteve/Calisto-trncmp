@@ -1,10 +1,10 @@
 // ====================================================================== BEGIN FILE =====
-// **                                     A R R A Y                                     **
+// **                                   V A R R E A L                                   **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 2010-2019, Stephen W. Soliday                                      **
+// **  Copyright (c) 2015-2019, Stephen W. Soliday                                      **
 // **                           stephen.soliday@trncmp.org                              **
 // **                           http://research.trncmp.org                              **
 // **                                                                                   **
@@ -24,72 +24,22 @@
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief  Array.
- *  @file   Array.hh
+//
+/** @brief  Variable row length array.
+ *  @file   VarReal.cc
  *  @author Stephen W. Soliday
- *  @date   2010-Feb-07 Original release.
+ *  @date   2015-Feb-09 Original release.
  *  @date   2019-Sep-01 CMake refactorization.
  *
- *  Provides the interface for a templated 2-D array.
+ *  Provides the methods for a templated 2-D array with variable row length.
  */
 // =======================================================================================
 
 
-#ifndef __HH_ARRAY_TRNCMP
-#define __HH_ARRAY_TRNCMP
+#include <VarReal.hh>
 
-#include <trncmp.hh>
+#define INIT_VAR(_a)  n_buf(_a), n_row(_a), n_col(_a), data(_a), rowptr(_a)
 
-// =======================================================================================
-template<class T>
-class Array {
-  // -------------------------------------------------------------------------------------
- protected:
-  int32_t n_row;
-  int32_t n_col;
-  int32_t n_dat;
-  T*      data;
-
-  void destroy ( void );
-  
- public:
-  Array  ( void );
-  Array  ( const int32_t nr, const int32_t nc, T* src = static_cast<T*>(0) );
-  Array  ( const Array<T>& src );
-  ~Array ( void );
-
-  int32_t size       ( const int dim = 0 ) const;
-  void    resize     ( const int32_t nr, const int32_t nc );
-
-  Array<T>&  operator=  ( const Array<T>& src );
-  void    copy       ( const Array<T>& src );
-
-  T       get        ( const int32_t ir, const int32_t ic ) const;
-  T*      get        ( const int32_t ir ) const;
-
-  void    set        ( const T val = static_cast<T>(0) );
-  void    set        ( const int32_t ir, const int32_t ic, const T val );
-
-  T&      operator() ( const size_t ir, const size_t ic );
-  T*      operator() ( const size_t ir ) const;
-
-  T*      load       ( T* src );
-  T*      store      ( T* dst );
-
-}; // end class Array
-
-// =======================================================================================
-/** @brief Size
- *  @param[in] ary reference to an Array.
- *  @param[in] dim dimension to return ( default: number of rows )
- *  @return number of rows, if dim==0, else number of columns.
- */
-// ---------------------------------------------------------------------------------------
-template<class T>
-int32_t size( const Array<T>& ary, const int dim = 0 ) {
-  // -------------------------------------------------------------------------------------
-  return ary.size(dim);
-}
 
 // =======================================================================================
 /** @brief Destroy.
@@ -97,16 +47,22 @@ int32_t size( const Array<T>& ary, const int dim = 0 ) {
  *  Remove internal allocation.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-void Array<T>::destroy( void ) {
+void VarReal::destroy( void ) {
   // -------------------------------------------------------------------------------------
-  if ( static_cast<T*>(0) != data ) {
+  if ( static_cast<real8_t*>(0) != data ) {
+    for ( int32_t r=0; r<n_row; r++ ) {
+      rowptr[r] = static_cast<real8_t*>(0);
+      n_col[r]  = 0;
+    }
+    delete[] rowptr;
+    delete[] n_col;
     delete[] data;
+    data   = static_cast<real8_t*>(0);
+    rowptr = static_cast<real8_t**>(0);
+    n_col  = static_cast<int32_t*>(0);
+    n_buf  = 0;
+    n_row  = 0;
   }
-  n_row = 0;
-  n_col = 0;
-  n_dat = 0;
-  data  = static_cast<T*>(0);
 }
 
 
@@ -116,17 +72,27 @@ void Array<T>::destroy( void ) {
  *  @param[in] nc number of columns.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-void Array<T>::resize( const int32_t nr, const int32_t nc ) {
+void VarReal::resize( const int32_t nr, const int32_t* nc ) {
   // -------------------------------------------------------------------------------------
-  const int32_t n = nr*nc;
-  if ( n != n_dat ) {
-    destroy();
-    data = new T[ n ];
-    n_dat = n;
-  }
+  destroy();
+
   n_row = nr;
-  n_col = nc;
+  n_buf = 0;
+  n_col = new int32_t[n_row];
+  for ( int32_t r=0; r<n_row; r++) {
+    n_col[r] = nc[r];
+    n_buf   += nc[r];
+  }
+
+  data   = new real8_t[ n_buf ];
+  rowptr = new real8_t*[ n_row ];
+
+  real8_t* ptr = data;
+
+  for ( int32_t r=0; r<n_row; r++ ) {
+    rowptr[r] = ptr;
+    ptr       = ( ptr + n_col[r] );
+  }
 }
 
 
@@ -134,10 +100,20 @@ void Array<T>::resize( const int32_t nr, const int32_t nc ) {
 /** @brief Constructor.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-Array<T>::Array( void )
-    : n_row(0), n_col(0), n_dat(0), data(0) {
+VarReal::VarReal( void ) : INIT_VAR(0) {
   // -------------------------------------------------------------------------------------
+}
+
+
+// =======================================================================================
+/** @brief Constructor.
+ *  @param[in] nr  number of rows.
+ *  @param[in] nc  number of columns.
+ */
+// ---------------------------------------------------------------------------------------
+VarReal::VarReal( const int32_t nr, const int32_t* nc ) : INIT_VAR(0) {
+  // -------------------------------------------------------------------------------------
+  resize( nr, nc );
 }
 
 
@@ -148,26 +124,10 @@ Array<T>::Array( void )
  *  @param[in] src optional pointer to a data source.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-Array<T>::Array( const int32_t nr, const int32_t nc, T* src )
-    : n_row(0), n_col(0), n_dat(0), data(0) {
+VarReal::VarReal( const int32_t nr, const int32_t* nc, real8_t* src ) : INIT_VAR(0) {
   // -------------------------------------------------------------------------------------
   resize( nr, nc );
-  if ( static_cast<T*>(0) != src ) {
-    load( src );
-  }
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- *  @param[in] src reference to a source Array.
- */
-// ---------------------------------------------------------------------------------------
-template<class T>
-Array<T>::Array( const Array<T>& src ) : n_row(0), n_col(0), n_dat(0), data(0) {
-  // -------------------------------------------------------------------------------------
-  copy( src );
+  load( src );
 }
 
 
@@ -175,187 +135,131 @@ Array<T>::Array( const Array<T>& src ) : n_row(0), n_col(0), n_dat(0), data(0) {
 /** @brief Destructor.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-Array<T>::~Array( void ) {
+VarReal::~VarReal( void ) {
   // -------------------------------------------------------------------------------------
   destroy();
 }
 
 
 // =======================================================================================
-/** @brief Size
- *  @param[in] dim dimension to return ( default: number of rows )
- *  @return number of rows, if dim==0, else number of columns.
+/** @brief Size.
+ *  @return total number of elements.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-int32_t Array<T>::size( const int dim ) const {
+int32_t VarReal::size( void ) const {
   // -------------------------------------------------------------------------------------
-  if ( 0 == dim ) {
-    return n_row;
-  }
-  return n_col;
+  return n_buf;
 }
 
 
 // =======================================================================================
-/** @brief Copy.
- *  @param[in] reference to a source Array.
- *  @return reference to this Array.
- *
- *  Copy the contents of src.
+/** @brief Number of rows.
+ *  @return total number of rows.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-Array<T>& Array<T>::operator=( const Array<T>& src ) {
+int32_t VarReal::nRow( void ) const {
   // -------------------------------------------------------------------------------------
-  copy( src );
-  return *this;
+  return n_row;
 }
 
 
 // =======================================================================================
-/** @brief Copy.
- *  @param[in] reference to a source Array.
- *
- *  Copy the contents of src.
+/** @brief Number of coluns.
+ *  @return total number of columns in a given row.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-void Array<T>::copy( const Array<T>& src ) {
+int32_t VarReal::nCol( const int32_t r ) const {
   // -------------------------------------------------------------------------------------
-  resize( src.n_row, src.n_col );
-  for ( int32_t i=0; i<n_dat; i++ ) {
-    *(data+i) = *(src.data+i);
-  }
+  return (0 == n_row) ? (0) : (n_col[r]);
 }
 
 
 // =======================================================================================
 /** @brief Get.
- *  @param[in] ir row    index.
- *  @param[in] ic column index.
- *  @return value of the element indexed by ir and ic.
+ *  @param[in] r row index.
+ *  @param[in] c column index.
+ *  @return value of the element indexed by (r,c)
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-T Array<T>::get( const int32_t ir, const int32_t ic ) const {
+real8_t VarReal::get( const int32_t r, const int32_t c ) const {
   // -------------------------------------------------------------------------------------
-  return *(data+ic+(ir*n_col));
-}
-
-
-// =======================================================================================
-/** @brief Get.
- *  @param[in] ir row index.
- *  @return pointer to the row indexed by ir.
- */
-// ---------------------------------------------------------------------------------------
-template<class T>
-T* Array<T>::get( const int32_t ir ) const {
-  // -------------------------------------------------------------------------------------
-  return (data+(ir*n_col));
+  return (rowptr[r])[c];
 }
 
 
 // =======================================================================================
 /** @brief Set.
- *  @param[in] val value to set (default: zero).
- *
- *  Set all elements of this Array to the value of val.
+ *  @param[in] r   row    index.
+ *  @param[in] c   column index.
+ *  @param[in] val value
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-void Array<T>::set( const T val ) {
+void VarReal::set( const int32_t r, const int32_t c, const real8_t val ) {
   // -------------------------------------------------------------------------------------
-  for ( int32_t i=0; i<n_dat; i++ ) {
-    *(data+i) = val;
-  }
+  (rowptr[r])[c] = val;
 }
 
 
 // =======================================================================================
-/** @brief Set.
- *  @param[in] ir row    index.
- *  @param[in] ic column index.
- *  @param[in] val value to set.
- *
- *  Set the element indexed by ir and ic to the value of val.
+/** @brief Reference.
+ *  @param[in] r row index.
+ *  @param[in] c column index.
+ *  @return reference to the element indexed by (r,c)
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-void Array<T>::set( const int32_t ir, const int32_t ic, const T val ) {
+real8_t& VarReal::operator()( const int32_t r, const int32_t c ) {
   // -------------------------------------------------------------------------------------
-  *(data+ic+(ir*n_col)) = val;
+  return (rowptr[r])[c];
 }
 
 
 // =======================================================================================
-/** @brief Get.
- *  @param[in] ir row    index.
- *  @param[in] ic column index.
- *  @return refernce to the element indexed by ir and ic.
+/** @brief Get Row.
+ *  @param[in] r row index.
+ *  @return pointer to begining of row.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-T& Array<T>::operator()( const size_t ir, const size_t ic ) {
+real8_t* VarReal::operator()( const int32_t r ) {
   // -------------------------------------------------------------------------------------
-  return *(data+ic+(ir*n_col));
+  return rowptr[r];
 }
 
-
-// =======================================================================================
-/** @brief Get.
- *  @param[in] ir row index.
- *  @return pointer to the row indexed by ir.
- */
-// ---------------------------------------------------------------------------------------
-template<class T>
-T* Array<T>::operator()( const size_t ir ) const {
-  // -------------------------------------------------------------------------------------
-  return (data+(ir*n_col));
-}
 
 // =======================================================================================
 /** @brief Store.
  *  @param[in] src pointer to an array of type T.
  *  @return return a pointer to the next available element of src.
  *
- *  Store the contents of this Array into a buffer provided by src. This copy is
+ *  Store the contents of this VarArray into a buffer provided by src. This copy is
  *  performed in row order.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-T* Array<T>::load( T* src ) {
+real8_t* VarReal::load( real8_t* src ) {
   // -------------------------------------------------------------------------------------
-  for ( int32_t i=0; i<n_dat; i++ ) {
-    *(data+i) = *(src+i);
+  for ( int32_t i=0; i<n_buf; i++ ) {
+    data[i] = src[i];
   }
-  return (src+n_dat);
+  return (src+n_buf);
 }
 
 
 // =======================================================================================
 /** @brief Store.
  *  @param[in] src pointer to an array of type T.
- *  @return return a pointer to the next available element of dst.
+ *  @return return a pointer to the next available element of src.
  *
- *  Store the contents of this Array into a buffer provided by dst. This copy is
+ *  Store the contents of this VarArray into a buffer provided by src. This copy is
  *  performed in row order.
  */
 // ---------------------------------------------------------------------------------------
-template<class T>
-T* Array<T>::store( T* dst ) {
+real8_t* VarReal::store( real8_t* dst ) {
   // -------------------------------------------------------------------------------------
-  for ( int32_t i=0; i<n_dat; i++ ) {
-    *(dst+i) = *(data+i);
+  for ( int32_t i=0; i<n_buf; i++ ) {
+    dst[i] = data[i];
   }
-  return (dst+n_dat);
+  return (dst+n_buf);
 }
 
-
-#endif
-
 // =======================================================================================
-// **                                     A R R A Y                                     **
+// **                                   V A R R E A L                                   **
 // ======================================================================== END FILE =====
