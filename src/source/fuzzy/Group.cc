@@ -223,11 +223,12 @@ void Group::set( VarReal& V ) {
 // ---------------------------------------------------------------------------------------
 void Group::fuzzify( real8_t* mu, real8_t* x  ) {
   // -------------------------------------------------------------------------------------
-    int idx = 0;
-    for ( int i=0; i<num_part; i++ ) {
-      partitions[i].mu( mu, idx, x[i] );
-      idx += partitions[i].size();
-    }
+    int32_t idx = 0;
+    for ( int32_t i=0; i<num_part; i++ ) {
+      real8_t* y = (mu+idx);
+      part[i]->mu( y, x[i] );
+      idx += part[i]->nOut();
+   }
 }
 
 
@@ -235,10 +236,11 @@ void Group::fuzzify( real8_t* mu, real8_t* x  ) {
 // ---------------------------------------------------------------------------------------
 void Group::defuzzify( real8_t* x,  real8_t* mu ) {
   // -------------------------------------------------------------------------------------
-    int idx = 0;
-    for ( int i=0; i<num_part; i++ ) {
-      x[i] = partitions[i].coa( mu, idx );
-      idx += partitions[i].size();
+    int32_t idx = 0;
+    for ( int32_t i=0; i<num_part; i++ ) {
+      real8_t* y = (mu+idx);
+      x[i] = part[i]->coa( y );
+      idx += part[i]->nOut();
     }
 }
 
