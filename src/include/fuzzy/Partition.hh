@@ -90,34 +90,36 @@ class Partition {
   int32_t     nOut          ( void ) const; ///< Number of outputs
   int32_t     size          ( void ) const; ///< Storage size (load/store elements)
   real8_t*    create_buffer ( void );
+  real8_t     getCenter     ( const int32_t idx ) const;
 
   // ----- configuration ----------------------------------
 
-  void balance ( void );
+  void        balance   ( void );
 
-  void        set      ( const int32_t n ); 
-  void        set      ( const int32_t n, const real8_t minc, const real8_t maxc ); 
-  void        set      ( const int32_t n, real8_t* ctrs );
+  void        set       ( const int32_t n ); 
+  void        set       ( const int32_t n, const real8_t minc, const real8_t maxc ); 
+  void        set       ( const int32_t n, real8_t* ctrs );
 
-  void        set      ( real8_t* ctrs );
-  void        set      ( const real8_t minc, const real8_t maxc );
+  void        set       ( real8_t* ctrs );
+  void        set       ( const real8_t minc, const real8_t maxc );
 
-  void        copy     ( const Partition& psrc );
-  Partition*  clone    ( void );
+  void        copy      ( const Partition& psrc );
+  Partition*  clone     ( void );
+
 
   // ----- execution --------------------------------------
 
-  void        mu       ( real8_t* degree, const real8_t x );
-  real8_t     area     ( real8_t* degree );
-  real8_t     coa      ( real8_t* degree );
+  void        mu        ( real8_t* degree, const real8_t x );
+  real8_t     area      ( real8_t* degree );
+  real8_t     coa       ( real8_t* degree );
 
   // ----- storage and transfer ---------------------------
 
-  real8_t*    load     ( real8_t* src );
-  real8_t*    store    ( real8_t* dst );
+  real8_t*    load      ( real8_t* src );
+  real8_t*    store     ( real8_t* dst );
   
-  bool        write    ( std::ofstream& ofs, std::string fmt = "%23.16e" );
-  bool        read     ( std::ifstream& ifs );
+  bool        write     ( std::ofstream& ofs, std::string fmt = "%23.16e" );
+  bool        read      ( std::ifstream& ifs );
 
 }; // end class Partition
 

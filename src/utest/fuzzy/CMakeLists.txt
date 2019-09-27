@@ -37,6 +37,7 @@ project( fuzzy CXX )
 
 add_executable(${PROJECT_NAME} ../main.cc
   utest_fset
+  utest_group
   utest_partition
   )
 

@@ -131,7 +131,9 @@ int32_t Group::nOut( void ) const {
   // -------------------------------------------------------------------------------------
   int32_t sum = 0;
   for ( int32_t i=0; i<num_part; i++ ) {
-    sum += part[i]->nOut();
+    if (static_cast<Partition*>(0) != part[i] ) {
+      sum += part[i]->nOut();
+    }
   }
   return sum;
 }
@@ -143,7 +145,9 @@ int32_t Group::size( void ) const {
   // -------------------------------------------------------------------------------------
   int32_t sum = 0;
   for ( int32_t i=0; i<num_part; i++ ) {
-    sum += part[i]->size();
+    if (static_cast<Partition*>(0) != part[i] ) {
+      sum += part[i]->size();
+    }
   }
   return sum;
 }
