@@ -56,6 +56,8 @@ private:
   static Dice* theInstance;  //< static singleton instance.
   Entropy*     ent_engine;   //< pointer to an entropy source.
 
+  static u_int32_t TEST_SEED_MATTER[];
+
   // -------------------------------------------------------------------------------------
 protected:
   bool              have_spare;      //< state flag for Box-Muller.
@@ -72,6 +74,8 @@ protected:
   // -------------------------------------------------------------------------------------
 public:
 
+  static Dice* TestDice( void );
+  
   ~Dice ( void );
   
   // ----- global instance ---(preferred)-------------------------------------------------
@@ -101,14 +105,16 @@ public:
   bool      boolean   ( real8_t thres = D_HALF );
   real8_t   uniform   ( void );
   real8_t   normal    ( void );
-  size_t    index     ( size_t maxValue );
-  size_t    index     ( size_t from, size_t to );
+  size_t    index     ( size_t  maxValue );
+  size_t    index     ( size_t  from, size_t to );
 
   template<class T> void random_index( T* index, const size_t len );
   template<class T> T*   random_index( const size_t len );
 
   template<class T> void shuffle( T* a, size_t n );
 }; // end class Dice
+
+
 
 // =======================================================================================
 /** @brief Random Index.

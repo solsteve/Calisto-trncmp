@@ -1,5 +1,5 @@
 #/ ====================================================================== BEGIN FILE =====
-#/ **                          Applications - C M A K E L I S T                         **
+#/ **                             Threads - C M A K E L I S T                           **
 #/ =======================================================================================
 #/ **                                                                                   **
 #/ **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
@@ -29,17 +29,37 @@
 #/ @details Provides a common build environment.
 #/
 #/ @author  Stephen W. Soliday
-#/ @date    2019-04-11
+#/ @date    2019-Sep-07
 #/
 #/ =======================================================================================
 
-project ( apps CXX )
+project ( threads CXX )
 
-add_subdirectory ( convert )
-add_subdirectory ( tictactoe )
-add_subdirectory ( nervenet )
-add_subdirectory ( threads )
+set ( APP1_NAME "test01" )
+set ( APP2_NAME "test02" )
+
+set ( CMAKE_CXX_DIRECTORY ${PROJECT_BINARY_DIR}/temp )
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
+
+add_executable ( ${APP1_NAME} test01.cc )
+add_executable ( ${APP2_NAME} test02.cc )
+
+target_link_libraries ( ${APP1_NAME} callisto )
+target_link_libraries ( ${APP2_NAME} callisto )
+
+install (TARGETS ${APP1_NAME}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+
+install (TARGETS ${APP2_NAME}
+  RUNTIME DESTINATION bin
+  LIBRARY DESTINATION lib
+  ARCHIVE DESTINATION lib)
+
 
 #/ =======================================================================================
-#/ **                          Applications - C M A K E L I S T                         **
+#/ **                             Threads - C M A K E L I S T                           **
 #/ =========================================================================== END FILE ==

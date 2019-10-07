@@ -1,5 +1,5 @@
 // ====================================================================== BEGIN FILE =====
-// **                               E V O : : M E T R I C                               **
+// **                             E V O : : E N C O D I N G                             **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
@@ -24,40 +24,43 @@
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief  Multi Valued Metric.
- *  @file   evo/Metric.cc
+/** @brief  Multi Valued Encoding.
+ *  @file   evo/Encoding.cc
  *  @author Stephen W. Soliday
  *  @date   1995-Dec-27 Original C++ release (as FGA).
  *  @date   2016-Sep-01 Refactored for MPIch.
  *  @date   2018-Jul-10 Ported to HPSP Java.
  *  @date   2019-Sep-26 CMake refactorization.
  *
- *  Provides the methods for a multi valued matric class.
+ *  Provides the methods for the generic encoding.
  */
 // =======================================================================================
 
 
-#include <evo/Metric.hh>
+#include <evo/Encoding.hh>
 #include <string.h>
 
 
 namespace evo {
 
 
-#define INIT_VAR(_a) buffer(_a), n_buf(_a), owns_buffer(false), data(_a), n_dat(_a)
+#define INIT_VAR(_a) buffer(_a), n_buf(_a), owns_buffer(false)
 
+  /** This constant is used with noise and mutation. It represents the number of standard
+   *  deviations that are covered by the range of parameter values when 'scale' is set
+   *  to 1. Example: if the mean is -1.0 and the scale is 1.0 then the opposite end
+   *  parameter 1.0 is N_SIGMA_SCALE * sigma away.
+   */
+const real8_t Encoding::N_SIGMA_SCALE = D_FOUR;
 
 // =======================================================================================
 /** @brief Destroy.
  *
- *  Deallocate space if required. Place this Metric in the empty state.
+ *  Deallocate space if required. Place this Encoding in the empty state.
  */
 // ---------------------------------------------------------------------------------------
-void Metric::destroy( void ) {
+void Encoding::destroy_buffer( void ) {
   // -------------------------------------------------------------------------------------
-  data  = static_cast<real8_t*>(0);
-  n_dat = 0;
-  
   if ( owns_buffer ) { // this will not be set to true unless the pointer is non-NULL
     delete[] buffer;
   }
@@ -71,20 +74,19 @@ void Metric::destroy( void ) {
 // =======================================================================================
 /** @brief Constructor.
  *  @param[in] nd     number of data elements.
- *  @param[in] src    pointer to a allocation for this Metric.
- *  @param[in] offset offset into the allocated buf for this Metric.
+ *  @param[in] src    pointer to a allocation for this Encoding.
+ *  @param[in] offset offset into the allocated buf for this Encoding.
  *
- *  Create a Metric object. Use the buffer if provided, otherwise
+ *  Create a Encoding object. Use the buffer if provided, otherwise
  *  make an allocation and take ownership.
  */
 // ---------------------------------------------------------------------------------------
-void Metric::resize( const int32_t nd, u_int8_t* src, const int32_t offset ) {
+void Encoding::resize_buffer( const int32_t nb, u_int8_t* src, const int32_t offset ) {
   // -------------------------------------------------------------------------------------
-  if ( n_dat != nd ) {
-    destroy();
+  if ( n_buf != nb ) {
+    destroy_buffer();
 
-    n_dat = nd;
-    n_buf = nd * static_cast<int32_t>(sizeof(real8_t));
+    n_buf = nb;
     
     if ( static_cast<u_int8_t*>(0) == src ) {
       buffer      = new u_int8_t[ n_buf ];
@@ -93,8 +95,6 @@ void Metric::resize( const int32_t nd, u_int8_t* src, const int32_t offset ) {
       buffer      = (src+offset);
       owns_buffer = false;
     }
-
-    data = reinterpret_cast<real8_t*>(buffer);
   }
 }
 
@@ -108,27 +108,11 @@ void Metric::resize( const int32_t nd, u_int8_t* src, const int32_t offset ) {
 // =======================================================================================
 /** @brief Constructor.
  *
- *  Create an empty Metric.
+ *  Create an empty Encoding.
  */
 // ---------------------------------------------------------------------------------------
-Metric::Metric( void ) : INIT_VAR(0) {
+Encoding::Encoding( void ) : INIT_VAR(0) {
   // -------------------------------------------------------------------------------------
-}
-
-
-// =======================================================================================
-  /** @brief Constructor.
-   *  @param[in] nd     number of data elements.
-   *  @param[in] src    pointer to a allocation for this Metric.
-   *  @param[in] offset offset into the allocated buf for this Metric.
-   *
-   *  Create a Metric object. Use the buffer if provided, otherwise
-   *  make an allocation and take ownership.
-   */
-// ---------------------------------------------------------------------------------------
-  Metric::Metric( const int32_t nd, u_int8_t* src, const int32_t offset ) : INIT_VAR(0) {
-  // -------------------------------------------------------------------------------------
-    resize( nd, src, offset );
 }
 
 
@@ -136,9 +120,9 @@ Metric::Metric( void ) : INIT_VAR(0) {
   /** @brief Destructor.
    */
 // ---------------------------------------------------------------------------------------
-Metric::~Metric( void ) {
+Encoding::~Encoding( void ) {
   // -------------------------------------------------------------------------------------
-  destroy();
+  destroy_buffer();
 }
 
 
@@ -146,98 +130,6 @@ Metric::~Metric( void ) {
 
 
 
-
-
-// =======================================================================================
-  /** @brief Compare.
-   *  @param[in] rhs pointer to the RHS Metric.
-   *  @return integer less than, equal to, or greater than zero if this is found,
-   *          respectively, to be less than, to match, or be greater than rhs.
-   *
-   *  Perform an element by element compare of the RHS Metric.
-   *
-   *  < 0   if   this[i] < rhs[i]
-   *  = 0   if   this[i] = rhs[i]
-   *  > 0   if   this[i] > rhs[i]
-   */
-// ---------------------------------------------------------------------------------------
-  int Metric::compare( Metric* rhs ) const {
-  // -------------------------------------------------------------------------------------
-    const int n = static_cast<int>(this->n_dat);
-    for ( int i=0; i<n; i++ ) {
-      if ( this->data[i] < rhs->data[i] ) { return -(i+1); }
-      if ( this->data[i] > rhs->data[i] ) { return   i+1;  }
-    }
-    return 0;
-}
-
-
-// =======================================================================================
-  /** @brief Sum of squares.
-   *  @return the sum of the squares.
-   *
-   *  Sum the squares of each element of the Metric array.
-   */
-// ---------------------------------------------------------------------------------------
-  real8_t Metric::sumsq( void ) const {
-  // -------------------------------------------------------------------------------------
-    real8_t sum = D_ZERO;
-
-    for ( int32_t i=0; i<n_dat; i++ ) {
-      const real8_t d = data[i];
-      sum += ( d*d );
-    }
-
-    return sum;
-}
-
-
-// =======================================================================================
-/** @brief Copy.
- *  @param[in] src pointer to the source Metric.
- *
- *  Perform a deep copy of this object.
- */
-// ---------------------------------------------------------------------------------------
-  void Metric::copy( Metric* src ) {
-  // -------------------------------------------------------------------------------------
-    for ( int32_t i=0; i<n_dat; i++ ) {
-      data[i] = src->data[i];
-    }
-}
-
-
-// =======================================================================================
-/** @brief Zero.
- *
- *  Zero all the elements of this Metric.
- */
-// ---------------------------------------------------------------------------------------
-  void Metric::zero( void ) {
-  // -------------------------------------------------------------------------------------
-    for ( int32_t i=0; i<n_dat; i++ ) {
-      data[i] = D_ZERO;
-    }
-}
-
-
-// =======================================================================================
-  /** @brief Normalize.
-   *  @return the scaling factor.
-   *
-   *  Normalize in place the elements of the Metric.
-   */
-// ---------------------------------------------------------------------------------------
-  real8_t Metric::normalize( void ) {
-  // -------------------------------------------------------------------------------------
-    const real8_t div = sqrt( sumsq() );
-
-    for ( int32_t i=0; i<n_dat; i++ ) {
-      data[i] /= div;
-    }
-
-    return div;
-}
 
 
 // =======================================================================================
@@ -246,7 +138,7 @@ Metric::~Metric( void ) {
    *  @return next unused address in the source.
    */
 // ---------------------------------------------------------------------------------------
-  u_int8_t* Metric::load( u_int8_t* src ) {
+  u_int8_t* Encoding::load( u_int8_t* src ) {
   // -------------------------------------------------------------------------------------
     memcpy( static_cast<void*>(buffer), static_cast<void*>(src), n_buf);
     return (src+n_buf);
@@ -259,7 +151,7 @@ Metric::~Metric( void ) {
    *  @return next unused address in the destination.
    */
 // ---------------------------------------------------------------------------------------
-  u_int8_t* Metric::store( u_int8_t* dst ) {
+  u_int8_t* Encoding::store( u_int8_t* dst ) {
   // -------------------------------------------------------------------------------------
     memcpy( static_cast<void*>(dst), static_cast<void*>(buffer), n_buf);
     return (dst+n_buf);
@@ -270,5 +162,5 @@ Metric::~Metric( void ) {
 
 
 // =======================================================================================
-// **                               E V O : : M E T R I C                               **
+// **                             E V O : : E N C O D I N G                             **
 // =========================================================================== END FILE ==

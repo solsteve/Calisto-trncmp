@@ -90,7 +90,7 @@ endif ( "${CMAKE_BUILD_TYPE}" STREQUAL "" )
 
 set ( GARCH "\
 -fverbose-asm -ansi -fsigned-char -funsigned-bitfields -fshort-enums \
--funroll-loops -march=corei7 -mtune=corei7 -fipa-sra" )
+-funroll-loops -march=corei7 -mtune=corei7 -fipa-sra -fopenmp" )
 
 set ( GWARN "\
 -W -Wall -Wextra -Wfloat-equal -Wshadow -Wcast-align -Wredundant-decls \

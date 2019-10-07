@@ -37,6 +37,8 @@ project( evo CXX )
 
 add_executable(${PROJECT_NAME} ../main.cc
   utest_metric
+  utest_real_enc
+  utest_toolkit
   )
 
 target_link_libraries(${PROJECT_NAME} GTest::GTest GTest::Main callisto ${lapackblas_libraries})

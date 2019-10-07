@@ -94,14 +94,14 @@ real8_t Statistics::running::var( void ) {
 void Statistics::running::report( std::ostream& os, const std::string sfmt ) {
   // -------------------------------------------------------------------------------------
   const char* fmt = sfmt.c_str();
-  os << "Samples:    " << c_fmt( fmt, count() ) << "\n"
-     << "  mean      " << c_fmt( fmt, mean()  ) << "\n"
-     << "  std dev   " << c_fmt( fmt, stdev() ) << "\n"
-     << "  min       " << c_fmt( fmt, minv()  ) << "\n"
-     << "  max       " << c_fmt( fmt, maxv()  ) << "\n"
-     << "  min index " << c_fmt( fmt, minidx()) << "\n"
-     << "  max index " << c_fmt( fmt, maxidx()) << "\n"
-     << "\n";
+  os << "Num:      " << c_fmt( "%lu", count() ) << "\n"
+     << "MinValue: " << c_fmt( fmt,   minv()  ) << "\n"
+     << "MaxValue: " << c_fmt( fmt,   maxv()  ) << "\n"
+     << "MinIndex: " << c_fmt( "%lu", minidx()) << "\n"
+     << "MaxIndex: " << c_fmt( "%lu", maxidx()) << "\n"
+     << "Mean:     " << c_fmt( fmt,   mean()  ) << "\n"
+     << "Var:      " << c_fmt( fmt,   var()   ) << "\n"
+    << "\n";
 }
 
 

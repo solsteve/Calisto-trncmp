@@ -50,9 +50,9 @@ namespace evo {
 class Metric {
   // -------------------------------------------------------------------------------------
  protected:
-  u_int8_t* buffer;       ///< pointer to the metrics buffer.
+  u_int8_t* buffer;       ///< pointer to the Metrics buffer.
   int32_t   n_buf;        ///< number of bytes in the buffer.
-  bool      owns_buffer;  ///< true if this metric owns the allocation.
+  bool      owns_buffer;  ///< true if this Metric owns the allocation.
     
   real8_t*  data;         ///< recast buffer as real8_t*
   int32_t   n_dat;        ///< number of real8_t data elements.
@@ -125,7 +125,7 @@ inline  int32_t Metric::size( void ) const {
 
 // =======================================================================================
 /** @brief Count.
- *  @return number of real elements in this metric.
+ *  @return number of real elements in this Metric.
  */
 // ---------------------------------------------------------------------------------------
 inline  int32_t Metric::count( void ) const {
@@ -136,7 +136,7 @@ inline  int32_t Metric::count( void ) const {
 
 // =======================================================================================
 /** @brief Create Buffer.
- *  @return pointer to new storage for this metric.
+ *  @return pointer to new storage for this Metric.
  */
 // ---------------------------------------------------------------------------------------
 inline  u_int8_t* Metric::create_buffer( void ) {
@@ -147,7 +147,7 @@ inline  u_int8_t* Metric::create_buffer( void ) {
 
 // =======================================================================================
 /** @brief Get Buffer.
- *  @return pointer to the storage for this metric.
+ *  @return pointer to the storage for this Metric.
  */
 // ---------------------------------------------------------------------------------------
 inline  u_int8_t* Metric::get_buffer( void ) {
@@ -158,7 +158,7 @@ inline  u_int8_t* Metric::get_buffer( void ) {
 
 // =======================================================================================
 /** @brief Get Data.
- *  @return pointer to the data for this metric.
+ *  @return pointer to the data for this Metric.
  */
 // ---------------------------------------------------------------------------------------
 inline  real8_t* Metric::get_data( void ) {
@@ -211,5 +211,5 @@ inline  real8_t Metric::mse( void ) const {
 
 
 // =======================================================================================
-// **                                  M A K E F I L E                                  **
+// **                               E V O : : M E T R I C                               **
 // =========================================================================== END FILE ==

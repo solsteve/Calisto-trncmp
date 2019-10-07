@@ -41,18 +41,6 @@
 namespace {
 
   
-  static u_int32_t SEED_MATTER[] = { 0x29341EA3, 0x9257677C, 0xCC98B1D1, 0x7C5EB68C,
-				     0x13ED5BC5, 0x3C91F88F, 0xE1A42570, 0x24CA88CD,
-				     0xAE36E97A, 0x59BADCBB, 0x4B9ED120, 0x952318E6,
-				     0xDD62B887, 0xCFC13ED9, 0x0F6A241B, 0x43970DA6,
-				     0xDF52E725, 0x4F6FE0ED, 0xCF9D4A7B, 0xA8742AE2,
-				     0x3B0590CF, 0xE20ACC41, 0x10A25D9B, 0xD59349FF,
-				     0x10BEE39E, 0x33CE2526, 0xD8029C5B, 0xFC6D3D65,
-				     0xD08E3996, 0x6FCFC48D, 0x2FD4F96B, 0x1AAEC36F };
-  /*
-  static int32_t SEED_MATTER_LEN = sizeof(SEED_MATTER)/sizeof(SEED_MATTER[0]);
-  */
-
 // =======================================================================================
 real8_t normal_MC( Dice* dd ) {
   // -------------------------------------------------------------------------------------
@@ -128,8 +116,7 @@ TEST(test_statistics_histogram, add ) {
 // =======================================================================================
 TEST(test_statistics_single, monte_carlo ) {
   // -------------------------------------------------------------------------------------
-  Dice* dd = Dice::getInstance();
-  dd->seed_set( reinterpret_cast<void*>(SEED_MATTER), dd->seed_size() );
+  Dice* dd = Dice::TestDice();
 
   int32_t   nsamp  = 1000000;
   real8_t* buffer = new real8_t[nsamp];
@@ -168,8 +155,7 @@ TEST(test_statistics_single, monte_carlo ) {
 // =======================================================================================
 TEST(test_statistics_single, normal_Dice ) {
   // -------------------------------------------------------------------------------------
-  Dice* dd = Dice::getInstance();
-  dd->seed_set( reinterpret_cast<void*>(SEED_MATTER), dd->seed_size() );
+  Dice* dd = Dice::TestDice();
 
   int32_t   nsamp  = 1000000;
   real8_t* buffer = new real8_t[nsamp];
@@ -210,8 +196,7 @@ TEST(test_statistics_single, normal_Dice ) {
 // =======================================================================================
 TEST(test_statistics_multiple, normal_Dice ) {
   // -------------------------------------------------------------------------------------
-  Dice* dd = Dice::getInstance();
-  dd->seed_set( reinterpret_cast<void*>(SEED_MATTER), dd->seed_size() );
+  Dice* dd = Dice::TestDice();
 
   real8_t MEAN[] = { 3.0, 7.0, -2.0, 1.0 };
   real8_t STDV[] = { 0.2, 1.5,  2.0, 3.0 };
@@ -256,6 +241,44 @@ TEST(test_statistics_multiple, normal_Dice ) {
   M.report( std::cout, "%10.6f" );
 }
 
+
+// =======================================================================================
+TEST(test_statistics_single, running_integer ) {
+  // -------------------------------------------------------------------------------------
+  Dice* dd = Dice::TestDice();
+
+  const int32_t IMIN =  20;
+  const int32_t IMAX = 100;
+  const int32_t IDIF = 1 + IMAX - IMIN;
+
+  const real8_t expected_mu  = D_HALF * static_cast<real8_t>(IMIN+IMAX);
+  const real8_t tt = static_cast<real8_t>( IMAX - IMIN + 1 );
+  const real8_t expected_var = ( tt*tt - D_ONE ) / 1.2e1;
+
+  int32_t   nsamp  = 1000000;
+
+  Statistics::running R;
+
+  real8_t minv = D_ZERO;
+  real8_t maxv = D_ZERO;
+  for ( int32_t i=0; i<nsamp; i++ ) {
+    int32_t x = IMIN + dd->index(IDIF);
+    R.update(x);
+    if ( x < minv ) { minv = x; }
+    if ( x > maxv ) { maxv = x; }
+  }
+
+  fprintf( stdout, "\nSampled %d normally distributed random numbers\n", nsamp );
+  fprintf( stdout, "   Attribute  Expected   Running\n" );
+  fprintf( stdout, "   ---------  ---------  ---------\n" );
+  fprintf( stdout, "   Min value  %d  %g\n", IMIN,          R.minv() );
+  fprintf( stdout, "   Mean       %g  %g\n", expected_mu,   R.mean() );
+  fprintf( stdout, "   Max value  %d  %g\n", IMAX,          R.maxv() );
+  fprintf( stdout, "   Variance   %g  %g\n\n", expected_var,  R.var()  );
+
+  R.report( std::cout );
+
+}
 
 
   

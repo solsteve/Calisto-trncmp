@@ -81,16 +81,6 @@ namespace {
   }
 
 
-static u_int32_t SEED_MATTER[] = { 0x29341EA3, 0x9257677C, 0xCC98B1D1, 0x7C5EB68C,
-                                   0x13ED5BC5, 0x3C91F88F, 0xE1A42570, 0x24CA88CD,
-                                   0xAE36E97A, 0x59BADCBB, 0x4B9ED120, 0x952318E6,
-                                   0xDD62B887, 0xCFC13ED9, 0x0F6A241B, 0x43970DA6,
-                                   0xDF52E725, 0x4F6FE0ED, 0xCF9D4A7B, 0xA8742AE2,
-                                   0x3B0590CF, 0xE20ACC41, 0x10A25D9B, 0xD59349FF,
-                                   0x10BEE39E, 0x33CE2526, 0xD8029C5B, 0xFC6D3D65,
-                                   0xD08E3996, 0x6FCFC48D, 0x2FD4F96B, 0x1AAEC36F };
-
-
 // =======================================================================================
 TEST(test_linalg_slice, get_row) {
   // -------------------------------------------------------------------------------------
@@ -847,8 +837,7 @@ TEST( test_linalg_lapack, sdd ) {
 // =======================================================================================
 TEST( test_linalg_table, rotate ) {
   // -------------------------------------------------------------------------------------
-  Dice* dd = Dice::getInstance();
-  dd->seed_set( reinterpret_cast<void*>(SEED_MATTER), dd->seed_size() );
+  Dice* dd = Dice::TestDice();
 
   const real8_t SIG_X = D_THREE;
   const real8_t SIG_Y = D_TWO;
