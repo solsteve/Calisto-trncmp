@@ -529,7 +529,7 @@ void correlate( Matrix& cor, const Matrix& cov ) {
       if ( i==j ) {
 	cor(i,i) = D_ONE;
       } else {
-	real8_t w = cov.get(i,j) / ( cov.get(i,i) * jvar );
+	real8_t w = cov.get(i,j) / sqrt( cov.get(i,i) * jvar );
 	cor(i,j) = w;
 	cor(j,i) = w;
       }

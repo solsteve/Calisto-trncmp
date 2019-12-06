@@ -56,7 +56,7 @@ class Statistics {
     real8_t  max_val;        ///< Maximum sampled value.
     real8_t  mean_val;       ///< Running mean of the sampled values.
     real8_t  mean_val_sq;    ///< Running mean of the squares of the sampled values.
-    bool     is_first;       ///< Set to true untile the first value is sampled.
+    bool     is_first;       ///< Set to true until the first value is sampled.
     int32_t  num_samp;       ///< Number of values sampled.
     int32_t  min_idx;        ///< Index of the minimum value sampled.
     int32_t  max_idx;        ///< Index of the maximum value sampled.
@@ -247,14 +247,13 @@ void Statistics::running::update( T v ) {
     min_idx     = 0;
     max_idx     = 0;
   } else {
-    if ( x < min_val ) { min_val = x;  min_idx = num_samp; }
-    if ( x > max_val ) { max_val = x;  max_idx = num_samp; }
-
     real8_t t  = (real8_t)num_samp * mean_val;
     real8_t t2 = (real8_t)num_samp * mean_val_sq;
     num_samp++;
     mean_val    = (x   + t ) / (real8_t)num_samp;
     mean_val_sq = (x*x + t2) / (real8_t)num_samp;      
+    if ( x < min_val ) { min_val = x;  min_idx = num_samp; }
+    if ( x > max_val ) { max_val = x;  max_idx = num_samp; }
   }
 
 }
