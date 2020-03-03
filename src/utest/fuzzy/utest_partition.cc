@@ -410,6 +410,7 @@ TEST( test_part_functions, area ) {
   real8_t ctrs[] = { 7.0, 11.0, 19.0 };
   fuzzy::Partition P( 3, ctrs );
 
+  
   for ( int32_t a=0; a<nd; a++ ) {
     D[0] = tD[a];
     for ( int32_t b=0; b<nd; b++ ) {
@@ -418,6 +419,7 @@ TEST( test_part_functions, area ) {
         D[2] = tD[c];
         real8_t area = P.area( D );
         EXPECT_DOUBLE_EQ( test[a][b][c], area );
+        fprintf( stdout, "%7.3f\n", test[a][b][c] );
       }
     }
   }

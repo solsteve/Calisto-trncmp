@@ -88,11 +88,12 @@ Partition::Partition( const int32_t n ) : INIT_VAR(0) {
 // =======================================================================================
 /** @brief Constructor.
  *  @param[in] n number of centers.
- *  @param[in] ctrs pointer to a real array of center values.
+ *  @param[in] left far left center values.
+ *  @param[in] right far right center values.
  *
  *  Construct a domain of fuzzy sets. The left and right sets are trapezoidal.
- *  The internal sets are triangular. The centers are defined by (ctrs) the left
- *  and right extents are defined by the centers of the sets to the left and right.
+ *  The internal sets are triangular. The centers are computed from the left
+ *  and right extents and the number of sets.
  */
 // ---------------------------------------------------------------------------------------
 Partition::Partition( const int32_t n, const real8_t  left, const real8_t right ) :
@@ -105,12 +106,11 @@ Partition::Partition( const int32_t n, const real8_t  left, const real8_t right 
 // =======================================================================================
 /** @brief Constructor.
  *  @param[in] n number of centers (sets).
- *  @param[in] left far left center values.
- *  @param[in] right far right center values.
+ *  @param[in] ctrs pointer to a real array of center values.
  *
  *  Construct a domain of fuzzy sets. The left and right sets are trapezoidal.
- *  The internal sets are triangular. The centers are computed from the left
- *  and right extents and the number of sets.
+ *  The internal sets are triangular. The centers are defined by (ctrs) the left
+ *  and right extents are defined by the centers of the sets to the left and right.
  */
 // ---------------------------------------------------------------------------------------
 Partition::Partition( const int32_t n, real8_t* ctrs ) : INIT_VAR(0) {

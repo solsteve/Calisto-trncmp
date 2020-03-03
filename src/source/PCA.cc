@@ -137,6 +137,7 @@ int PCA::fromSamples( Table& table ) {
     variance(i) = S[i]*S[i] / fnsm1;
   }
 
+    // **** TODO: look at your Fortran code on Europa. You can compute the covariance from the SVD products.
   ::covariance( covariance, table, mu );
 
   return 0;
