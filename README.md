@@ -1,3 +1,6 @@
+![Logo](docs/media/LittleCallisto.png "Callisto")
+
+
 Callisto
 ========
 
@@ -5,9 +8,9 @@ Core C++ libraries.
 
 
 
-##NervNet Sim Tools
+## NervNet Sim Tools
 
-####Make_Network
+#### Make_Network
 
     USAGE: make_network options
     
@@ -15,7 +18,7 @@ Core C++ libraries.
       net	- network config file
 
 
-####Train Network
+#### Train Network
 
     USAGE: train_network options
     
@@ -31,7 +34,7 @@ Core C++ libraries.
       tst	- testing exemplars
     
 
-####Execute Network
+#### Execute Network
 
     USAGE: callisto/bin/execute_network options
 
@@ -43,7 +46,7 @@ Core C++ libraries.
       fmt   - label file input  format (default: %23.16e)
       ofmt  - label file output format (default: same as fmt)
 
-####Validate Network
+#### Validate Network
 
     USAGE: callisto/bin/validate_network options
 
@@ -54,7 +57,7 @@ Core C++ libraries.
     optional:
       rpt	- path to report file 1=stdout, 2=stderr
 
-##Run a Test Group
+## Run a Test Group
 
 First make the training and testing data sets.
 
