@@ -37,8 +37,9 @@ project ( apps CXX )
 
 add_subdirectory ( convert )
 add_subdirectory ( tictactoe )
-add_subdirectory ( nervenet )
+#add_subdirectory ( nervenet )
 add_subdirectory ( threads )
+add_subdirectory ( PointCloud )
 
 #/ =======================================================================================
 #/ **                          Applications - C M A K E L I S T                         **

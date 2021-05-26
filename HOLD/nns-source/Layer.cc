@@ -46,6 +46,52 @@ TLOGGER_REFERENCE( Layer, logger );
 
 
 
+// =======================================================================================
+/** @brief Builder for Layers.
+ *  @param[in] n_con Number of connections to a previous Layer (input)
+ *  @param[in] n_nod Number of nodes in this Layer (output)
+ *  @return instance of a Layer builder
+ *
+ *  Create an instance of a layer builder.
+ */
+// ---------------------------------------------------------------------------------------
+Layer::Builder::Builder( size_t n_con, size_t n_nod ) :
+    num_con(n_con), num_nod(n_nod),
+    act_enum(SIGMOID), act_name("sigmoid"), use_enum(true),
+    is_first(false), do_init(false) {
+  // -------------------------------------------------------------------------------------
+}
+
+
+// =======================================================================================
+/** @brief Build a Layer.
+ *  @return pointer to a newly created Layer.
+ *
+ *  Construct the Layer.
+ */
+// ---------------------------------------------------------------------------------------
+Layer* Layer::Builder::build( void ) {
+  // -------------------------------------------------------------------------------------
+  Layer* L = new Layer( num_con, num_nod, is_first );
+  if ( use_enum ) {
+    L->setTransfer( act_enum );
+  } else {
+    L->setTransfer( act_name );
+  }
+
+  if ( do_init ) {
+    L->randomize();
+  }
+
+  return L;      
+}
+
+
+
+
+
+
+
 
 // =======================================================================================
 /** @brief Resize.
@@ -135,18 +181,6 @@ void Layer::destroy( void ) {
 
 
 // =======================================================================================
-/** @brief Constructor.
- *
- *  Construct a void layer.
- */
-// ---------------------------------------------------------------------------------------
-Layer::Layer( void ) : INIT_VAR1(0) {
-  // -------------------------------------------------------------------------------------
-  setTransfer();
-}
-
-
-// =======================================================================================
 /** @briefConstructor.
  *  @param[in] n_in  number of connections/inputs.
  *  @param[in] n_out number of nodes/outputs.
@@ -157,20 +191,6 @@ Layer::Layer( void ) : INIT_VAR1(0) {
 Layer::Layer( const int32_t n_in, const int32_t n_out ) : INIT_VAR1(0) {
   // -------------------------------------------------------------------------------------
   resize( n_in, n_out );
-  setTransfer();
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- *  @param[in] inf reference to an input file stream.
- *
- *  Read meta data and weights from an input stream.
- */
-// ---------------------------------------------------------------------------------------
-Layer::Layer( std::ifstream& inf ) : INIT_VAR1(0) {
-  // -------------------------------------------------------------------------------------
-  read( inf );
 }
 
 
@@ -182,8 +202,6 @@ Layer::~Layer( void ) {
   // -------------------------------------------------------------------------------------
   destroy();
 }
-
-
 
 
 // =======================================================================================
@@ -217,58 +235,17 @@ void Layer::setTransfer( transfer_e  ttype ) {
 }
 
 
-
-
 // =======================================================================================
-/** @brief Read File.
- *  @param[in] inf reference to an input file stream.
- *  @return true if error occured.
- *
- *  Read meta data and weights from an input stream.
- */
-// ---------------------------------------------------------------------------------------
-bool Layer::read( std::ifstream& inf ) {
-  // -------------------------------------------------------------------------------------
-  int32_t ni, no;
-  real8_t x;
-  std::string ttype;
-  inf >> ni >> no >> ttype;
-  resize( ni, no );
-  int32_t idx = 0;
-  for ( int32_t i=0; i<nOut; i++ ) {
-    inf >> x; b[i] = x;
-    for ( int32_t j=0; j<nIn; j++ ) {
-      inf >> x; W_buffer[idx++] = x;
-    }
-  }
-  setTransfer( ttype );
-
-  return false;
-}
-
-
-// =======================================================================================
-/** @brief Write File.
- *  @param[in] inf reference to an input file stream.
+/** @brief Display Summary
+ *  @param[in] os reference to an output stream.
  *  @return true if error occured.
  *
  *
  */
 // ---------------------------------------------------------------------------------------
-bool Layer::write( std::ofstream& outf, std::string sfmt ) {
+void Layer::summary( std::ostream& os ) {
   // -------------------------------------------------------------------------------------
-  const char* fmt = sfmt.c_str();
-  outf << nIn << " " << nOut << " " << trans->name() << "\n";
-  int32_t idx = 0;
-  for ( int32_t i=0; i<nOut; i++ ) {
-    outf << c_fmt( fmt, b[i] ) << " ";
-    for ( int32_t j=0; j<nIn; j++ ) {
-      outf << " " << c_fmt( fmt, W_buffer[idx++] );
-    }
-    outf << "\n";
-  }
-
-  return false;
+  
 }
 
 

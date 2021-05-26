@@ -494,9 +494,9 @@ inline  Vector3D& Vector3D::operator/= ( const Vector3D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  void Vector3D::swap( Vector3D& that ) {
   // -------------------------------------------------------------------------------------
-  ::swap( this->x[0], that.x[0] );
-  ::swap( this->x[1], that.x[1] );
-  ::swap( this->x[2], that.x[2] );
+  std::swap( this->x[0], that.x[0] );
+  std::swap( this->x[1], that.x[1] );
+  std::swap( this->x[2], that.x[2] );
 }
 
 

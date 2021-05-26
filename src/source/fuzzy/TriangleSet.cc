@@ -155,6 +155,11 @@ real8_t TriangleSet::area( const real8_t degree ) {
 // ---------------------------------------------------------------------------------------
 real8_t TriangleSet::coa( const real8_t degree ) {
   // -------------------------------------------------------------------------------------
+  real8_t cd = (D_THREE*(L+R) - (D_THREE*(R-C+L) - (R-D_TWO*C+L)*degree)*degree );
+  real8_t cn = (D_THREE*(D_TWO-degree));
+
+  std::cout << cd << "\t" << cn << std::endl;
+  
   return (D_THREE*(L+R) - (D_THREE*(R-C+L) - (R-D_TWO*C+L)*degree)*degree )
         / (D_THREE*(D_TWO-degree));
 }

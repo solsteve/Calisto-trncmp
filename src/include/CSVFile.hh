@@ -1,12 +1,12 @@
 // ====================================================================== BEGIN FILE =====
-// **                             N N S : : T R A N S F E R                             **
+// **                                   C S V F I L E                                   **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 2011-2019, Stephen W. Soliday                                      **
-// **                           stephen.soliday@trncmp.org                              **
-// **                           http://research.trncmp.org                              **
+// **  Copyright (c) 2021, Stephen W. Soliday                                           **
+// **                      stephen.soliday@trncmp.org                                   **
+// **                      http://research.trncmp.org                                   **
 // **                                                                                   **
 // **  -------------------------------------------------------------------------------  **
 // **                                                                                   **
@@ -24,204 +24,229 @@
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief  Tarnsfer Functions.
- *  @file   nns/Transfer.hh
+/** @brief  CSV File.
+ *  @file   CSVFile.hh
  *  @author Stephen W. Soliday
- *  @date   2019-Sep-12.
+ *  @date   2021-Mar-28.
  *
- *  Provides the interface for basic transfer functions.
+ *  Provides the interface for a CSV File.
  */
 // =======================================================================================
 
-#ifndef __HH_NNS_TRANSFER_TRNCMP
-#define __HH_NNS_TRANSFER_TRNCMP
 
-#include <trncmp.hh>
+#ifndef __HH_CSVFILE_TRNCMP
+#define __HH_CSVFILE_TRNCMP
 
-namespace nns {
-
-typedef enum { SIGMOID=0, RELU=1, TANH=2, GAUSSIAN=3 } transfer_e;
+#include <TLogger.hh>
+#include <StringTool.hh>
 
 // =======================================================================================
-class Transfer {                                                          // nns::Transfer
+class CSVFile {
   // -------------------------------------------------------------------------------------
+ private:
+  EMPTY_PROTOTYPE( CSVFile );
+    
+ public:
+
+  static size_t NOT_FOUND;
+
+  // =====================================================================================
+  class Record {
+    // -----------------------------------------------------------------------------------
+   private:
+    EMPTY_PROTOTYPE( Record );
+    
+   protected:
+    std::string* fields;      ///< array of fields.
+    size_t       num_fields;  ///< number of fields.
+    Record*      next_record; ///< pointer to the next record.
+
+   public:
+    Record            ( size_t n );
+    ~Record           ( void );
+
+    size_t       size ( void );
+    std::string& at   ( size_t idx );
+    Record*      next ( void );
+    void         next ( Record* R );
+
+    size_t       find ( std::string str );
+    
+  }; // end class CSVFile::Record
+
  protected:
-  std::string _name;
+  Record*  head;
+  Record*  tail;
+  Record** index;
+  size_t   num_fields;
+  size_t   num_records;
+  Record*  head_label;
+
+  Record* append( void );
+
+ public:
+  CSVFile            ( std::string fspc );
+  ~CSVFile           ( void );
+
+  Record*     first  ( void );
+  size_t      size   ( const int dim=0 );
+  Record*     get    ( size_t recn );
+  std::string header ( size_t idx );
   
- public:
-  Transfer( void ) : _name() {};
-  virtual ~Transfer( void ) {};
+  std::string get      ( size_t recn, size_t fldn );
+  int32_t     getInt32 ( size_t recn, size_t fldn );
+  real8_t     getReal8 ( size_t recn, size_t fldn );
+
+  std::string get      ( size_t recn, std::string label );
+  int32_t     getInt32 ( size_t recn, std::string label );
+  real8_t     getReal8 ( size_t recn, std::string label );
   
-  virtual real8_t     activate  ( const real8_t z ) const = 0;
-  virtual real8_t     gradient  ( const real8_t a, const real8_t z ) const = 0;
+}; // end class CSVFile;
 
-  std::string name( void ) const { return _name; };
-  
-  static  Transfer* createPtr ( std::string str   );
-  static  Transfer* createPtr ( transfer_e  ttype );
-  
-}; // end class nns::Transfer
-
-// =======================================================================================
-class Sigmoid : public Transfer {                                          // nns::Sigmoid
-  // -------------------------------------------------------------------------------------
- public:
-  Sigmoid( void ) { _name = "Sigmoid"; };
-  virtual ~Sigmoid( void ) {};
-  virtual real8_t activate  ( const real8_t z ) const;
-  virtual real8_t gradient  ( const real8_t a, const real8_t z ) const;
-}; // end class nns::Transfer
 
 
 // =======================================================================================
-class TanH : public Transfer {                                                // nns::TanH
-  // -------------------------------------------------------------------------------------
- public:
-  TanH( void ) { _name = "TanH"; };
-  virtual ~TanH( void ) {};
-  virtual real8_t activate  ( const real8_t z ) const;
-  virtual real8_t gradient  ( const real8_t a, const real8_t z ) const;
-}; // end class nns::Transfer
-
-
-// =======================================================================================
-class ReLU : public Transfer {                                                // nns::ReLU
-  // -------------------------------------------------------------------------------------
- public:
-  ReLU( void ) { _name = "ReLU"; };
-  virtual ~ReLU( void ) {};
-  virtual real8_t activate  ( const real8_t z ) const;
-  virtual real8_t gradient  ( const real8_t a, const real8_t z ) const;
-}; // end class nns::Transfer
-
-
-// =======================================================================================
-class Gaussian : public Transfer {                                        // nns::Gaussian
-  // -------------------------------------------------------------------------------------
- public:
-  Gaussian( void ) { _name = "Gaussian"; };
-  virtual ~Gaussian( void ) {};
-  virtual real8_t activate  ( const real8_t z ) const;
-  virtual real8_t gradient  ( const real8_t a, const real8_t z ) const;
-}; // end class nns::Transfer
-
-
-// =======================================================================================
-/** @brief Activate.
- *  @param[in] z linear input.
- *  @return non-linear activation of z.
- */
-// ---------------------------------------------------------------------------------------
-inline  real8_t Sigmoid::activate( const real8_t z ) const {
-  // -------------------------------------------------------------------------------------
-  return D_ONE / (D_ONE + exp(-z));
-}
-
-
-// =======================================================================================
-/** @brief Gradient.
- *  @param[in] a non-linear activation of z.
- *  @param[in] z linear input.
- *  @return derivative of the activation.
+/** @brief Size.
+ *  @return number of fields.
  *
- *  Compute the derivative of the activation function at z.
+ *  Obtain the number of fields in this Record.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t Sigmoid::gradient( const real8_t a, const real8_t ) const {
+inline  size_t CSVFile::Record::size( void ) {
   // -------------------------------------------------------------------------------------
-  return a*(D_ONE - a);  
+  return num_fields;
 }
 
 
 // =======================================================================================
-/** @brief Activate.
- *  @param[in] z linear input.
- *  @return non-linear activation of z.
- */
-// ---------------------------------------------------------------------------------------
-inline  real8_t ReLU::activate( const real8_t z ) const {
-  // -------------------------------------------------------------------------------------
-  return (z>D_ZERO) ? (z) : (D_ZERO);
-}
-
-
-// =======================================================================================
-/** @brief Gradient.
- *  @param[in] a non-linear activation of z.
- *  @param[in] z linear input.
- *  @return derivative of the activation.
+/** @brief At.
+ *  @param[in] idx index of the field.
+ *  @return reference to the indexed field.
  *
- *  Compute the derivative of the activation function at z.
+ *  Obtain the number of fields in this Record.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t ReLU::gradient( const real8_t, const real8_t z ) const {
+inline  std::string& CSVFile::Record::at( size_t idx ) {
   // -------------------------------------------------------------------------------------
-  const real8_t E = exp( 12.0 * z );
-  return E / (D_ONE + E);
+  return fields[idx];
 }
 
 
 // =======================================================================================
-/** @brief Activate.
- *  @param[in] z linear input.
- *  @return non-linear activation of z.
+/** @brief Next Record.
+ *  @return pointer to the next record.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t TanH::activate( const real8_t z ) const {
+inline  CSVFile::Record* CSVFile::Record::next( void ) {
   // -------------------------------------------------------------------------------------
-  const real8_t E = exp(D_TWO * z );
-  return (E-D_ONE) / (E+D_ONE);
+  return next_record;
 }
 
 
 // =======================================================================================
-/** @brief Gradient.
- *  @param[in] a non-linear activation of z.
- *  @param[in] z linear input.
- *  @return derivative of the activation.
- *
- *  Compute the derivative of the activation function at z.
+/** @brief Next Record.
+ *  @return pointer to the next record.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t TanH::gradient( const real8_t a, const real8_t ) const {
+inline  void CSVFile::Record::next( CSVFile::Record* R ) {
   // -------------------------------------------------------------------------------------
-  return D_ONE - (a*a);  
+   next_record = R;
+}
+
+
+
+
+
+
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  CSVFile::Record* CSVFile::first( void ) {
+  // -------------------------------------------------------------------------------------
+  return head;
 }
 
 
 // =======================================================================================
-/** @brief Activate.
- *  @param[in] z linear input.
- *  @return non-linear activation of z.
- */
 // ---------------------------------------------------------------------------------------
-inline  real8_t Gaussian::activate( const real8_t z ) const {
+inline  size_t CSVFile::size( const int dim ) {
   // -------------------------------------------------------------------------------------
-  return exp(-z*z);
+  return ((0==dim) ? (num_records) : (num_fields));
 }
 
 
 // =======================================================================================
-/** @brief Gradient.
- *  @param[in] a non-linear activation of z.
- *  @param[in] z linear input.
- *  @return derivative of the activation.
- *
- *  Compute the derivative of the activation function at z.
- */
 // ---------------------------------------------------------------------------------------
-inline  real8_t Gaussian::gradient( const real8_t a, const real8_t z ) const {
+inline  CSVFile::Record* CSVFile::get( size_t recn ) {
   // -------------------------------------------------------------------------------------
-  return -D_TWO*z*a;
+  return index[recn];
 }
 
 
-}; // end namespace nns
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  std::string CSVFile::header( size_t idx ) {
+  // -------------------------------------------------------------------------------------
+  return head_label->at( idx );
+}
 
 
-#endif 
 
 
 // =======================================================================================
-// **                                N N S : : L A Y E R                                **
+// ---------------------------------------------------------------------------------------
+inline  std::string  CSVFile::get( size_t recn, size_t fldn ) {
+  // -------------------------------------------------------------------------------------
+  return index[recn]->at( fldn );
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  int32_t CSVFile::getInt32( size_t recn, size_t fldn ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asInt32( this->get( recn, fldn ) );
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  real8_t CSVFile::getReal8( size_t recn, size_t fldn ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asReal8( this->get( recn, fldn ) );
+}
+
+
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  std::string  CSVFile::get( size_t recn, std::string label ) {
+  // -------------------------------------------------------------------------------------
+  return index[recn]->at( head_label->find(label) );
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  int32_t CSVFile::getInt32( size_t recn, std::string label ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asInt32( this->get( recn, label ) );
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+inline  real8_t CSVFile::getReal8( size_t recn, std::string label ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asReal8( this->get( recn, label ) );
+}
+
+
+#endif
+
+
+// =======================================================================================
+// **                                   C S V F I L E                                   **
 // ======================================================================== END FILE =====

@@ -68,6 +68,12 @@ int main( int argc, char *argv[], char **env ) {
   AppOptions::setOptConfigFilename( "cfg" );
   AppOptions::setHelp( "help" );
 
+  AppOptions::setExampleLine( "if= of= n=" );
+
+  AppOptions::addUsageText( "Line one contains help" );
+  AppOptions::addUsageText( "this is another help line" );
+  AppOptions::addUsageText( "and one more for good measure." );
+
   ConfigDB* cfg = AppOptions::getConfigDB();
 
   if ( (ConfigDB*)0 != cfg ) {

@@ -46,9 +46,6 @@
 #include <iterator>
 
 
-
-
-
 // =======================================================================================
 class StringTool {
   // -------------------------------------------------------------------------------------
@@ -232,6 +229,11 @@ inline  std::string& StringTool::Splitter::at( size_t idx ) noexcept(false) {
   return this->vector.at( idx );
 }
 
+
+
+
+std::string UpperCase( std::string str );
+std::string LowerCase( std::string str );
 
 #endif
 

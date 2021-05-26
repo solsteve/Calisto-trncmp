@@ -37,7 +37,7 @@
 
 #include <StringTool.hh>
 #include <string.h>
-
+#include <algorithm>
 
 const size_t StringTool::NOT_FOUND = std::string::npos;
 
@@ -1557,6 +1557,53 @@ std::string StringTool::asYesNo( int test ) {
   return (0==test) ? "No" : "Yes";
 }
 
+
+
+
+
+
+
+
+
+
+// =======================================================================================
+/** @brief Uppercase.
+ *  @param str mixed case input string.
+ *  @return uppercase letters.
+ *
+ *  Return all uppercase letters.
+ */
+// ---------------------------------------------------------------------------------------
+std::string UpperCase( std::string data ) {
+  // -------------------------------------------------------------------------------------
+  std::for_each(data.begin(),
+                data.end(),
+                [](char & c) {
+                  c =(char) ::toupper((int)c);
+                });
+
+  return data.c_str();
+}
+
+
+// =======================================================================================
+/** @briefLowercase.
+ *  @param str mixed case input string.
+ *  @return lowercase letters.
+ *
+ *  Return all lowercase letters.
+ */
+// ---------------------------------------------------------------------------------------
+std::string LowerCase( std::string data ) {
+  // -------------------------------------------------------------------------------------
+  std::for_each(data.begin(),
+                data.end(),
+                [](char & c) {
+                  c =(char) ::tolower((int)c);
+                });
+
+  return data.c_str();
+}
 
 
 // =======================================================================================

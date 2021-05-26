@@ -70,13 +70,14 @@ class Statistics {
     real8_t maxv   ( void );
     real8_t mean   ( void );
     real8_t var    ( void );
-    real8_t stdev  ( void );
+    real8_t sigma  ( void );
     int32_t minidx ( void );
     int32_t maxidx ( void );
 
     void    reset  ( void );
 
-    void    report ( std::ostream& os, const std::string sfmt = "%g" );
+    void    report       ( std::ostream& os, const std::string sfmt = "%g" );
+    void    report_short ( std::ostream& os, std::string label, const std::string sfmt = "%g" );
    
     template<class T> void update ( T v );
     template<class T> void batch  ( T* a, int32_t n );
@@ -114,7 +115,7 @@ class Statistics {
     int32_t  maxidx ( void ) { return t_maxidx; };
     real8_t  mean   ( void ) { return t_mean;   };
     real8_t  var    ( void ) { return t_var;    };
-    real8_t  std    ( void ) { return t_std;    };
+    real8_t  sigma  ( void ) { return t_std;    };
     real8_t  adev   ( void ) { return t_adev;   };
     real8_t  skew   ( void ) { return t_skew;   };
     real8_t  kurt   ( void ) { return t_kurt;   };
@@ -160,7 +161,7 @@ class Statistics {
     int32_t  maxidx ( int32_t idx ) { return S[idx]->maxidx(); };
     real8_t  mean   ( int32_t idx ) { return S[idx]->mean();   };
     real8_t  var    ( int32_t idx ) { return S[idx]->var();    };
-    real8_t  std    ( int32_t idx ) { return S[idx]->std();    };
+    real8_t  sigma  ( int32_t idx ) { return S[idx]->sigma();    };
     real8_t  adev   ( int32_t idx ) { return S[idx]->adev();   };
     real8_t  skew   ( int32_t idx ) { return S[idx]->skew();   };
     real8_t  kurt   ( int32_t idx ) { return S[idx]->kurt();   };
@@ -171,7 +172,7 @@ class Statistics {
     int32_t  maxidx ( int32_t* t, const int32_t n=0 );
     int32_t  mean   ( real8_t* t, const int32_t n=0 );
     int32_t  var    ( real8_t* t, const int32_t n=0 );
-    int32_t  std    ( real8_t* t, const int32_t n=0 );
+    int32_t  sigma  ( real8_t* t, const int32_t n=0 );
     int32_t  adev   ( real8_t* t, const int32_t n=0 );
     int32_t  skew   ( real8_t* t, const int32_t n=0 );
     int32_t  kurt   ( real8_t* t, const int32_t n=0 );
@@ -197,7 +198,7 @@ class Statistics {
     EMPTY_PROTOTYPE( histogram );
 
     int32_t  nbin;       ///< Number of bins
-    int32_t*  hbin;       ///< The bins
+    int32_t* hbin;       ///< The bins
     real8_t* hctr;       ///< Numeric center of each bin
     int32_t  nsamp;      ///< Number of samples
 
@@ -215,14 +216,40 @@ class Statistics {
     void    add    ( const real8_t x );
     void    add    ( const real8_t* A, const int32_t n );
 
-    int32_t size   ( void ) const;
-    int32_t count  ( void ) const;
-    int32_t bin    ( const int32_t idx ) const;
-    int32_t max    ( void ) const;
-    real8_t center ( const int32_t idx ) const;
+    int32_t size   ( void ) const;              ///< number of bins
+    int32_t count  ( void ) const;              ///< number of samples
+    int32_t bin    ( const int32_t idx ) const; ///< number of samples in each bin
+    real8_t center ( const int32_t idx ) const; ///< center value of each bin
+    int32_t max    ( void ) const;              ///< index of the bin with the max fill
 
     int32_t map    ( const real8_t x ) const; ///< Esentially 1-D k-means clustering
   }; // end class Statistics::histogram
+
+  // =====================================================================================
+  class PlotHist {                                                 // Statistics::PlotHist
+    // -----------------------------------------------------------------------------------
+   protected:
+    EMPTY_PROTOTYPE( PlotHist );
+
+    histogram*   hist;
+    std::string  plot_title;
+    std::string  xaxis_title;
+    std::string  yaxis_title;
+
+   public:
+    PlotHist      ( Statistics::histogram* h );
+    ~PlotHist     ( void );
+
+    void setTitle ( std::string str ) { plot_title  = str; };
+    void setXAxis ( std::string str ) { xaxis_title = str; };
+    void setYAxis ( std::string str ) { yaxis_title = str; };
+
+    void write( std::string fspc );
+
+
+    
+    
+  }; // end class Statistics::PlotHist
 
   
 }; // end class Statistics
@@ -323,7 +350,7 @@ inline  real8_t Statistics::running::mean( void ) {
  *  @return mean of the standard deviation of the sampled values.
  */
 // ---------------------------------------------------------------------------------------
-inline  real8_t Statistics::running::stdev( void ) {
+inline  real8_t Statistics::running::sigma( void ) {
   // -------------------------------------------------------------------------------------
   return sqrt( var() );
 }

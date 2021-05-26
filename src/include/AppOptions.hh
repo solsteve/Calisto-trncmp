@@ -50,6 +50,8 @@
 class AppOptions {
   // -------------------------------------------------------------------------------------
  public:
+
+  static size_t MAX_USAGE_TEXT;
   
   // =====================================================================================
   typedef struct {                                                // AppOptions::cli_map_s
@@ -76,23 +78,27 @@ class AppOptions {
     EMPTY_PROTOTYPE( classInstance );
 
    public:
-    std::string config_base;     //< configuration file base for searching
-    std::string config_path;     //< configuration file path for searching
+    std::string  config_base;     //< configuration file base for searching
+    std::string  config_path;     //< configuration file path for searching
 
-    std::string env_secname;     //< section name for environment variables
-    std::string opt_secname;     //< section name for command line options
+    std::string  env_secname;     //< section name for environment variables
+    std::string  opt_secname;     //< section name for command line options
 
-    std::string env_keyname;     //< keyname for override config file found in ENV
-    std::string opt_keyname;     //< keyname for override config file found on CommandLine
-    std::string help_keyname;    //< keyname for asking for help on CommandLine
-    bool        check_for_help;
-    std::string progName;        //< name of the application
+    std::string  env_keyname;     //< keyname for override config file found in ENV
+    std::string  opt_keyname;     //< keyname for override config file found on CommandLine
+    std::string  help_keyname;    //< keyname for asking for help on CommandLine
+    bool         check_for_help;
+    std::string  progName;        //< name of the application
 
-    std::string title_line;      //< constructed by default
-
-    int         argc;               //< shallow copy of command line pointers
-    char**      argv;
-    char**      env;
+    std::string  title_line;      //< constructed by default
+    std::string  example_line;    //< example usage
+    bool         display_example;
+    std::string* usage_lines;
+    size_t       usage_line_index;
+    
+    int              argc;       //< shallow copy of command line pointers
+    char**           argv;
+    char**           env;
 
     cli_map_s**      map;        //< array of command line option descriptions
     size_t           map_count;  //< number of current maps
@@ -129,14 +135,21 @@ class AppOptions {
   static void init                 ( cli_map_s* cmap, usage_function_t uf = (usage_function_t)0 );
   static void free                 ( void );
 
-  static void setTitleLine         ( std::string line );
   static void setConfigBase        ( std::string base );
   static void setConfigPath        ( std::string path );
+  static void setHelp              ( std::string help_name );
+  static void setTitleLine         ( std::string line );
+
+  static void setExampleLine       ( std::string line );
+  static void addUsageText         ( std::string line );    // **** ADD FUNCTION
+
+
+
+  
   static void setEnvSectionName    ( std::string sec_name );
   static void setOptSectionName    ( std::string sec_name );
   static void setEnvConfigFilename ( std::string env_name );
   static void setOptConfigFilename ( std::string opt_name );
-  static void setHelp              ( std::string help_name );
   static void setCommandLine       ( int argc, char** argv, char** env = (char**)0 );
   static void addOptions           ( cli_map_s* cmap );
 

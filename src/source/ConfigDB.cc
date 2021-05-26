@@ -679,6 +679,24 @@ ConfigDB::ConfigDB( const std::string fspc ) : file_comments(0), sections(0), se
 
 
 // =======================================================================================
+/** @brief Destructor.
+ */
+// ---------------------------------------------------------------------------------------
+ConfigDB::~ConfigDB( void ) {
+  // -------------------------------------------------------------------------------------
+  if ( static_cast<Comments*>(0) == file_comments ) {
+    logger->debug( "ConfigDB::~ConfigDB - free file_comments" );
+    delete file_comments;
+  }
+
+  if ( 0 == sections ) {
+    logger->debug( "ConfigDB::~ConfigDB - free sections" );
+    delete sections;
+  }
+}
+
+
+// =======================================================================================
 /** @brief Has Section.
  *  @param[in] sname test section name.
  *  @return true if a section exists associated with the section name.
@@ -1040,6 +1058,173 @@ int ConfigDB::readINI( const std::string fspc, int* status ) {
   return istat;
 }
 
+
+// =======================================================================================
+/** Get Bool.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a Bool.
+ */
+// ---------------------------------------------------------------------------------------
+bool ConfigDB::Section::getBool( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asBool( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get Int8.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a .
+ */
+// ---------------------------------------------------------------------------------------
+int8_t ConfigDB::Section::getInt8( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asInt8( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get Int16.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a Int16.
+ */
+// ---------------------------------------------------------------------------------------
+int16_t ConfigDB::Section::getInt16( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asInt16( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get Int32.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a Int32.
+ */
+// ---------------------------------------------------------------------------------------
+int32_t ConfigDB::Section::getInt32( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asInt32( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get Int64.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a Int64.
+ */
+// ---------------------------------------------------------------------------------------
+int64_t ConfigDB::Section::getInt64( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asInt64( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get UInt8.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a UInt8.
+ */
+// ---------------------------------------------------------------------------------------
+uint8_t ConfigDB::Section::getUInt8( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asUInt8( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get UInt16.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a UInt16.
+ */
+// ---------------------------------------------------------------------------------------
+uint16_t ConfigDB::Section::getUInt16( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asUInt16( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get UInt32.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a UInt32.
+ */
+// ---------------------------------------------------------------------------------------
+uint32_t ConfigDB::Section::getUInt32( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asUInt32( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get UInt64.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a UInt64.
+ */
+// ---------------------------------------------------------------------------------------
+uint64_t ConfigDB::Section::getUInt64( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asUInt64( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get .
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a .
+ */
+// ---------------------------------------------------------------------------------------
+size_t ConfigDB::Section::getIndex( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return (size_t) StringTool::asUInt32( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get Real4.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a Real4.
+ */
+// ---------------------------------------------------------------------------------------
+real4_t  ConfigDB::Section::getReal4( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asReal4( this->get( key ) );
+}
+
+
+// =======================================================================================
+/** Get Real8.
+ *  @param key string key to map the results.
+ *  @return value stored with the key.
+ *
+ *  Returns the value stored with the key as a Real8.
+ */
+// ---------------------------------------------------------------------------------------
+real8_t ConfigDB::Section::getReal8( std::string key ) {
+  // -------------------------------------------------------------------------------------
+  return StringTool::asReal8( this->get( key ) );
+}
 
 // =======================================================================================
 // **                                  C O N F I G D B                                  **

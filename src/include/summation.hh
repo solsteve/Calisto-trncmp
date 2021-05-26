@@ -143,6 +143,29 @@ T sumsqDiff( T* X, T* Y, size_t n ) {
 }
 
 
+
+// =======================================================================================t
+/** @brief Mean Square Error.
+ *  @param[in] X pointer to a list.
+ *  @param[in] Y pointer to another list.
+ *  @param[in] n number of elements in the list.
+ *  @return mean of the squares of the elements of the list.
+ *
+ *  $mse = \frac{1}{n} SUM^n_{i=1} {\(X_i - Y_i\)}^2$
+ */
+// ---------------------------------------------------------------------------------------
+template<class T>
+real8_t MSE( T* X, T* Y, size_t n ) {
+  // -------------------------------------------------------------------------------------
+  T s = (T)0;
+  for ( size_t i=0; i<n; i++ ) {
+    T d = X[i] - Y[i];
+    s += (d*d);
+  }
+  return static_cast<real8_t>(s) / static_cast<real8_t>(n);
+}
+
+
 // =======================================================================================t
 /** @brief Center of mass.
  *  @param W array of Masses    ( weights )

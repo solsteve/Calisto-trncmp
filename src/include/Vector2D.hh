@@ -479,8 +479,8 @@ inline  Vector2D& Vector2D::operator/= ( const Vector2D& that ) {
 // ---------------------------------------------------------------------------------------
 inline  void Vector2D::swap( Vector2D& that ) {
   // -------------------------------------------------------------------------------------
-  ::swap( this->x[0], that.x[0] );
-  ::swap( this->x[1], that.x[1] );
+  std::swap( this->x[0], that.x[0] );
+  std::swap( this->x[1], that.x[1] );
 }
 
 

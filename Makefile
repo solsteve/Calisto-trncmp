@@ -43,15 +43,19 @@ help:
 	@echo "... clean"
 	@echo "... fullclean"
 	@echo "... distclean"
+	@echo "... package"
+	@echo "... dpackage"
 	@echo ""
 .PHONY: help
 
 DOCFLAG=OFF
 
+TCOUNT=32
+
 #/ =======================================================================================
 
 debug: DEBUG
-	make -C $<
+	make -j$(TCOUNT) -C $<
 .PHONY: debug
 
 DEBUG:
@@ -62,7 +66,7 @@ DEBUG:
 #/ ---------------------------------------------------------------------------------------
 
 release: RELEASE
-	make -C $<
+	make -j$(TCOUNT) -C $<
 .PHONY: release
 
 RELEASE:
@@ -92,6 +96,23 @@ distclean: fullclean
 	rm -rf scripts/__pycache__
 
 .PHONY: distclean
+
+#/ =======================================================================================
+
+package: RELEASE
+	make -j$(TCOUNT) -C RELEASE install
+	(cd src; tar -cf - include | (cd ~; tar -xvf -))
+	cp -f RELEASE/callisto/lib/libcallisto.a ~/lib/libcallisto.a
+	(cd src; tar -cf - include | (cd /ARA; tar -xvf -))
+	cp -f RELEASE/callisto/lib/libcallisto.a /ARA/lib/libcallisto.a
+
+
+dpackage: DEBUG
+	make -j$(TCOUNT) -C DEBUG install
+	(cd src; tar -cf - include | (cd ~; tar -xvf -))
+	cp -f DEBUG/callisto/lib/libcallisto.a ~/lib/libcallisto.a
+	(cd src; tar -cf - include | (cd /ARA; tar -xvf -))
+	cp -f DEBUG/callisto/lib/libcallisto.a /ARA/lib/libcallisto.a
 
 #/ =======================================================================================
 #/ **                                  M A K E F I L E                                  **

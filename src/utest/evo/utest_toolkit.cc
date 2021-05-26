@@ -218,16 +218,17 @@ TEST( test_toolkit_bracket, real ) {
 // =======================================================================================
 TEST( test_toolkit_bracket, real_bias ) {
   // -------------------------------------------------------------------------------------
-  const int32_t n   = 33333;
-  const int32_t n1  = 22222;
+  const int32_t n1   = 33333;
+  const int32_t n2  = 22222;
   const real8_t L   = D_ONE;
   const real8_t H   = D_FOUR;
+  const int32_t n   = n1+n2;
 
   real8_t* a = new real8_t[n];
   real8_t* b = new real8_t[n];
 
   for ( int32_t i=0; i<n; i++ ) {
-    b[i] = ( n<n1 ) ? (D_TWO) : (D_THREE);
+    b[i] = ( i<n1 ) ? (D_TWO) : (D_THREE);
   }
 
   evo::ToolKit* tk = evo::ToolKit::getInstance( Dice::TestDice() );

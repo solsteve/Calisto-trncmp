@@ -47,8 +47,10 @@ bool          fileExists ( const std::string path );
 std::string   findFile   ( const std::string root, const std::string path = ".:~" );
 std::string   timeStamp  ( const bool use_seconds=false );
 
-std::ifstream openRead(  const std::string fspc, int* status=static_cast<int*>(0) );
-std::ofstream openWrite( const std::string fspc, int* status=static_cast<int*>(0) );
+std::ifstream openRead   ( const std::string fspc, int* status=static_cast<int*>(0) );
+std::ofstream openWrite  ( const std::string fspc, int* status=static_cast<int*>(0) );
+
+std::string   tempFilename( std::string dir="." );
 
 }; // end namespace FileTool
 

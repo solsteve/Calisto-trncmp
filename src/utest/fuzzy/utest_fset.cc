@@ -158,14 +158,17 @@ TEST(test_fset_area, left_trap ) {
 TEST(test_fset_area, triangle ) {
   // -------------------------------------------------------------------------------------
 
-  real8_t D[] = { 1.000, 0.750, 0.500, 0.250, 0.000 };
-  real8_t A[] = { 6.000, 5.625, 4.500, 2.625, 0.000 };
+  real8_t D[] = {  1.000,  0.750,  0.500, 0.250, 0.000 };
+  real8_t A[] = { 14.000, 13.125, 10.500, 6.125, 0.000 };
 
   int32_t n = sizeof(D) / sizeof(D[0]);
 
-  fuzzy::TriangleSet T( 3.0, 11.0, 15.0 );
+  fuzzy::TriangleSet T( 5.0, 25.0, 33.0 );
 
   for ( int32_t i=0; i<n; i++ ) {
+
+    std::cout << i << ' ' << D[i] << ' ' << A[i] << ' ' << T.area(D[i]) << std::endl;
+    
     EXPECT_DOUBLE_EQ( A[i], T.area(D[i]) );
   }
 }
@@ -219,6 +222,7 @@ TEST(test_fset_coa, triangle ) {
   fuzzy::TriangleSet T( 3.0, 5.0, 9.0 );
 
   for ( int32_t i=0; i<n; i++ ) {
+    //std::cout << D[i] << '\t' << Cn[i]/Cd[i] << '\t' << T.coa(D[i]) << std::endl;
     EXPECT_DOUBLE_EQ( Cn[i]/Cd[i], T.coa(D[i]) );
   }
 }

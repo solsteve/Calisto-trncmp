@@ -47,7 +47,70 @@ TLOGGER_REFERENCE( BPNN, logger );
 
 #define INIT_VAR2(_a) nIn(_a), nOut(_a), nLayer(_a), L(_a)
 
+#define INIT_VAR3(_a) num_input(_a), num_output(_a), num_hidden(_a), num_hnode(_a), do_init(false), use_file(false), cfg_file(""), use_enum(false), act_enum(SIGMOID), act_name("sigmoid"), use_enum_out(false), act_enum_out(SIGMOID), act_name_out("sigmoid")
 
+
+// =======================================================================================
+/** @brief
+ *  @param[in]
+ *  @return reference to this builder. Used for chaining.
+ *
+ *  
+ */
+// ---------------------------------------------------------------------------------------
+BPNN::Builder::Builder( void ) : INIT_VAR3(0) {
+  // -------------------------------------------------------------------------------------
+}
+
+
+// =======================================================================================
+/** @brief
+ *  @param[in]
+ *  @return reference to this builder. Used for chaining.
+ *
+ *  
+ */
+// ---------------------------------------------------------------------------------------
+BPNN::Builder::~Builder ( void ) {
+  // -------------------------------------------------------------------------------------
+}
+
+
+// =======================================================================================
+/** @brief
+ *  @param[in]
+ *  @return instantiation of a BPNN.
+ *
+ *  
+ */
+// ---------------------------------------------------------------------------------------
+BPNN* BPNN::Builder::build( void ) {
+  // -------------------------------------------------------------------------------------
+  BPNN* net = new BPNN()
+  
+  if ( use_file ) {
+    net.read( cfg_file );
+  } else {
+    net.configure( num_input, num_hnode, num_hidden, num_output,
+                    activate, activate_out );
+  }
+
+  if ( do_init ) {
+    new->randomize();
+  }
+
+  return net;
+}
+
+
+
+
+
+
+
+
+
+    
 // =======================================================================================
 /** @brief Resize.
  *  @param[in] n_in  number of inputs.
@@ -100,21 +163,6 @@ void BPNN::destroy( void ) {
 // ---------------------------------------------------------------------------------------
 BPNN::BPNN( void ) : INIT_VAR2(0) {
   // -------------------------------------------------------------------------------------
-}
-
-
-// =======================================================================================
-/** @brief Constructor.
- *  @param[in] n_in  number of inputs.
- *  @param[in] n_hid number of hiddin layer nodes.
- *  @param[in] n_out number of outputs.
- *
- *  Create a three layer (two weight matricies) NN.
- */
-// ---------------------------------------------------------------------------------------
-BPNN::BPNN( const int32_t n_in, const int32_t n_hid, const int32_t n_out ) : INIT_VAR2(0) {
-  // -------------------------------------------------------------------------------------
-  resize( n_in, n_hid, n_out );
 }
 
 

@@ -483,15 +483,15 @@ inline  real8_t Matrix3D::det( void ) const {
 // ---------------------------------------------------------------------------------------
 inline  void Matrix3D::swap( Matrix3D& that ) {
   // -------------------------------------------------------------------------------------
-  ::swap( this->q[0], that.q[0] );
-  ::swap( this->q[1], that.q[1] );
-  ::swap( this->q[2], that.q[2] );
-  ::swap( this->q[3], that.q[3] );
-  ::swap( this->q[4], that.q[4] );
-  ::swap( this->q[5], that.q[5] );
-  ::swap( this->q[6], that.q[6] );
-  ::swap( this->q[7], that.q[7] );
-  ::swap( this->q[8], that.q[8] );
+  std::swap( this->q[0], that.q[0] );
+  std::swap( this->q[1], that.q[1] );
+  std::swap( this->q[2], that.q[2] );
+  std::swap( this->q[3], that.q[3] );
+  std::swap( this->q[4], that.q[4] );
+  std::swap( this->q[5], that.q[5] );
+  std::swap( this->q[6], that.q[6] );
+  std::swap( this->q[7], that.q[7] );
+  std::swap( this->q[8], that.q[8] );
 }
 
 
@@ -507,40 +507,40 @@ inline  void Matrix3D::swap_row( size_t ia, size_t ib ) {
   // -------------------------------------------------------------------------------------
   if ( 0 == ia ) {
     if ( 1 == ib ) {
-      ::swap( q[0], q[3] );
-      ::swap( q[1], q[4] );
-      ::swap( q[2], q[5] );
+      std::swap( q[0], q[3] );
+      std::swap( q[1], q[4] );
+      std::swap( q[2], q[5] );
     }
     if ( 2 == ib ) {
-      ::swap( q[0], q[6] );
-      ::swap( q[1], q[7] );
-      ::swap( q[2], q[8] );
+      std::swap( q[0], q[6] );
+      std::swap( q[1], q[7] );
+      std::swap( q[2], q[8] );
     }
   }
 
   if ( 1 == ia ) {
     if ( 0 == ib ) {
-      ::swap( q[3], q[0] );
-      ::swap( q[4], q[1] );
-      ::swap( q[5], q[2] );
+      std::swap( q[3], q[0] );
+      std::swap( q[4], q[1] );
+      std::swap( q[5], q[2] );
     }
     if ( 2 == ib ) {
-      ::swap( q[3], q[6] );
-      ::swap( q[4], q[7] );
-      ::swap( q[5], q[8] );
+      std::swap( q[3], q[6] );
+      std::swap( q[4], q[7] );
+      std::swap( q[5], q[8] );
     }
   }
 
   if ( 2 == ia ) {
     if ( 0 == ib ) {
-      ::swap( q[6], q[0] );
-      ::swap( q[7], q[1] );
-      ::swap( q[8], q[2] );
+      std::swap( q[6], q[0] );
+      std::swap( q[7], q[1] );
+      std::swap( q[8], q[2] );
     }
     if ( 1 == ib ) {
-      ::swap( q[6], q[3] );
-      ::swap( q[7], q[4] );
-      ::swap( q[8], q[5] );
+      std::swap( q[6], q[3] );
+      std::swap( q[7], q[4] );
+      std::swap( q[8], q[5] );
     }
   }
 
@@ -559,40 +559,40 @@ inline  void Matrix3D::swap_col( size_t ia, size_t ib ) {
   // -------------------------------------------------------------------------------------
   if ( 0 == ia ) {
     if ( 1 == ib ) {
-      ::swap( q[0], q[1] );
-      ::swap( q[3], q[4] );
-      ::swap( q[6], q[7] );
+      std::swap( q[0], q[1] );
+      std::swap( q[3], q[4] );
+      std::swap( q[6], q[7] );
     }
     if ( 2 == ib ) {
-      ::swap( q[0], q[2] );
-      ::swap( q[3], q[5] );
-      ::swap( q[6], q[8] );
+      std::swap( q[0], q[2] );
+      std::swap( q[3], q[5] );
+      std::swap( q[6], q[8] );
     }
   }
 
   if ( 1 == ia ) {
     if ( 0 == ib ) {
-      ::swap( q[1], q[0] );
-      ::swap( q[4], q[3] );
-      ::swap( q[7], q[6] );
+      std::swap( q[1], q[0] );
+      std::swap( q[4], q[3] );
+      std::swap( q[7], q[6] );
     }
     if ( 2 == ib ) {
-      ::swap( q[1], q[2] );
-      ::swap( q[4], q[5] );
-      ::swap( q[7], q[8] );
+      std::swap( q[1], q[2] );
+      std::swap( q[4], q[5] );
+      std::swap( q[7], q[8] );
     }
   }
 
   if ( 2 == ia ) {
     if ( 0 == ib ) {
-      ::swap( q[2], q[0] );
-      ::swap( q[5], q[3] );
-      ::swap( q[8], q[6] );
+      std::swap( q[2], q[0] );
+      std::swap( q[5], q[3] );
+      std::swap( q[8], q[6] );
     }
     if ( 1 == ib ) {
-      ::swap( q[2], q[1] );
-      ::swap( q[5], q[4] );
-      ::swap( q[8], q[7] );
+      std::swap( q[2], q[1] );
+      std::swap( q[5], q[4] );
+      std::swap( q[8], q[7] );
     }
   }
 

@@ -170,7 +170,7 @@ u_int8_t Entropy_XORShift::U8( void ) {
 // ---------------------------------------------------------------------------------------
 u_int16_t Entropy_XORShift::U16( void ) {
   // -------------------------------------------------------------------------------------
-  uint16_t t = SW[0] ^ (u_int16_t)(SW[0]<<5); 
+  u_int16_t t = SW[0] ^ (u_int16_t)(SW[0]<<5); 
   SW[0] = SW[1]; 
   SW[1] = SW[2]; 
   SW[2] = SW[3]; 
@@ -188,7 +188,7 @@ u_int16_t Entropy_XORShift::U16( void ) {
 // ---------------------------------------------------------------------------------------
 u_int32_t Entropy_XORShift::U32( void ) {
   // -------------------------------------------------------------------------------------
-  uint32_t t = SD[0] ^ (SD[0] << 11);   
+  u_int32_t t = SD[0] ^ (SD[0] << 11);   
   SD[0] = SD[1];
   SD[1] = SD[2];
   SD[2] = SD[3];
@@ -198,7 +198,7 @@ u_int32_t Entropy_XORShift::U32( void ) {
 
 
 // =======================================================================================
-static inline uint64_t rotl(const uint64_t x, int k) {
+static inline u_int64_t rotl(const u_int64_t x, int k) {
   // -------------------------------------------------------------------------------------
 	return (x << k) | (x >> (64 - k));
 }
@@ -212,9 +212,9 @@ static inline uint64_t rotl(const uint64_t x, int k) {
 // ---------------------------------------------------------------------------------------
 u_int64_t Entropy_XORShift::U64( void ) {
   // -------------------------------------------------------------------------------------
-  const uint64_t result_starstar = rotl(SQ[1] * 5, 7) * 9;
+  const u_int64_t result_starstar = rotl(SQ[1] * 5, 7) * 9;
   
-  const uint64_t t = SQ[1] << 17;
+  const u_int64_t t = SQ[1] << 17;
   
   SQ[2] ^= SQ[0];
   SQ[3] ^= SQ[1];
@@ -228,8 +228,8 @@ u_int64_t Entropy_XORShift::U64( void ) {
   return result_starstar;
 }
 
-// const uint64_t result_starstar = rotl(SQ[1] * 5, 7) * 9;
-// const uint64_t t = SQ[1] << 11;
+// const u_int64_t result_starstar = rotl(SQ[1] * 5, 7) * 9;
+// const u_int64_t t = SQ[1] << 11;
 // SQ[2] ^= SQ[0];
 // SQ[5] ^= SQ[1];
 // SQ[1] ^= SQ[2];

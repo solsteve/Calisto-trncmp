@@ -36,6 +36,7 @@
 
 
 #include <FileTool.hh>
+#include <Dice.hh>
 #include <sys/stat.h>
 
 namespace FileTool {
@@ -180,6 +181,29 @@ std::ofstream openWrite( const std::string fspc, int* status ) {
     
   return ofs;
 }
+
+
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+std::string   tempFilename( std::string dir ) {
+  // -------------------------------------------------------------------------------------
+  time_t    raw;
+  struct tm temp;
+  Dice*     dd  = Dice::getInstance();
+  int       num = (int)floor(255.0*dd->uniform());
+  char      buffer[MAXPATHLEN];
+
+  time( &raw );
+  gmtime_r( &raw, &temp );
+
+  snprintf( buffer, MAXPATHLEN, "%s/tmp%02d%02d.%02x", dir, temp.tm_min, temp.tm_sec, num );
+
+  return buffer;
+}
+
+
 
 
 }; // end namespace FileTool

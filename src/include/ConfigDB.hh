@@ -57,6 +57,9 @@ typedef enum { SECTIONS, COMMENTS, ENTRIES } config_dim_type_e;
 // ---------------------------------------------------------------------------------------
 class ConfigDB {
   // -------------------------------------------------------------------------------------
+ private:
+  EMPTY_PROTOTYPE( ConfigDB );
+  
  protected:
   
   TLOGGER_HEADER(logger); ///< reference to logger instance
@@ -147,7 +150,6 @@ class ConfigDB {
   // -------------------------------------------------------------------------------------
   class Comments {                                                   // ConfigDB::Comments
     // -----------------------------------------------------------------------------------
-
    protected:
     std::vector<std::string>*          array;
     std::vector<std::string>::iterator com_it;
@@ -209,6 +211,19 @@ class ConfigDB {
     std::string get        ( std::string key );                             /**/
     std::string getComment ( std::string key );                             /**/
 
+    bool        getBool    ( std::string key );                             /**/
+    int8_t      getInt8    ( std::string key );                             /**/
+    int16_t     getInt16   ( std::string key );                             /**/
+    int32_t     getInt32   ( std::string key );                             /**/
+    int64_t     getInt64   ( std::string key );                             /**/
+    u_int8_t    getUInt8   ( std::string key );                             /**/
+    u_int16_t   getUInt16  ( std::string key );                             /**/
+    u_int32_t   getUInt32  ( std::string key );                             /**/
+    u_int64_t   getUInt64  ( std::string key );                             /**/
+    size_t      getIndex   ( std::string key );                             /**/
+    real4_t     getReal4   ( std::string key );                             /**/
+    real8_t     getReal8   ( std::string key );                             /**/
+
     void        add        ( Entry&   ent );                                /**/
     void        add        ( Entry*   ent );                                /**/
     void        merge      ( Section& sec );                                /**/
@@ -231,12 +246,10 @@ class ConfigDB {
 
 
 
-  
- public:
   // =====================================================================================
   // CONFIGDB MAIN METHODS                                                        ConfigDB
   // =====================================================================================
-
+  
  protected:
   Comments*                                           file_comments;
   std::map<std::string, ConfigDB::Section*>*          sections;
@@ -249,6 +262,7 @@ class ConfigDB {
  public:
   ConfigDB  ( void );                                                      /**/
   ConfigDB  ( std::string fspc );                                          /**/
+  ~ConfigDB ( void );                                                      /**/
 
   // ----- direct --------------------------------------
 
@@ -611,13 +625,6 @@ inline  void ConfigDB::addComment( std::string sname, std::string com ) {
   this->add( sname );
   this->get( sname )->addComment( com );
 }
-
-
-
-
-
-
-
 
 
 #endif

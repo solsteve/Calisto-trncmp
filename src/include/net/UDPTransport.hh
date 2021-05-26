@@ -1,12 +1,12 @@
 // ====================================================================== BEGIN FILE =====
-// **                                      B P N N                                      **
+// **                              U D P T R A N S P O R T                              **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 2011-2019, Stephen W. Soliday                                      **
-// **                           stephen.soliday@trncmp.org                              **
-// **                           http://research.trncmp.org                              **
+// **  Copyright (c) 2019, Stephen W. Soliday                                           **
+// **                      stephen.soliday@trncmp.org                                   **
+// **                      http://research.trncmp.org                                   **
 // **                                                                                   **
 // **  -------------------------------------------------------------------------------  **
 // **                                                                                   **
@@ -24,96 +24,53 @@
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief  Back Propagation Neural Network.
- *  @file   BPN.hh
+/** @brief UDP Data Transport.
+ *  @file   UDPTransport.hh
  *  @author Stephen W. Soliday
- *  @date   2019-Sep-01.
+ *  @date   2020-Mar-18
  *
- *  Provides the interface for a vector implementation of a BLAS enabled
- *  back-propagation neural network.
+ *  Provides the interface for UDP transport threads.
  */
 // =======================================================================================
 
 
-#ifndef __HH_BPNN_TRNCMP
-#define __HH_BPNN_TRNCMP
+#ifndef __HH_UDPTRANSPORT_TRNCMP
+#define __HH_UDPTRANSPORT_TRNCMP
 
-#include <nns/Layer.hh>
+#include <trncmp.hh>
 
-namespace nns {
+namespace UDP {
 
 // =======================================================================================
-class BPNN {                                                                       // BPNN
+class Sender {
   // -------------------------------------------------------------------------------------
- protected:
-  TLOGGER_HEADER( logger );
-  EMPTY_PROTOTYPE( BPNN );
+}; // end class Sender
 
-  int32_t   nIn;    ///< number of inputs/connections
-  int32_t   nOut;   ///< number of outputs/nodes
-  int32_t   nLayer; ///< number of layers
-  Layer**   L;      ///< list of layers
 
-  void destroy( void );
+// =======================================================================================
+class Receiver {
+  // -------------------------------------------------------------------------------------
+}; // end class Receiver
+
+
+// =======================================================================================
+class Notifier {
+  // -------------------------------------------------------------------------------------
+}; // end class Notifier
+
+
+// =======================================================================================
+class Listener {
+  // -------------------------------------------------------------------------------------
+}; // end class Listener
+
+
+}; // end namespace UDP
+
+
+#endif
+
   
- public:
- 
-  BPNN( void );
-  BPNN( const int32_t n_in, const int32_t  n_hid, const int32_t n_out );
-  BPNN( const int32_t n_in, const int32_t* n_hid, const int32_t n );
-  BPNN( std::string fspc );
-  BPNN( std::ifstream& inf );
-
-  int32_t nInput  ( void ) const { return this->nIn;  };
-  int32_t nOutput ( void ) const { return this->nOut; };
-
-  ~BPNN( void );
-
-  void resize ( const int32_t n_in, const int32_t  n_hid, const int32_t n_out );
-  void resize ( const int32_t n_in, const int32_t* n_hid, const int32_t n );
-
-  void setTransfer ( const int32_t ln, std::string str );
-  void setTransfer ( const int32_t ln, transfer_e  ttype = SIGMOID );
-
-  bool read   ( std::ifstream& inf );
-  bool write  ( std::ofstream& outf, std::string sfmt = "%23.16e" );
-
-  bool read   ( std::string fspc );
-  bool write  ( std::string fspc, std::string sfmt = "%23.16e" );
-
-  void debug     ( void );
-  void randomize ( Dice* dd = static_cast<Dice*>(0) );
-
-  void    reset     ( void );
-  real8_t cost      ( real8_t* output, real8_t* test, real8_t* delta, const int32_t n );
-  void    execute   ( real8_t* input, real8_t* output );
-  real8_t train     ( real8_t* input, real8_t* output, real8_t* test );
-  void    update    ( const real8_t eta );
-
-  static real8_t activate( const real8_t x );
-  static real8_t derivative( const real8_t a );
-
-}; // end class BPNN
-
-
 // =======================================================================================
-inline void BPNN::setTransfer( const int32_t ln, std::string str ) {
-  // -------------------------------------------------------------------------------------
-  L[ln]->setTransfer( str );
-}
-
-// =======================================================================================
-inline void BPNN::setTransfer( const int32_t ln, transfer_e  ttype ) {
-  // -------------------------------------------------------------------------------------
-  L[ln]->setTransfer( ttype );
-}
-
-
-}; // end namespace nns
-
-
-#endif 
-
-// =======================================================================================
-// **                                      B P N N                                      **
+// **                              U D P T R A N S P O R T                              **
 // ======================================================================== END FILE =====

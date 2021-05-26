@@ -48,6 +48,7 @@ add_subdirectory ( data )
 add_subdirectory ( time )
 add_subdirectory ( fuzzy )
 add_subdirectory ( evo )
+add_subdirectory ( nervenet )
 
 #/ =======================================================================================
 #/ **                              UTest - C M A K E L I S T                            **

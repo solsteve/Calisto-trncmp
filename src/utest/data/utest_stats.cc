@@ -233,7 +233,7 @@ TEST(test_statistics_multiple, normal_Dice ) {
     fprintf( stdout, "   Min value  %9.6f  %9.6f\n", minv[j], M.minv(j) );
     fprintf( stdout, "   Mean       %9.6f  %9.6f\n", MEAN[j], M.mean(j) );
     fprintf( stdout, "   Max value  %9.6f  %9.6f\n", maxv[j], M.maxv(j) );
-    fprintf( stdout, "   Std. Dev.  %9.6f  %9.6f\n", STDV[j], M.std(j)  );
+    fprintf( stdout, "   Std. Dev.  %9.6f  %9.6f\n", STDV[j], M.sigma(j)  );
     fprintf( stdout, "   Skew        0.000000  %9.6f\n",      M.skew(j) );
     fprintf( stdout, "   Kurt        0.000000  %9.6f\n\n",    M.kurt(j) );
   }

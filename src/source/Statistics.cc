@@ -37,6 +37,7 @@
 #include <Statistics.hh>
 #include <LinAlg.hh>
 #include <array_print.hh>
+#include <FileTool.hh>
 
 
 TLOGGER_REFERENCE( Statistics, logger );
@@ -105,6 +106,25 @@ void Statistics::running::report( std::ostream& os, const std::string sfmt ) {
 }
 
 
+// =======================================================================================
+/** @brief Report.
+ *  @param[in] os optional reference to an output stream (default: stdout)
+ */
+// ---------------------------------------------------------------------------------------
+void Statistics::running::report_short( std::ostream&     os,
+                                        std::string       label,
+                                        const std::string sfmt ) {
+  // -------------------------------------------------------------------------------------
+  const char* fmt = sfmt.c_str();
+  os << label << " ("
+     << c_fmt( "%7lu", count() ) << " recs) "
+     << c_fmt( fmt,   minv()  ) << " < N("
+     << c_fmt( fmt,   mean()  ) << ", "
+     << c_fmt( fmt,   sigma() ) << " ) < "
+     << c_fmt( fmt,   maxv()  ) << "\t["
+     << c_fmt( "%7lu", minidx()) << "] ["
+     << c_fmt( "%7lu", maxidx()) << "]\n";
+}
 
 
 
@@ -518,7 +538,7 @@ int32_t Statistics::multi::var( real8_t* t, const int32_t n ) {
  *  @param[in]  n number of requested values (may not be greater than t_nvar)
  */
 // -------------------------------------------------------------------------------------
-int32_t Statistics::multi::std( real8_t* t, const int32_t n ) {
+int32_t Statistics::multi::sigma( real8_t* t, const int32_t n ) {
   // -----------------------------------------------------------------------------------
   int32_t nv = t_nvar;
   if ( 0 < n ) {
@@ -530,7 +550,7 @@ int32_t Statistics::multi::std( real8_t* t, const int32_t n ) {
     }
   }
   for ( int32_t i=0; i<nv; i++ ) {
-    t[i] = S[i]->std();
+    t[i] = S[i]->sigma();
   }
   return nv;
 }
@@ -649,10 +669,10 @@ void Statistics::multi::report( std::ostream& os, const std::string sfmt ) {
     var( rTemp );    os << "Variance  = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
 
     if ( t_level2a ) {
-      std( rTemp );  os << "Std Dev   = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
-      adev( rTemp ); os << "Abs Dev   = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
-      skew( rTemp ); os << "Skew      = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
-      kurt( rTemp ); os << "Kurtosis  = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
+      sigma( rTemp ); os << "Sigma     = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
+      adev( rTemp );  os << "Abs Dev   = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
+      skew( rTemp );  os << "Skew      = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
+      kurt( rTemp );  os << "Kurtosis  = " << toString( rTemp, t_nvar, sfmt, " " ) << "\n";
 
       if ( t_level2b ) {
 	os << "Covariance:\n"
@@ -824,6 +844,7 @@ void Statistics::histogram::init( const real8_t* centers, const int32_t n ) {
   hctr      = new real8_t[n];
   for ( int32_t i=0; i<n; i++ ) {
     hctr[i] = centers[i];
+    hbin[i] = 0;
   }
   nsamp     = 0;
 }
@@ -1001,6 +1022,37 @@ int32_t Statistics::histogram::map( const real8_t x ) const {
     }
   } 
   return idx;
+}
+
+
+
+
+
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+Statistics::PlotHist::PlotHist( Statistics::histogram* h ) :
+    plot_title("Histogram"), xaxis_title("bins"), yaxis_title("count") {
+  // -------------------------------------------------------------------------------------
+  std::string plot_config = FileTool::tempFilename();
+  std::string plot_data   = FileTool::tempFilename();
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+Statistics::PlotHist::~PlotHist( void ) {
+  // -------------------------------------------------------------------------------------
+  hist = static_cast<Statistics::histogram*>(0);
+}
+
+
+// =======================================================================================
+// ---------------------------------------------------------------------------------------
+void Statistics::PlotHist::write( std::string fspc ) {
+  // -------------------------------------------------------------------------------------
+  
 }
 
 

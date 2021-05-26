@@ -55,7 +55,7 @@ TEST( swap, Positive ) {
   {
     real8_t a = A8;
     real8_t b = B8;
-    swap( a, b );
+    std::swap( a, b );
     EXPECT_DOUBLE_EQ( a, B8 );
     EXPECT_DOUBLE_EQ( b, A8 );
   }
@@ -63,7 +63,7 @@ TEST( swap, Positive ) {
   {
     real4_t a = A4;
     real4_t b = B4;
-    swap( a, b );
+    std::swap( a, b );
     EXPECT_FLOAT_EQ( a, B4 );
     EXPECT_FLOAT_EQ( b, A4 );
   }
@@ -71,7 +71,7 @@ TEST( swap, Positive ) {
   {
     int32_t a = A32;
     int32_t b = B32;
-    swap( a, b );
+    std::swap( a, b );
     EXPECT_EQ( a, B32 );
     EXPECT_EQ( b, A32 );
   }

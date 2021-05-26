@@ -243,7 +243,7 @@ TEST( test_metric_manipulate, compare ) {
 TEST( test_metric_manipulate, sumsq ) {
   // -------------------------------------------------------------------------------------
   real8_t D[] = { 1.2, 3.4, 5.6 };
-  evo::Metric M(3,reinterpret_cast<u_int8_t*>(D) );
+  evo::Metric M(3, reinterpret_cast<u_int8_t*>(D) );
   real8_t x = M.sumsq();
   EXPECT_DOUBLE_EQ( 44.36, x );
 }
@@ -253,7 +253,7 @@ TEST( test_metric_manipulate, sumsq ) {
 TEST( test_metric_manipulate, mse ) {
   // -------------------------------------------------------------------------------------
   real8_t D[] = { 1.2, 3.4, 5.6 };
-  evo::Metric M(3,reinterpret_cast<u_int8_t*>(D) );
+  evo::Metric M(3, reinterpret_cast<u_int8_t*>(D) );
   real8_t x = M.mse();
   EXPECT_DOUBLE_EQ( 14.78666666666667, x );
 }

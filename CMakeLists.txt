@@ -33,7 +33,7 @@
 #/
 #/ =======================================================================================
 
-cmake_minimum_required( VERSION 3.10 )
+cmake_minimum_required( VERSION 3.15 )
 
 project ( Callisto CXX )
 
@@ -51,6 +51,8 @@ Callisto_MAJOR_VERSION}.\
 ${Callisto_MINOR_VERSION}.\
 ${Callisto_PATCH_VERSION}" )
 
+set ( CMAKE_BUILD_PARALLEL_LEVEL 64 )
+
 set ( CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" )
 message ( STATUS "Path = ${CMAKE_MODULE_PATH}" )
 
@@ -63,34 +65,40 @@ if(LAPACK_FOUND AND BLAS_FOUND)
   set(lapackblas_libraries ${BLAS_LIBRARIES} ${LAPACK_LIBRARIES})
 endif()
 
+find_package ( HDF5 REQUIRED COMPONENTS CXX HL )
 
   
 #/ =======================================================================================
+#/ Check whether the user has selected a BUILD_TYPE
+#/ ---------------------------------------------------------------------------------------
 
-if ( "${CMAKE_BUILD_TYPE}" STREQUAL "" )
+IF ("${CMAKE_BUILD_TYPE}" STREQUAL "")
 
-  message ( STATUS "Build type not explicitly set. Trying to guess..." )
-  get_filename_component ( BINDIR ${PROJECT_BINARY_DIR} NAME )
+  message( STATUS "I -- Build type not explicitly set." )
+  message( STATUS "I --     Trying to guess..." )
   
-  if ( ${BINDIR} MATCHES "RELEASE" )
-    set ( CMAKE_BUILD_TYPE "RELEASE" )
-    message ( STATUS "Set to ${CMAKE_BUILD_TYPE}" )
-  elseif ( ${BINDIR} MATCHES "DEBUG" )
-    set ( CMAKE_BUILD_TYPE "DEBUG" )
-    message ( STATUS "Set to ${CMAKE_BUILD_TYPE}" )
-  else ( )
-    message ( WARNING "Unable to deduce build type. Use -DCMAKE_BUILD_TYPE=<RELEASE/DEBUG>" )
-  endif ( ${BINDIR} MATCHES "RELEASE" )
+  get_filename_component( BINDIR ${PROJECT_BINARY_DIR} NAME )
   
-else ( )
-  message ( STATUS "Build Type is ${CMAKE_BUILD_TYPE}" )
-endif ( "${CMAKE_BUILD_TYPE}" STREQUAL "" )
+  IF ( ${BINDIR} MATCHES    "RELEASE" )
+    set( CMAKE_BUILD_TYPE   "RELEASE" )
+  ELSEIF( ${BINDIR} MATCHES "DEBUG" )
+    set( CMAKE_BUILD_TYPE   "DEBUG" )
+  ELSE()
+    message( STATUS "W -- Unable to deduce build type." )
+    message( STATUS "W --     Use -DCMAKE_BUILD_TYPE=<RELEASE/DEBUG>" )
+    return()
+  ENDIF( ${BINDIR} MATCHES "RELEASE" )
+ENDIF( "${CMAKE_BUILD_TYPE}" STREQUAL "" )
+
+message( STATUS "I -- Build type is set to ${CMAKE_BUILD_TYPE}" )
+
+
 
 #/ =======================================================================================
 
 set ( GARCH "\
 -fverbose-asm -ansi -fsigned-char -funsigned-bitfields -fshort-enums \
--funroll-loops -march=corei7 -mtune=corei7 -fipa-sra -fopenmp" )
+-funroll-loops -march=native -mtune=native -fipa-sra -fopenmp" )
 
 set ( GWARN "\
 -W -Wall -Wextra -Wfloat-equal -Wshadow -Wcast-align -Wredundant-decls \
@@ -105,25 +113,22 @@ set ( GFIX  "--param max-inline-insns-single=2000" )
 set ( CMAKE_CXX_FLAGS_RELEASE "-O3    ${GWARN} ${GARCH} ${GFORM} ${GFIX}" )
 set ( CMAKE_CXX_FLAGS_DEBUG   "-O1 -g ${GWARN} ${GARCH} ${GFORM}" )
 
-#/ =======================================================================================
+IF ( ${CMAKE_BUILD_TYPE} MATCHES    "RELEASE" )
+  set ( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_RELEASE} )
+ELSEIF( ${CMAKE_BUILD_TYPE} MATCHES "DEBUG" )
+  set ( CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS_DEBUG} )
+ELSE()
+  message( STATUS "E -- Build type not set" )
+  return()
+ENDIF()
 
-#set( CMAKE_BUILD_TYPE Release )
+message( STATUS "A -- " ${CMAKE_CXX_FLAGS} )
+
+#/ =======================================================================================
 
 set ( CMAKE_INSTALL_PREFIX ${PROJECT_BINARY_DIR}/callisto )
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src/include)
-
-#/ =======================================================================================
-
-if ( ${CMAKE_BUILD_TYPE} MATCHES "DEBUG" )
-  message ( STATUS "DEBUG Compile Options: ${CMAKE_CXX_FLAGS_DEBUG}" )
-else ( )
-  if ( ${CMAKE_BUILD_TYPE} MATCHES "RELEASE" )
-    message ( STATUS "RELEASE Compile Options: ${CMAKE_CXX_FLAGS_RELEASE}" )
-  else ( )
-    message ( STATUS "Compiler option could not be set" )
-  endif ( )
-endif ( )
 
 #/ =======================================================================================
 #/ Add the sub-builds

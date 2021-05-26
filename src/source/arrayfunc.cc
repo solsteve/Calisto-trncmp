@@ -1,10 +1,10 @@
 // ====================================================================== BEGIN FILE =====
-// **                                N N S : : L A Y E R                                **
+// **                                 A R R A Y F U N C                                 **
 // =======================================================================================
 // **                                                                                   **
 // **  This file is part of the TRNCMP Research Library, `Callisto' (formerly SolLib.)  **
 // **                                                                                   **
-// **  Copyright (c) 2011-2019, Stephen W. Soliday                                      **
+// **  Copyright (c) 2002-2019, Stephen W. Soliday                                      **
 // **                           stephen.soliday@trncmp.org                              **
 // **                           http://research.trncmp.org                              **
 // **                                                                                   **
@@ -24,81 +24,19 @@
 // **                                                                                   **
 // ----- Modification History ------------------------------------------------------------
 //
-/** @brief  Neural Network Layer.
- *  @file   Layer.hh
+/** @brief  Main header
+ *  @file   arrayfunc.cc
  *  @author Stephen W. Soliday
- *  @date   2019-Sep-12.
+ *  @date   2002-08-17 Original release.
+ *  @date   2009-12-23 Major revision.
+ *  @date   2019-Apr-11 CMake refactorization.
  *
- *  Provides the interface for a neural network layer.
+ *  This is a collection of array based functions.
  */
 // =======================================================================================
 
-#ifndef __HH_NNS_LAYER_TRNCMP
-#define __HH_NNS_LAYER_TRNCMP
-
-#include <Dice.hh>
-#include <TLogger.hh>
-#include <nns/Transfer.hh>
-
-namespace nns {
-
-// =======================================================================================
-class Layer {                                                                // nns::Layer
-  // -------------------------------------------------------------------------------------
- protected:
-  TLOGGER_HEADER( logger );
-  EMPTY_PROTOTYPE( Layer );
-
- public:
-  int32_t   nIn;   ///< number of inputs/connections
-  int32_t   nOut;  ///< number of outputs/nodes
-  int32_t   nBuf;
-  real8_t*  W_buffer;  
-  real8_t*  dW_buffer;
-    
-  real8_t** W;  ///< Weights           ( [out][in] ) Each column is the weights of one node
-  real8_t*  b;  ///< Bias              ( [out] )
-  real8_t** dW; ///< Delta Weights     ( [out][in] )
-  real8_t*  db; ///< Delta Bias        ( [out] )
-  real8_t*  z;  ///< Weighted Sum      ( [out] )
-  real8_t*  a;  ///< Non-linear output ( [out] )
-
-  real8_t*  E;
-  real8_t*  d;
-
-  Transfer* trans; ///< pointer to an transfer function.
-    
-  Layer  ( void );
-  Layer  ( const int32_t n_in, const int32_t n_out );
-  Layer  ( std::ifstream& inf );
-
-  ~Layer ( void );
-
-  void     setTransfer ( std::string str );
-  void     setTransfer ( transfer_e  ttype = SIGMOID );
-
-  void     resize      ( const int32_t n_in, const int32_t n_out );
-  void     destroy     ( void );
-  
-  bool     read        ( std::ifstream& inf );
-  bool     write       ( std::ofstream& outf, std::string sfmt = "%23.16e" );
-
-  void     debug       ( int32_t i );
-  void     randomize   ( Dice* dd = static_cast<Dice*>(0) );
-
-  void     reset       ( void );
-  real8_t* forward     ( real8_t* input );
-  void     backward    ( real8_t* input, real8_t* delta = static_cast<real8_t*>(0) );
-  void     update      ( const real8_t eta );
-    
-}; // end class nns::Layer
-
-}; // end namespace nns
-
-
-#endif 
 
 
 // =======================================================================================
-// **                                N N S : : L A Y E R                                **
+// **                                 A R R A Y F U N C                                 **
 // ======================================================================== END FILE =====

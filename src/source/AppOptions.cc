@@ -47,6 +47,7 @@
 #define EMPTY_MAP     static_cast<cli_map_s*>(0)
 #define EMPTY_MAP_PTR static_cast<cli_map_s**>(0)
 
+size_t                       AppOptions::MAX_USAGE_TEXT    = 32;
 char**                       AppOptions::NO_ENV            = static_cast<char**>(0);
 char**                       AppOptions::NO_ARGV           = static_cast<char**>(0);
 const char*                  AppOptions::FILENAME          = static_cast<const char*>(0);
@@ -57,6 +58,7 @@ AppOptions::usage_function_t AppOptions::DEFAULT_USAGE     = static_cast<AppOpti
 AppOptions::classInstance*   AppOptions::instance = static_cast<AppOptions::classInstance*>(0);
 
 static TLogger* logger = TLogger::getInstance();
+
 
 // =======================================================================================
 /** @brief Constructor
@@ -73,6 +75,10 @@ AppOptions::classInstance::classInstance( void )
     check_for_help( false ),
     progName("Application"),
     title_line("Application * ver 1.0 * 20xx"),
+    example_line(""),
+    display_example(false),
+    usage_lines(0),
+    usage_line_index(0),
     argc(0), argv(0), env(0),
     map(0), map_count(0), file_count(0),
     user_supplied(0), config(0) {
@@ -83,7 +89,10 @@ AppOptions::classInstance::classInstance( void )
 
   char buffer[64];
   sprintf( buffer, "Application * ver 1.0 * %4d", st->tm_year + 1900 );
-  title_line = buffer;  
+  title_line = buffer;
+
+  usage_lines      = new std::string[ AppOptions::MAX_USAGE_TEXT ];
+  usage_line_index = 0;
 }
 
 
@@ -95,13 +104,20 @@ AppOptions::classInstance::classInstance( void )
 // ---------------------------------------------------------------------------------------
 AppOptions::classInstance::~classInstance( void ) {
   // -------------------------------------------------------------------------------------
-  if ( (ConfigDB*)0 != config ) { delete config; }
+  if ( static_cast<ConfigDB*>(0) != config ) {
+    logger->debug( "call for a delete of the embedded config instance" );
+    delete config;
+    logger->debug( "a delete of the embedded config instance wasd tried" );
+  }
+  config = static_cast<ConfigDB*>(0);
 
   for ( size_t i=0; i<map_count; i++ ) {
     map[i] = EMPTY_MAP;
   }
 
-  if ( EMPTY_MAP_PTR != map ) { delete map; }
+  delete[] usage_lines;
+
+  if ( EMPTY_MAP_PTR != map ) { delete[] map; }
 }
 
 
@@ -183,6 +199,7 @@ AppOptions::classInstance* AppOptions::getInstance( void ) {
   // -------------------------------------------------------------------------------------
   if ( ( AppOptions::classInstance*)0 == AppOptions::instance ) {
     AppOptions::instance = new AppOptions::classInstance();
+    logger->debug( "A global instance of AppOptions was instantiated" );
   }
   return AppOptions::instance;
 }
@@ -210,8 +227,13 @@ void AppOptions::init( cli_map_s* cmap, usage_function_t uf ) {
 // ---------------------------------------------------------------------------------------
 void AppOptions::free( void ) {
   // -------------------------------------------------------------------------------------
-  if (( AppOptions::classInstance*)0 == AppOptions::instance) { delete AppOptions::instance; };
-  AppOptions::instance = ( AppOptions::classInstance*)0;
+  if (static_cast<AppOptions::classInstance*>(0) != AppOptions::instance) {
+    delete AppOptions::instance;
+    logger->debug( "A global instance of AppOptions was derezzed" );
+  } else {
+    logger->debug( "A global instance of AppOptions was never allocated" );
+  }
+  AppOptions::instance = static_cast<AppOptions::classInstance*>(0);
 }
 
 
@@ -228,6 +250,39 @@ void AppOptions::setTitleLine( std::string line ) {
   I->title_line = line;
 }
 
+
+// =======================================================================================
+/** @brief Example Line.
+ *  @param[in] line example line
+ *
+ *  Set the example line displayed when the application runs.
+ */
+// ---------------------------------------------------------------------------------------
+void AppOptions::setExampleLine( std::string line ) {
+  // -------------------------------------------------------------------------------------
+  AppOptions::classInstance* I = AppOptions::getInstance();
+  I->example_line = line;
+  I->display_example = true;
+}
+
+
+// =======================================================================================
+/** @brief Add another usage line.
+ *  @param[in] line usage line line
+ *
+ *  Add another line of help information.
+ */
+// ---------------------------------------------------------------------------------------
+void AppOptions::addUsageText( std::string line ) {
+  // -------------------------------------------------------------------------------------
+  AppOptions::classInstance* I = AppOptions::getInstance();
+  if ( I->usage_line_index < AppOptions::MAX_USAGE_TEXT ) {
+    I->usage_lines[I->usage_line_index] = line;
+    I->usage_line_index += 1;
+  } else {
+    std::cerr << "Error ** AppOptions::addUsageText ** increase AppOptions::MAX_USAGE_TEXT\n";
+  }
+}
 
 // =======================================================================================
 /** @brief 
@@ -520,6 +575,22 @@ AppOptions::classInstance* I = AppOptions::getInstance();
 	if ( 22 == gram ) { line = "these options/files are"; }
 
         std::cerr << "\n  *- " << line << " required.\n";
+      }
+      
+      // ----- display example usage -----------------------------------------------------
+
+      if ( I->display_example ) {
+        std::cerr << std::endl << "  Example: " << pname
+                  << " " << I->example_line << std::endl;
+      }
+      
+      // ----- display help text ---------------------------------------------------------
+
+      if ( 0 < I->usage_line_index ) {
+        std::cerr << std::endl;
+        for ( size_t i=0; i<I->usage_line_index; i++ ) {
+          std::cerr << "  " << I->usage_lines[i] << std::endl;
+        }
       }
       
       // ---------------------------------------------------------------------------------
